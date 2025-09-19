@@ -1,0 +1,51 @@
+/* style.css for LegalEagle */
+body {
+    background-color: #f8faff;
+    font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+}
+.navbar, .footer {
+    background: #1a2238 !important;
+    color: #ffd700 !important;
+}
+.navbar .nav-link, .footer a {
+    color: #ffd700 !important;
+    font-weight: 500;
+}
+.navbar .nav-link.active {
+    text-decoration: underline;
+}
+.card-header {
+    background: #1a2238 !important;
+    color: #ffd700 !important;
+}
+.card {
+    border-radius: 12px !important;
+    border: none !important;
+    box-shadow: 0 2px 12px rgba(26,34,56,0.08);
+}
+.btn-primary, .btn-warning, .btn {
+    background: #ffd700 !important;
+    color: #1a2238 !important;
+    border: none !important;
+    font-weight: 600;
+}
+.chat-bubble.bg-light {
+    background: #e0e7ef !important;
+    color: #222 !important;
+    border: 1px solid #c7d2fe;
+}
+.chat-bubble.bg-primary {
+    background: #1a2238 !important;
+    color: #ffd700 !important;
+    border: 1px solid #1a2238;
+}
+.chat-bubble.bg-danger {
+    background: #fee2e2 !important;
+    color: #b91c1c !important;
+    border: 1px solid #fca5a5;
+}
+.highlight {
+    background-color: #ffe066;
+    padding: 2px 4px;
+    border-radius: 3px;
+}

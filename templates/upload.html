@@ -1,0 +1,263 @@
+{% extends 'base.html' %} {% block title %}LegalEagle - Upload{% endblock %} {%
+block content %}
+<div class="hero-section py-5">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <div
+          class="card mb-4 shadow-lg"
+          style="background: rgba(13, 27, 42, 0.95); border: 1px solid #415a77"
+        >
+          <div class="card-body">
+            <h1 class="mb-4 text-center" style="color: #f1faee">
+              Upload Document
+            </h1>
+            <form
+              id="uploadForm"
+              action="/upload"
+              method="post"
+              enctype="multipart/form-data"
+            >
+              <div class="mb-3">
+                <div
+                  id="dropzone"
+                  class="border border-primary rounded-3 p-5 text-center"
+                  style="
+                    background: #1b263b;
+                    color: #f1faee;
+                    cursor: pointer;
+                    border: 2px dashed #0d6efd !important;
+                    transition: all 0.3s ease;
+                  "
+                >
+                  <i class="fas fa-cloud-upload-alt fa-3x mb-3"></i>
+                  <div id="drop-text" class="h5 mb-3">
+                    Drag & drop files here or click to select
+                  </div>
+                  <small class="text-muted">Supports PDF and TXT files</small>
+                  <input
+                    type="file"
+                    id="file"
+                    name="file"
+                    accept=".pdf,.txt"
+                    required
+                    class="d-none"
+                  />
+                </div>
+              </div>
+              <button
+                type="submit"
+                class="btn btn-primary w-100"
+                style="background: #415a77; border: none"
+              >
+                Upload
+              </button>
+            </form>
+          </div>
+        </div>
+        {% if result %}
+        <div
+          class="card mb-4 {% if success %}border-success{% else %}border-danger{% endif %}"
+        >
+          <div class="card-body">
+            <div
+              class="hero-section py-5"
+              style="
+                background: linear-gradient(120deg, #ffd700 60%, #f8faff 100%);
+              "
+            >
+              <div class="container">
+                <div class="row justify-content-center">
+                  <div class="col-md-8">
+                    <div
+                      class="card mb-4 shadow-lg border-0"
+                      style="background: #fff"
+                    >
+                      <div class="card-body">
+                        <h1 class="mb-4 text-center" style="color: #1a2238">
+                          <i class="fa-solid fa-file-upload me-2"></i> Upload
+                          Document
+                        </h1>
+                        <form
+                          id="uploadForm"
+                          action="/upload"
+                          method="post"
+                          enctype="multipart/form-data"
+                        >
+                          <div class="mb-3">
+                            <div
+                              id="dropzone"
+                              class="border border-warning rounded-3 p-5 text-center"
+                              style="
+                                background: #f8faff;
+                                color: #1a2238;
+                                cursor: pointer;
+                                border: 2px dashed #ffd700 !important;
+                                transition: all 0.3s ease;
+                              "
+                            >
+                              <i
+                                class="fa-solid fa-cloud-arrow-up fa-3x mb-3"
+                                style="color: #ffd700"
+                              ></i>
+                              <div id="drop-text" class="h5 mb-3">
+                                Drag & drop files here or click to select
+                              </div>
+                              <small class="text-muted"
+                                >Supports PDF and TXT files</small
+                              >
+                              <input
+                                type="file"
+                                id="file"
+                                name="file"
+                                accept=".pdf,.txt"
+                                required
+                                class="d-none"
+                              />
+                            </div>
+                          </div>
+                          <button
+                            type="submit"
+                            class="btn w-100"
+                            style="
+                              background: #ffd700;
+                              color: #1a2238;
+                              border: none;
+                            "
+                          >
+                            <i class="fa-solid fa-upload me-2"></i> Upload
+                          </button>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <h4
+              class="card-title text-{% if success %}success{% else %}danger{% endif %}"
+            >
+              {% if success %}✅ Upload Successful{% else %}❌ Upload Failed{%
+              endif %}
+            </h4>
+            <pre
+              style="
+                max-height: 400px;
+                overflow: auto;
+                background: #f8f9fa;
+                padding: 12px;
+                border-radius: 8px;
+              "
+            >
+{{ result }}</pre
+            >
+          </div>
+        </div>
+        {% endif %} {% if error %}
+        <div class="card mb-4 border-danger">
+          <div class="card-body">
+            <h4 class="card-title text-danger">❌ Upload Failed</h4>
+            <div class="alert alert-danger">{{ error }}</div>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block scripts %}
+<script>
+  $(document).ready(function () {
+    var $dropzone = $("#dropzone");
+    var $fileInput = $("#file");
+    var $dropText = $("#drop-text");
+
+    // Click to select file - dropzone only
+    $dropzone.on("click", function () {
+      document.getElementById("file").click();
+    });
+
+    // File input change
+    $fileInput.change(function () {
+      if (this.files && this.files.length > 0) {
+        $dropText.html('<i class="fas fa-file"></i> ' + this.files[0].name);
+        $dropzone.css("border-color", "#28a745");
+      }
+    });
+
+    // Drag and drop events
+    $dropzone.on("dragover dragenter", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      $(this).css({
+        "border-color": "#28a745",
+        background: "#0f2027",
+      });
+    });
+
+    $dropzone.on("dragleave dragend", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      $(this).css({
+        "border-color": "#0d6efd",
+        background: "#1b263b",
+      });
+    });
+
+    $dropzone.on("drop", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      var files = e.originalEvent.dataTransfer.files;
+      if (files.length > 0) {
+        $fileInput[0].files = files;
+        $dropText.html('<i class="fas fa-file"></i> ' + files[0].name);
+        $(this).css({
+          "border-color": "#28a745",
+          background: "#1b263b",
+        });
+      }
+    });
+
+    // Form submit handler
+    $("#uploadForm").submit(function (e) {
+      e.preventDefault();
+
+      var formData = new FormData(this);
+      var $submitBtn = $(this).find('button[type="submit"]');
+
+      $dropText.html('<i class="fas fa-spinner fa-spin"></i> Uploading...');
+      $submitBtn.prop("disabled", true).text("Uploading...");
+
+      // Remove previous alerts
+      $(".alert").remove();
+
+      // jQuery AJAX request
+      $.ajax({
+        url: "/upload",
+        type: "POST",
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function (response) {
+          $dropText.html('<i class="fas fa-check-circle"></i> Upload complete');
+          $("#uploadForm").after(
+            '<div class="alert alert-success mt-3">✅ Upload successful!</div>'
+          );
+          $dropzone.css("border-color", "#28a745");
+        },
+        error: function () {
+          $dropText.html('<i class="fas fa-times-circle"></i> Upload failed');
+          $("#uploadForm").after(
+            '<div class="alert alert-danger mt-3">Upload failed</div>'
+          );
+          $dropzone.css("border-color", "#dc3545");
+        },
+        complete: function () {
+          $submitBtn.prop("disabled", false).text("Upload");
+        },
+      });
+    });
+  });
+</script>
+{% endblock %}

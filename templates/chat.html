@@ -1,0 +1,241 @@
+{% extends 'base.html' %} {% block title %}LegalEagle - Chat{% endblock %} {%
+block content %}
+<div class="container py-5" style="min-height: 100vh">
+  <div class="row justify-content-center">
+    <div class="col-md-10">
+      <div class="card shadow-lg border-0" style="background: #ffffff">
+        <div
+          class="card-header"
+          style="background: #2563eb; color: #fff; border-radius: 8px 8px 0 0"
+        >
+          <h3 class="mb-0">
+            <i class="fa-solid fa-comments me-2"></i> LegalEagle Chat Assistant
+          </h3>
+          <small style="color: #e0e7ef"
+            >Ask questions about your uploaded legal documents</small
+          >
+        </div>
+        <div class="card-body" style="background: #f4f7fb">
+          <div
+            id="chat-window"
+            style="
+              height: 500px;
+              overflow-y: auto;
+              background: #f4f7fb;
+              border-radius: 8px;
+              padding: 15px;
+              margin-bottom: 20px;
+              border: 1px solid #e3e8ee;
+            "
+          >
+            <div class="text-muted text-center py-5">
+              <i
+                class="fa-solid fa-comments fa-3x mb-3"
+                style="color: #2563eb"
+              ></i>
+              <p style="color: #6b7280">
+                Welcome! Upload documents first, then ask your legal questions
+                here.
+              </p>
+            </div>
+          </div>
+          <form id="chat-form">
+            <div class="input-group">
+              <input
+                type="text"
+                id="user-input"
+                class="form-control"
+                placeholder="Ask your legal question..."
+                required
+                style="
+                  background: #e3f0ff;
+                  border: 1px solid #2563eb;
+                  color: #222;
+                "
+              />
+              <button
+                type="submit"
+                class="btn"
+                id="send-btn"
+                style="background: #2563eb; color: #fff"
+              >
+                <i class="fa-solid fa-paper-plane"></i> Send
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block styles %}
+<style>
+  .chat-message {
+    animation: fadeIn 0.3s ease-in;
+  }
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .chat-bubble.bg-light {
+    background: #e3f0ff !important;
+    color: #222 !important;
+    border: 1px solid #c7d2fe;
+  }
+  .chat-bubble.bg-primary {
+    background: #2563eb !important;
+    color: #fff !important;
+    border: 1px solid #2563eb;
+  }
+  .chat-bubble.bg-danger {
+    background: #fee2e2 !important;
+    color: #b91c1c !important;
+    border: 1px solid #fca5a5;
+  }
+  #chat-window {
+    font-size: 14px;
+  }
+  #chat-window p {
+    margin-bottom: 18px;
+    text-align: left;
+    display: block;
+    width: 100%;
+    background: #f1f3f4;
+    border-radius: 8px;
+    padding: 12px 18px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  }
+  #chat-window p:last-child {
+    margin-bottom: 0;
+  }
+  /* Remove yellow color from modal and header */
+  .card-header,
+  #chatLoaderLabel {
+    background: #2563eb !important;
+    color: #fff !important;
+  }
+  .modal-content {
+    background: #f4f7fb !important;
+    border-radius: 16px;
+    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.08);
+  }
+</style>
+<!-- Loader Modal -->
+<div
+  class="modal fade"
+  id="chatLoaderModal"
+  tabindex="-1"
+  aria-labelledby="chatLoaderLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-centered">
+    <div
+      class="modal-content"
+      style="
+        background: #f4f7fb;
+        border-radius: 16px;
+        box-shadow: 0 2px 16px rgba(0, 0, 0, 0.08);
+      "
+    >
+      <div class="modal-body text-center py-5">
+        <div class="mb-3">
+          <i class="fas fa-spinner fa-spin fa-3x" style="color: #2563eb"></i>
+        </div>
+        <h5 id="chatLoaderLabel" style="color: #2563eb">
+          Finding the best answer...
+        </h5>
+        <small class="text-muted"
+          >Please wait while LegalEagle analyzes your documents.</small
+        >
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block scripts %}
+<script>
+  $(document).ready(function () {
+    let firstMessage = true;
+    $("#chat-form").on("submit", function (e) {
+      e.preventDefault();
+      const message = $("#user-input").val().trim();
+      if (!message) return;
+      // Remove any previous loader and clear chat window only on first message
+      $("#chat-loader").remove();
+      if (firstMessage) {
+        $("#chat-window").empty();
+        firstMessage = false;
+      }
+      addMessage("user", message);
+      $("#user-input").val("");
+      $("#send-btn")
+        .prop("disabled", true)
+        .html('<i class="fas fa-spinner fa-spin"></i> Thinking...');
+      // Show loader inside chat window (only once per request)
+      $("#chat-window").append(
+        '<div id="chat-loader" class="text-center py-4"><i class="fas fa-spinner fa-spin fa-2x" style="color:#2563eb"></i><div class="mt-2 text-muted">Searching your documents...</div></div>'
+      );
+      $.ajax({
+        url: "/chat",
+        type: "POST",
+        data: { message: message },
+        dataType: "json",
+        success: function (data) {
+          $("#chat-loader").remove();
+          if (data.error) {
+            addMessage("assistant", data.answer, null, true);
+          } else {
+            addMessage("assistant", data.answer, null, false);
+          }
+        },
+        error: function () {
+          $("#chat-loader").remove();
+          addMessage(
+            "assistant",
+            "Sorry, I encountered an error. Please try again.",
+            null,
+            true
+          );
+        },
+        complete: function () {
+          $("#send-btn")
+            .prop("disabled", false)
+            .html('<i class="fa-solid fa-paper-plane"></i> Send');
+          $("#user-input").focus();
+        },
+      });
+    });
+    function addMessage(sender, text, sources, isError) {
+      const badge = sender === "user" ? "💬 You" : "🦅 LegalEagle";
+      let bgClass;
+      if (sender === "user") {
+        bgClass = "bg-primary text-white";
+      } else if (isError) {
+        bgClass = "bg-danger text-white";
+      } else {
+        bgClass = "bg-light";
+      }
+      const alignClass = sender === "user" ? "text-end" : "";
+      let paragraphs = text.split(/\n\n+/);
+      let html = `<div class="mb-3 chat-message ${alignClass}"><div class="mb-2"><strong>${badge}</strong></div>`;
+      paragraphs.forEach((para, idx) => {
+        html += `<div class="chat-bubble ${bgClass} mb-3" style="width:100%;display:block;padding:16px 20px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.04);margin-bottom:18px;line-height:1.7;">${para.replace(
+          /\n/g,
+          "<br>"
+        )}</div>`;
+      });
+      if (sources && sources !== "No sources found") {
+        html += `<div class="border-top pt-2 mt-2"><small class="text-muted"><strong>🔗 Sources:</strong> ${sources}</small></div>`;
+      }
+      html += "</div>";
+      $("#chat-window").append(html);
+      $("#chat-window").scrollTop($("#chat-window")[0].scrollHeight);
+    }
+  });
+</script>
+{% endblock %}
