@@ -1,0 +1,57 @@
+{% macro header(active) %}
+<nav
+  class="header-menu navbar navbar-expand-lg navbar-dark shadow-sm"
+  aria-label="Main navigation"
+  style="
+    background: linear-gradient(90deg, #343a40 60%, #007bff 100%);
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  "
+>
+  <div class="container-fluid px-4">
+    <a
+      class="navbar-brand fw-bold"
+      href="/"
+      style="font-size: 2rem; letter-spacing: 2px"
+      >🦅 LegalEagle</a
+    >
+    <div class="collapse navbar-collapse">
+      <ul class="navbar-nav ms-auto mb-2 mb-lg-0 gap-2">
+        <li class="nav-item">
+          <a class="nav-link {% if active=='home' %}active{% endif %}" href="/"
+            >Home</a
+          >
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link {% if active=='upload' %}active{% endif %}"
+            href="/upload"
+            >Upload</a
+          >
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link {% if active=='chat' %}active{% endif %}"
+            href="/chat"
+            >Chatbot</a
+          >
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+{% endmacro %} {% macro footer() %}
+<footer
+  class="footer fixed-bottom py-3"
+  style="
+    background: linear-gradient(90deg, #343a40 60%, #007bff 100%);
+    color: #fff;
+    z-index: 100;
+  "
+>
+  <div class="container text-center">
+    <span class="fw-bold">LegalEagle &copy; 2025</span> | Made for law firms,
+    compliance teams, and contract review assistants.
+  </div>
+</footer>
+{% endmacro %}
