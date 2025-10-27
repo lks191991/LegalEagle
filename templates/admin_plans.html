@@ -1,0 +1,587 @@
+{% extends 'admin_base.html' %} {% block title %}Manage Plans - LegalEagle
+Admin{% endblock %} {% block page_title %}Manage Subscription Plans{% endblock
+%} {% block content %}
+<!-- Message Display -->
+<div id="messageArea"></div>
+
+<!-- Top Actions -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div
+    class="d-flex align-items-center rounded px-3 py-2 border"
+    style="border-color: #ef4524 !important; background-color: #ef4524"
+  >
+    <i class="fa-solid fa-tags text-white me-2"></i>
+    <span class="text-white me-1">Total Records:</span>
+    <span class="fw-bold text-white">{{ plans|length }}</span>
+  </div>
+  <button
+    class="btn btn-primary"
+    data-bs-toggle="modal"
+    data-bs-target="#createPlanModal"
+  >
+    <i class="fa-solid fa-plus me-2"></i>Create New Plan
+  </button>
+</div>
+
+<!-- Plans Table -->
+<div class="card-box">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead class="table-light">
+        <tr>
+          <th class="text-dark">ID</th>
+          <th class="text-dark">Plan Name</th>
+          <th class="text-dark">Subtitle</th>
+          <th class="text-dark">Price</th>
+          <th class="text-dark">Most Popular</th>
+          <th class="text-dark">Max Documents</th>
+          <th class="text-dark">Max Chat Prompts</th>
+          <th class="text-dark">Features</th>
+          <th class="text-dark">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for plan in plans %}
+        <tr>
+          <td class="text-dark">#{{ "%03d"|format(plan.id) }}</td>
+          <td class="text-dark">{{ plan.name }}</td>
+          <td class="text-dark">
+            <small>{{ plan.subtitle or 'No subtitle' }}</small>
+          </td>
+          <td class="text-dark">₹{{ "%.2f"|format(plan.price) }}</td>
+          <td class="text-dark">
+            {% if plan.most_popular %}
+            <span class="badge bg-success"
+              ><i class="fa-solid fa-star me-1"></i>Most Popular</span
+            >
+            {% else %}
+            <span class="text-muted">No</span>
+            {% endif %}
+          </td>
+          <td class="text-dark">{{ plan.max_documents or 'N/A' }}</td>
+          <td class="text-dark">{{ plan.max_chat_prompts or 'N/A' }}</td>
+          <td class="text-dark">
+            <small>{{ plan.features|safe }}</small>
+          </td>
+          <td>
+            <div class="btn-group btn-group-sm">
+              <button
+                class="btn btn-outline-primary"
+                title="Edit"
+                onclick="editPlan({{ plan.id }}, '{{ plan.name }}', '{{ plan.subtitle|e }}', {{ plan.price }}, '{{ plan.features|e }}', {{ plan.max_documents or 10 }}, {{ plan.max_chat_prompts or 100 }}, {{ plan.most_popular|lower }})"
+              >
+                <i class="fa-solid fa-edit"></i>
+              </button>
+              <button
+                class="btn btn-outline-danger"
+                title="Delete"
+                onclick="deletePlan({{ plan.id }})"
+              >
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Create Plan Modal -->
+<div class="modal fade" id="createPlanModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title text-dark">Create New Plan</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <form id="createPlanForm">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-semibold text-dark">Plan Name</label>
+              <input type="text" class="form-control" name="name" required />
+              <div class="invalid-feedback"></div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-semibold text-dark">Subtitle</label>
+              <input
+                type="text"
+                class="form-control"
+                name="subtitle"
+                placeholder="Brief description of the plan"
+              />
+              <div class="invalid-feedback"></div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-semibold text-dark">Price (₹)</label>
+              <input
+                type="number"
+                class="form-control"
+                name="price"
+                step="0.01"
+                required
+              />
+              <div class="invalid-feedback"></div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-semibold text-dark"
+                >Max Documents</label
+              >
+              <input
+                type="number"
+                class="form-control"
+                name="max_documents"
+                value="10"
+                min="1"
+                required
+              />
+              <div class="invalid-feedback"></div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-semibold text-dark"
+                >Max Chat Prompts</label
+              >
+              <input
+                type="number"
+                class="form-control"
+                name="max_chat_prompts"
+                value="100"
+                min="1"
+                required
+              />
+              <div class="invalid-feedback"></div>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold text-dark"
+              >Validity Days</label
+            >
+            <input
+              type="number"
+              class="form-control"
+              name="validity_days"
+              required
+            />
+            <div class="invalid-feedback"></div>
+          </div>
+          <div class="mb-3">
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                name="most_popular"
+                id="createMostPopular"
+              />
+              <label
+                class="form-check-label fw-semibold text-dark"
+                for="createMostPopular"
+              >
+                <i class="fa-solid fa-star text-warning me-2"></i>Mark as Most
+                Popular
+              </label>
+              <small class="form-text text-muted d-block"
+                >Only one plan can be marked as most popular at a time.</small
+              >
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold text-dark">Features</label>
+            <div id="createFeaturesEditor" style="height: 150px"></div>
+            <textarea
+              class="form-control d-none"
+              name="features"
+              required
+            ></textarea>
+            <div class="invalid-feedback"></div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Cancel
+        </button>
+        <button type="button" class="btn btn-primary" onclick="createPlan()">
+          Create Plan
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Plan Modal -->
+<div class="modal fade" id="editPlanModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title text-dark">Edit Plan</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <form id="editPlanForm">
+          <input type="hidden" name="plan_id" id="editPlanId" />
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-semibold text-dark">Plan Name</label>
+              <input
+                type="text"
+                class="form-control"
+                name="name"
+                id="editPlanName"
+                required
+              />
+              <div class="invalid-feedback"></div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-semibold text-dark">Subtitle</label>
+              <input
+                type="text"
+                class="form-control"
+                name="subtitle"
+                id="editPlanSubtitle"
+                placeholder="Brief description of the plan"
+              />
+              <div class="invalid-feedback"></div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-semibold text-dark">Price (₹)</label>
+              <input
+                type="number"
+                class="form-control"
+                name="price"
+                id="editPlanPrice"
+                step="0.01"
+                required
+              />
+              <div class="invalid-feedback"></div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-semibold text-dark"
+                >Max Documents</label
+              >
+              <input
+                type="number"
+                class="form-control"
+                name="max_documents"
+                id="editPlanMaxDocs"
+                min="1"
+                required
+              />
+              <div class="invalid-feedback"></div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-semibold text-dark"
+                >Max Chat Prompts</label
+              >
+              <input
+                type="number"
+                class="form-control"
+                name="max_chat_prompts"
+                id="editPlanMaxPrompts"
+                min="1"
+                required
+              />
+              <div class="invalid-feedback"></div>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold text-dark"
+              >Validity Days</label
+            >
+            <input
+              type="number"
+              class="form-control"
+              name="validity_days"
+              id="editPlanValidity"
+              required
+            />
+            <div class="invalid-feedback"></div>
+          </div>
+          <div class="mb-3">
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                name="most_popular"
+                id="editMostPopular"
+              />
+              <label
+                class="form-check-label fw-semibold text-dark"
+                for="editMostPopular"
+              >
+                <i class="fa-solid fa-star text-warning me-2"></i>Mark as Most
+                Popular
+              </label>
+              <small class="form-text text-muted d-block"
+                >Only one plan can be marked as most popular at a time.</small
+              >
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold text-dark">Features</label>
+            <div id="editFeaturesEditor" style="height: 150px"></div>
+            <textarea
+              class="form-control d-none"
+              name="features"
+              id="editPlanFeatures"
+              required
+            ></textarea>
+            <div class="invalid-feedback"></div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Cancel
+        </button>
+        <button type="button" class="btn btn-primary" onclick="updatePlan()">
+          Update Plan
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %} {% block head %}
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet" />
+<script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+{% endblock %} {% block scripts %}
+<script>
+  let createQuill, editQuill;
+
+  // Initialize Quill editors
+  $(document).ready(function () {
+    // Create modal editor
+    createQuill = new Quill("#createFeaturesEditor", {
+      theme: "snow",
+      modules: {
+        toolbar: [
+          ["bold", "italic"],
+          [{ list: "ordered" }, { list: "bullet" }],
+          ["link"],
+        ],
+      },
+    });
+
+    // Edit modal editor
+    editQuill = new Quill("#editFeaturesEditor", {
+      theme: "snow",
+      modules: {
+        toolbar: [
+          ["bold", "italic"],
+          [{ list: "ordered" }, { list: "bullet" }],
+          ["link"],
+        ],
+      },
+    });
+  });
+  function validateField(input, message) {
+    const $input = $(input);
+    const $feedback = $input.parent().find(".invalid-feedback");
+    if (message) {
+      $input.addClass("is-invalid");
+      $feedback.text(message).show();
+      return false;
+    } else {
+      $input.removeClass("is-invalid");
+      $feedback.hide();
+      return true;
+    }
+  }
+
+  function createPlan() {
+    // Save Quill content to hidden textarea
+    $('textarea[name="features"]').val(createQuill.root.innerHTML);
+
+    const $form = $("#createPlanForm");
+    const nameInput = $form.find('[name="name"]')[0];
+    const priceInput = $form.find('[name="price"]')[0];
+    const featuresInput = $form.find('[name="features"]')[0];
+
+    let isValid = true;
+
+    // Validate name
+    const name = $(nameInput).val().trim();
+    if (!name || name.length < 2) {
+      validateField(nameInput, "Plan name must be at least 2 characters long");
+      isValid = false;
+    } else {
+      validateField(nameInput, "");
+    }
+
+    // Validate price
+    const price = parseFloat($(priceInput).val());
+    if (!price || price <= 0) {
+      validateField(priceInput, "Price must be greater than 0");
+      isValid = false;
+    } else {
+      validateField(priceInput, "");
+    }
+
+    // Validate features
+    const features = $(featuresInput).val().trim();
+    if (!features || features.length < 5) {
+      validateField(
+        featuresInput,
+        "Features description must be at least 5 characters long"
+      );
+      isValid = false;
+    } else {
+      validateField(featuresInput, "");
+    }
+
+    if (!isValid) return;
+
+    $.ajax({
+      url: "/admin/plans",
+      method: "POST",
+      data: $form.serialize(),
+      success: function (data) {
+        showMessage(data.message, data.success ? "success" : "error");
+        if (data.success) {
+          $("#createPlanModal").modal("hide");
+          setTimeout(() => location.reload(), 1500);
+        }
+      },
+    });
+  }
+
+  function editPlan(
+    planId,
+    name,
+    subtitle,
+    price,
+    features,
+    maxDocs,
+    maxPrompts,
+    mostPopular
+  ) {
+    $("#editPlanId").val(planId);
+    $("#editPlanName").val(name);
+    $("#editPlanSubtitle").val(subtitle || "");
+    $("#editPlanPrice").val(price);
+    $("#editPlanValidity").val("30");
+    $("#editPlanFeatures").val(features);
+    $("#editPlanMaxDocs").val(maxDocs || 10);
+    $("#editPlanMaxPrompts").val(maxPrompts || 100);
+    $("#editMostPopular").prop(
+      "checked",
+      mostPopular === true || mostPopular === "true"
+    );
+
+    // Set Quill content
+    editQuill.root.innerHTML = features;
+
+    $("#editPlanModal").modal("show");
+  }
+
+  function updatePlan() {
+    // Save Quill content to hidden textarea
+    $("#editPlanFeatures").val(editQuill.root.innerHTML);
+
+    const $form = $("#editPlanForm");
+    const nameInput = $form.find('[name="name"]')[0];
+    const priceInput = $form.find('[name="price"]')[0];
+    const featuresInput = $form.find('[name="features"]')[0];
+
+    let isValid = true;
+
+    // Validate name
+    const name = $(nameInput).val().trim();
+    if (!name || name.length < 2) {
+      validateField(nameInput, "Plan name must be at least 2 characters long");
+      isValid = false;
+    } else {
+      validateField(nameInput, "");
+    }
+
+    // Validate price
+    const price = parseFloat($(priceInput).val());
+    if (!price || price <= 0) {
+      validateField(priceInput, "Price must be greater than 0");
+      isValid = false;
+    } else {
+      validateField(priceInput, "");
+    }
+
+    // Validate features
+    const features = $(featuresInput).val().trim();
+    if (!features || features.length < 5) {
+      validateField(
+        featuresInput,
+        "Features description must be at least 5 characters long"
+      );
+      isValid = false;
+    } else {
+      validateField(featuresInput, "");
+    }
+
+    if (!isValid) return;
+
+    const planId = $("#editPlanId").val();
+
+    $.ajax({
+      url: `/admin/plans/${planId}/edit`,
+      method: "POST",
+      data: $form.serialize(),
+      success: function (data) {
+        showMessage(data.message, data.success ? "success" : "error");
+        if (data.success) {
+          $("#editPlanModal").modal("hide");
+          setTimeout(() => location.reload(), 1500);
+        }
+      },
+    });
+  }
+
+  function deletePlan(planId) {
+    showDeleteConfirm(
+      "Are you sure you want to delete this subscription plan?",
+      function () {
+        fetch(`/admin/plans/${planId}`, {
+          method: "DELETE",
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            showMessage(data.message, data.success ? "success" : "error");
+            if (data.success) {
+              setTimeout(() => location.reload(), 1500);
+            }
+          });
+      }
+    );
+  }
+
+  // Message display function
+  function showMessage(message, type) {
+    const alertClass = type === "success" ? "alert-success" : "alert-danger";
+    const alertHtml = `
+        <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    $("#messageArea").html(alertHtml);
+    setTimeout(() => {
+      $("#messageArea .alert").remove();
+    }, 5000);
+  }
+</script>
+{% endblock %}

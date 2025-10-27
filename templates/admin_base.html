@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}Admin Dashboard - LegalEagle{% endblock %}</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="/static/style.css" />
+    <link rel="stylesheet" href="/static/admin.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/css/bootstrap-datepicker.min.css"
+    />
+    {% block head %}{% endblock %}
+  </head>
+  <body class="bg-light-gray">
+    <div class="d-flex" style="min-height: 100vh">
+      <!-- Sidebar -->
+      <nav class="sidebar fade-in" style="width: 250px; min-height: 100vh">
+        <div class="p-4 border-bottom">
+          <div class="d-flex align-items-center">
+            <div class="admin-logo me-3">
+              <i class="fa-solid fa-scale-balanced"></i>
+            </div>
+            <div>
+              <h5 class="mb-0 text-dark fw-bold" style="font-size: 1.1rem">
+                LegalEagle
+              </h5>
+              <small class="text-muted fw-medium" style="font-size: 0.75rem"
+                >Admin Dashboard</small
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="px-3 py-2">
+          <div class="mb-3">
+            <small
+              class="text-muted fw-bold text-uppercase"
+              style="font-size: 0.7rem; letter-spacing: 1px"
+              >Navigation</small
+            >
+          </div>
+          <ul class="nav nav-pills flex-column slide-in">
+            <li class="nav-item mb-1">
+              <a
+                class="nav-link {% if current_page == 'dashboard' %}active{% else %}text-dark{% endif %}"
+                href="/admin/dashboard"
+              >
+                <i class="fa-solid fa-chart-line me-3"></i
+                ><span>Dashboard</span>
+              </a>
+            </li>
+            <li class="nav-item mb-1">
+              <a
+                class="nav-link {% if current_page == 'users' %}active{% else %}text-dark{% endif %}"
+                href="/admin/users"
+              >
+                <i class="fa-solid fa-users me-3"></i><span>Users</span>
+              </a>
+            </li>
+            <li class="nav-item mb-1">
+              <a
+                class="nav-link {% if current_page == 'plans' %}active{% else %}text-dark{% endif %}"
+                href="/admin/plans"
+              >
+                <i class="fa-solid fa-tags me-3"></i><span>Plans</span>
+              </a>
+            </li>
+            <li class="nav-item mb-1">
+              <a
+                class="nav-link {% if current_page == 'subscriptions' %}active{% else %}text-dark{% endif %}"
+                href="/admin/subscriptions"
+              >
+                <i class="fa-solid fa-credit-card me-3"></i
+                ><span>Subscriptions</span>
+              </a>
+            </li>
+            <li class="nav-item mb-1">
+              <a
+                class="nav-link {% if current_page == 'transactions' %}active{% else %}text-dark{% endif %}"
+                href="/admin/transactions"
+              >
+                <i class="fa-solid fa-receipt me-3"></i
+                ><span>Transactions</span>
+              </a>
+            </li>
+            <li class="nav-item mb-1">
+              <a
+                class="nav-link {% if current_page == 'faqs' %}active{% else %}text-dark{% endif %}"
+                href="/admin/faqs"
+              >
+                <i class="fa-solid fa-question-circle me-3"></i
+                ><span>FAQ Manager</span>
+              </a>
+            </li>
+            <li class="nav-item mb-1">
+              <a
+                class="nav-link {% if current_page == 'contacts' %}active{% else %}text-dark{% endif %}"
+                href="/admin/contacts"
+              >
+                <i class="fa-solid fa-envelope me-3"></i
+                ><span>Contact Messages</span>
+              </a>
+            </li>
+            <li class="nav-item mb-1">
+              <a
+                class="nav-link {% if current_page == 'chat_history' %}active{% else %}text-dark{% endif %}"
+                href="/admin/chat-history"
+              >
+                <i class="fa-solid fa-comments me-3"></i
+                ><span>Chat History</span>
+              </a>
+            </li>
+            <li class="nav-item mb-2">
+              <a
+                class="nav-link {% if current_page == 'settings' %}active{% else %}text-dark{% endif %}"
+                href="/admin/settings"
+              >
+                <i class="fa-solid fa-cog me-2"></i>Settings
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <div class="mt-auto p-3 border-top">
+          <a href="/admin/logout" class="btn btn-outline-danger btn-sm w-100">
+            <i class="fa-solid fa-sign-out-alt me-2"></i>Logout
+          </a>
+        </div>
+      </nav>
+
+      <!-- Main Content -->
+      <div class="flex-fill d-flex flex-column">
+        <!-- Top Header -->
+        <header class="p-4">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h4
+                class="mb-2 text-dark fw-bold"
+                style="font-size: 1.4rem; letter-spacing: -0.5px"
+              >
+                {% block page_title %}Dashboard{% endblock %}
+              </h4>
+              <small class="text-muted fw-medium" style="font-size: 0.85rem"
+                >Manage your LegalEagle platform</small
+              >
+            </div>
+            <div class="d-flex align-items-center">
+              <div class="me-4">
+                <small class="text-muted d-block" style="font-size: 0.7rem"
+                  >Welcome back</small
+                >
+                <span class="fw-semibold text-dark" style="font-size: 0.85rem"
+                  >{{ user_name or 'Admin' }}</span
+                >
+              </div>
+              <div class="dropdown">
+                <button
+                  class="btn btn-light btn-sm dropdown-toggle d-flex align-items-center"
+                  type="button"
+                  data-bs-toggle="dropdown"
+                  style="border: 1px solid #e0e6ed; border-radius: 8px"
+                >
+                  <div
+                    class="rounded-circle bg-primary d-flex align-items-center justify-content-center me-2"
+                    style="width: 24px; height: 24px"
+                  >
+                    <i
+                      class="fa-solid fa-user text-white"
+                      style="font-size: 0.7rem"
+                    ></i>
+                  </div>
+                  <span style="font-size: 0.8rem">Profile</span>
+                </button>
+                <ul class="dropdown-menu">
+                  <li>
+                    <a class="dropdown-item" href="/admin/profile"
+                      ><i class="fa-solid fa-user-gear me-2"></i>Profile</a
+                    >
+                  </li>
+                  <li>
+                    <a class="dropdown-item" href="/admin/logout"
+                      ><i class="fa-solid fa-sign-out-alt me-2"></i>Logout</a
+                    >
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <!-- Page Content -->
+        <main
+          class="p-4 fade-in admin-content-area flex-grow-1"
+          style="
+            background: linear-gradient(
+              135deg,
+              rgba(248, 250, 252, 0.5) 0%,
+              rgba(241, 245, 249, 0.3) 100%
+            );
+            position: relative;
+          "
+        >
+          <div class="content-gradient-border"></div>
+          {% block content %}{% endblock %}
+        </main>
+      </div>
+    </div>
+
+    <!-- Admin Footer -->
+    <footer class="admin-footer text-light py-3">
+      <div class="container-fluid text-center">
+        <p class="mb-0 small">
+          <i
+            class="fa-solid fa-scale-balanced fa-lg me-2"
+            style="color: #ef4524"
+          ></i>
+          &copy; 2025 LegalEagle - AI-Powered Legal Assistant |
+          <small class="text-muted"
+            >Admin Dashboard | Built with FastAPI, Qdrant & OpenAI</small
+          >
+        </p>
+      </div>
+    </footer>
+
+    <!-- Common Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteConfirmModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title text-dark">Confirm Delete</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body text-center">
+            <i
+              class="fa-solid fa-trash-can text-danger mb-3"
+              style="font-size: 3rem"
+            ></i>
+            <p class="text-dark mb-0" id="deleteMessage">
+              Are you sure you want to delete this item?
+            </p>
+            <small class="text-muted">This action cannot be undone.</small>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              No
+            </button>
+            <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+              Yes, Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/js/bootstrap-datepicker.min.js"></script>
+    <script>
+      // Common delete confirmation function
+      function showDeleteConfirm(message, onConfirm) {
+        $("#deleteMessage").text(message);
+        $("#confirmDeleteBtn")
+          .off("click")
+          .on("click", function () {
+            onConfirm();
+            $("#deleteConfirmModal").modal("hide");
+          });
+        $("#deleteConfirmModal").modal("show");
+      }
+    </script>
+    {% block scripts %}{% endblock %}
+  </body>
+</html>

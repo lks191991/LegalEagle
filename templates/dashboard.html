@@ -1,0 +1,420 @@
+{% extends 'base.html' %} {% block title %}Dashboard - LegalEagle{% endblock %}
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section small dashboard">
+  <div class="hero-overlay"></div>
+  <div class="container hero-container small position-relative z-2 d-flex align-items-center">
+    <div class="row w-100 align-items-center">
+      <div class="col-md-8">
+        <h1 class="hero-title display-5 fw-bold text-white mb-2">
+          Welcome back, {{ user.name }}!
+        </h1>
+        <p class="text-white-50 mb-0">
+          {% if current_plan %}
+            {{ current_plan.plan_name }} Plan • 
+            {% if current_plan.end_date %}
+              {% if current_plan.end_date is string %}
+                Expires: {{ current_plan.end_date }}
+              {% else %}
+                Expires: {{ current_plan.end_date.strftime('%B %d, %Y') }}
+              {% endif %}
+            {% else %} 
+              Active
+            {% endif %}
+          {% else %} 
+            Welcome! Choose a plan to unlock premium features
+          {% endif %}
+        </p>
+      </div>
+      <div class="col-md-4 text-md-end">
+        <a href="/upload" class="btn btn-theme btn-lg fw-semibold">
+          <i class="fa-solid fa-upload me-2"></i>Upload Document
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Dashboard Content -->
+<section class="py-5 bg-light">
+  <div class="container">
+    <!-- Quick Actions Section -->
+    <div class="text-center mb-5">
+      <h2 class="fw-bold text-dark mb-3" style="font-size: 1.1rem; font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;"><i class="fa-solid fa-rocket me-2"></i>Quick Actions</h2>
+      <p class="lead text-muted">Get started with these essential features</p>
+    </div>
+    
+    <div class="row g-4 mb-5">
+      <div class="col-md-6 col-lg-3">
+        <div class="feature-box text-center">
+          <div class="feature-icon mb-3">
+            <i class="fa-solid fa-upload fa-3x text-accent"></i>
+          </div>
+          <h5 class="feature-title">Upload Documents</h5>
+          <p class="feature-description">
+            Upload legal documents for AI analysis
+          </p>
+          <a href="/upload" class="btn btn-theme feature-button">
+            <i class="fa-solid fa-file-plus me-2"></i>Upload Now
+          </a>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-3">
+        <div class="feature-box text-center">
+          <div class="feature-icon mb-3">
+            <i class="fa-solid fa-comments fa-3x text-accent"></i>
+          </div>
+          <h5 class="feature-title">AI Chat</h5>
+          <p class="feature-description">
+            Ask questions about your documents
+          </p>
+          <a href="/chat" class="btn btn-theme feature-button">
+            <i class="fa-solid fa-robot me-2"></i>Start Chat
+          </a>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-3">
+        <div class="feature-box text-center">
+          <div class="feature-icon mb-3">
+            <i class="fa-solid fa-folder fa-3x text-accent"></i>
+          </div>
+          <h5 class="feature-title">My Documents</h5>
+          <p class="feature-description">
+            View and manage your uploaded files
+          </p>
+          <a href="/documents" class="btn btn-theme feature-button">
+            <i class="fa-solid fa-folder-open me-2"></i>View Files ({{ usage_stats.total_documents or 0 }})
+          </a>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-3">
+        <div class="feature-box text-center">
+          <div class="feature-icon mb-3">
+            <i class="fa-solid fa-user-cog fa-3x text-accent"></i>
+          </div>
+          <h5 class="feature-title">Profile Settings</h5>
+          <p class="feature-description">
+            Update your account preferences
+          </p>
+          <a href="/profile" class="btn btn-theme feature-button">
+            <i class="fa-solid fa-cog me-2"></i>Settings
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Getting Started Section for New Users -->
+    {% if not current_plan %}
+    <div class="dashboard-card mb-5" style="background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%); color: white; border: none;">
+      <div class="card-body text-center py-5">
+        <i class="fa-solid fa-rocket fa-4x mb-4 text-white"></i>
+        <h3 class="fw-bold text-white mb-3">Welcome to LegalEagle!</h3>
+        <p class="text-white mb-4 fs-5">Get started by choosing a plan to unlock powerful AI features</p>
+        <div class="row g-3 justify-content-center">
+          <div class="col-auto">
+            <a href="/plan" class="btn btn-light btn-lg fw-semibold">
+              <i class="fa-solid fa-crown me-2"></i>Choose a Plan
+            </a>
+          </div>
+          <div class="col-auto">
+            <a href="/upload" class="btn btn-outline-light btn-lg fw-semibold">
+              <i class="fa-solid fa-upload me-2"></i>Upload Document
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Statistics Section -->
+    <div class="text-center mb-5">
+      <h2 class="fw-bold text-dark mb-3" style="font-size: 1.1rem; font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;"><i class="fa-solid fa-chart-bar me-2"></i>Your Statistics</h2>
+      <p class="lead text-muted">Track your usage and progress</p>
+    </div>
+    
+    <div class="row g-4 mb-5">
+      <div class="col-md-3">
+        <div class="feature-box text-center">
+          <div class="feature-icon mb-3">
+            <i class="fa-solid fa-file-alt fa-3x text-accent"></i>
+          </div>
+          <h5 class="feature-title">{{ usage_stats.total_documents or 0 }}</h5>
+          <p class="feature-description">
+            <strong>Documents Uploaded</strong>
+            {% if current_plan and current_plan.max_documents %}
+            <br><small class="text-muted">{{ usage_stats.documents_used or 0 }} / {{ current_plan.max_documents }} used</small>
+            {% endif %}
+          </p>
+          {% if current_plan and current_plan.max_documents %}
+          <div class="progress mt-2">
+            <div class="progress-bar bg-primary documents-progress-bar"
+                 data-progress="{{ (usage_stats.documents_used / current_plan.max_documents * 100) if current_plan.max_documents > 0 else 0 }}">
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="feature-box text-center">
+          <div class="feature-icon mb-3">
+            <i class="fa-solid fa-comments fa-3x text-accent"></i>
+          </div>
+          <h5 class="feature-title">{{ usage_stats.total_chats or 0 }}</h5>
+          <p class="feature-description">
+            <strong>Chat Messages</strong>
+            {% if current_plan and current_plan.max_prompts %}
+            <br><small class="text-muted">{{ usage_stats.prompts_used or 0 }} / {{ current_plan.max_prompts }} used</small>
+            {% endif %}
+          </p>
+          {% if current_plan and current_plan.max_prompts %}
+          <div class="progress mt-2">
+            <div class="progress-bar bg-success prompts-progress-bar"
+                 data-progress="{{ (usage_stats.prompts_used / current_plan.max_prompts * 100) if current_plan.max_prompts > 0 else 0 }}">
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="feature-box text-center">
+          <div class="feature-icon mb-3">
+            <i class="fa-solid fa-credit-card fa-3x text-accent"></i>
+          </div>
+          <h5 class="feature-title">{{ subscriptions|length or 0 }}</h5>
+          <p class="feature-description">
+            <strong>Subscriptions</strong>
+            {% if subscriptions %}
+            <br><span class="badge bg-{{ 'success' if subscriptions[0].status == 'active' else 'secondary' }}">
+              {{ subscriptions[0].status|title }}
+            </span>
+            {% endif %}
+          </p>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="feature-box text-center">
+          <div class="feature-icon mb-3">
+            <i class="fa-solid fa-star fa-3x text-accent"></i>
+          </div>
+          <h5 class="feature-title">{% if current_plan %}{{ current_plan.plan_name }}{% else %}Free{% endif %}</h5>
+          <p class="feature-description">
+            <strong>Current Plan</strong>
+          </p>
+          {% if not current_plan %}
+          <a href="/subscription" class="btn btn-sm btn-outline-theme feature-button">
+            <i class="fa-solid fa-arrow-up me-1"></i>Upgrade
+          </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Subscription History Section -->
+    <div class="dashboard-card mb-5">
+      <div class="card-header">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h3 class="card-title">
+              <i class="fa-solid fa-credit-card me-2"></i>Subscription History
+            </h3>
+            <p class="card-subtitle">View your subscription details and history</p>
+          </div>
+          <a href="/subscription" class="btn btn-outline-theme btn-sm">
+            <i class="fa-solid fa-plus me-1"></i>View Plans
+          </a>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="table-container">
+            {% if subscriptions %}
+          <div class="table-responsive">
+            <table class="dashboard-table">
+              <thead>
+                <tr>
+                  <th><i class="fa-solid fa-tag me-2"></i>Plan</th>
+                  <th><i class="fa-solid fa-circle-check me-2"></i>Status</th>
+                  <th><i class="fa-solid fa-calendar me-2"></i>Dates</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for subscription in subscriptions[:10] %}
+                <tr>
+                  <td>
+                    <div class="table-cell-content">
+                      <strong>{{ subscription.plan_name }}</strong>
+                      {% if subscription.price %}
+                      <small class="text-muted d-block">
+                        <i class="fa-solid fa-rupee-sign me-1"></i>{{ subscription.price }}/month
+                      </small>
+                      {% endif %}
+                    </div>
+                  </td>
+                  <td>
+                    <span class="status-badge bg-{{ 'success' if subscription.status == 'active' else 'secondary' }}">
+                      {{ subscription.status|title }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="date-text">
+                      {% if subscription.start_date is string %}
+                        {{ subscription.start_date }} - {{ subscription.end_date }}
+                      {% else %}
+                        {{ subscription.start_date.strftime('%b %d') }} - {{ subscription.end_date.strftime('%b %d, %Y') }}
+                      {% endif %}
+                    </span>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <div class="empty-state">
+            <div class="empty-icon">
+              <i class="fa-solid fa-credit-card"></i>
+            </div>
+            <h5 class="empty-title">No subscriptions yet</h5>
+            <p class="empty-description">Choose a plan to get started with premium features</p>
+            <a href="/plan" class="btn btn-theme">
+              <i class="fa-solid fa-crown me-1"></i>Choose a Plan
+            </a>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Transaction History Section -->
+    <div class="dashboard-card mb-5">
+      <div class="card-header">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h3 class="card-title">
+              <i class="fa-solid fa-receipt me-2"></i>Transaction History
+            </h3>
+            <p class="card-subtitle">View your payment and transaction records</p>
+          </div>
+          {% if transactions %}
+          <span class="info-badge">
+            <i class="fa-solid fa-list me-1"></i>{{ transactions|length }} total
+          </span>
+          {% endif %}
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="table-container">
+          {% if transactions %}
+          <div class="table-responsive">
+            <table class="dashboard-table">
+              <thead>
+                <tr>
+                  <th><i class="fa-solid fa-hashtag me-2"></i>ID</th>
+                  <th><i class="fa-solid fa-tag me-2"></i>Plan</th>
+                  <th><i class="fa-solid fa-rupee-sign me-2"></i>Amount</th>
+                  <th><i class="fa-solid fa-circle-check me-2"></i>Status</th>
+                  <th><i class="fa-solid fa-calendar me-2"></i>Date</th>
+                  <th><i class="fa-solid fa-key me-2"></i>Session ID</th>
+                </tr>
+              </thead>
+                <tbody>
+                {% for transaction in transactions[:10] %}
+                <tr>
+                  <td>
+                    <div class="table-cell-content">
+                      <strong>#{{ transaction.id }}</strong>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="table-cell-content">
+                      {{ transaction.plan_name or 'N/A' }}
+                    </div>
+                  </td>
+                  <td>
+                    <div class="table-cell-content">
+                      <span class="amount-text">
+                        <i class="fa-solid fa-rupee-sign me-1"></i>{{ transaction.amount }}
+                      </span>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="status-badge bg-{{ 'success' if transaction.status == 'completed' else 'warning' }}">
+                      {{ transaction.status|title }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="date-text">
+                      {% if transaction.transaction_date is string %}
+                        {{ transaction.transaction_date }}
+                      {% else %}
+                        {{ transaction.transaction_date.strftime('%b %d, %Y %I:%M %p') }}
+                      {% endif %}
+                    </span>
+                  </td>
+                  <td>
+                    {% if transaction.stripe_session_id %}
+                    <span class="session-id">
+                      {{ transaction.stripe_session_id[:20] }}...
+                    </span>
+                    {% else %}
+                    <span class="text-muted">-</span>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+          <div class="empty-state">
+            <div class="empty-icon">
+              <i class="fa-solid fa-receipt"></i>
+            </div>
+            <h5 class="empty-title">No transactions yet</h5>
+            <p class="empty-description">
+              Your payment history will appear here after your first purchase
+            </p>
+            <a href="/plan" class="btn btn-theme">
+              <i class="fa-solid fa-shopping-cart me-1"></i>Make Your First Purchase
+            </a>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  </div>
+
+</section>{% from 'base_macros.html' import cta_section %}
+{{ cta_section(
+  title="Ready to Get Started?", 
+  subtitle="Upload your first document and experience AI-powered legal assistance",
+  primary_text="Upload Document",
+  primary_link="/upload",
+  secondary_text="View Plans",
+  secondary_link="/subscription"
+) }}
+{% endblock %} {% block scripts %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Set progress bar widths
+    const documentsProgressBar = document.querySelector(
+      ".documents-progress-bar"
+    );
+    const promptsProgressBar = document.querySelector(".prompts-progress-bar");
+
+    if (documentsProgressBar) {
+      const progress = documentsProgressBar.getAttribute("data-progress");
+      documentsProgressBar.style.width = progress + "%";
+    }
+
+    if (promptsProgressBar) {
+      const progress = promptsProgressBar.getAttribute("data-progress");
+      promptsProgressBar.style.width = progress + "%";
+    }
+  });
+</script>
+{% endblock %}

@@ -1,14 +1,10 @@
-<!-- Modern header only -->
-<nav class="navbar navbar-expand-lg navbar-dark" style="background: #1a2238">
+<nav class="navbar navbar-expand-lg navbar-light bg-white py-3 border-bottom">
   <div class="container">
     <a class="navbar-brand d-flex align-items-center" href="/">
-      <i
-        class="fa-solid fa-scale-balanced fa-lg me-2"
-        style="color: #ffd700"
-      ></i>
-      <strong style="font-family: 'Segoe UI', sans-serif; letter-spacing: 1px"
-        >LegalEagle</strong
-      >
+      <a class="navbar-brand d-flex align-items-center" href="/">
+        <i class="fa-solid fa-scale-balanced fa-lg me-2 text-accent"></i>
+        <strong>LegalEagle</strong>
+      </a>
     </a>
     <button
       class="navbar-toggler"
@@ -19,22 +15,122 @@
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav ms-auto">
+      <ul class="navbar-nav ms-auto align-items-center">
         <li class="nav-item">
-          <a class="nav-link" href="/">
-            <i class="fa-solid fa-house"></i> Home
-          </a>
+          <a
+            class="nav-link {% if current_page == 'home' %}active{% endif %}"
+            href="/"
+            ><i class="fa fa-home me-1 text-accent"></i>Home</a
+          >
+        </li>
+
+        <!-- Show for all users -->
+        <li class="nav-item">
+          <a
+            class="nav-link {% if current_page == 'about' %}active{% endif %}"
+            href="/about"
+            ><i class="fa fa-info-circle me-1 text-accent"></i>About</a
+          >
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="/upload">
-            <i class="fa-solid fa-file-upload"></i> Upload
-          </a>
+          <a
+            class="nav-link {% if current_page == 'subscription' %}active{% endif %}"
+            href="/subscription"
+            ><i class="fa fa-tags me-1 text-accent"></i>Pricing</a
+          >
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="/chat">
-            <i class="fa-solid fa-comments"></i> Chat
-          </a>
+          <a
+            class="nav-link {% if current_page == 'faq' %}active{% endif %}"
+            href="/faq"
+            ><i class="fa fa-question-circle me-1 text-accent"></i>FAQ</a
+          >
         </li>
+        <li class="nav-item">
+          <a
+            class="nav-link {% if current_page == 'contact' %}active{% endif %}"
+            href="/contact"
+            ><i class="fa fa-envelope me-1 text-accent"></i>Contact Us</a
+          >
+        </li>
+
+        <!-- Check if user is logged in -->
+        {% set user_session = request.cookies.get('user_session') %} {% if
+        user_session %}
+        <!-- User is logged in - show user menu -->
+        <li class="nav-item">
+          <a
+            class="nav-link {% if current_page == 'dashboard' %}active{% endif %}"
+            href="/dashboard"
+            ><i class="fa fa-tachometer-alt me-1 text-accent"></i>Dashboard</a
+          >
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link {% if current_page == 'upload' %}active{% endif %}"
+            href="/upload"
+            ><i class="fa fa-upload me-1 text-accent"></i>Upload</a
+          >
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link {% if current_page == 'chat' %}active{% endif %}"
+            href="/chat"
+            ><i class="fa fa-comments me-1 text-accent"></i>Chat</a
+          >
+        </li>
+
+        <!-- User dropdown menu -->
+        <li class="nav-item dropdown">
+          <a
+            class="nav-link dropdown-toggle user-dropdown"
+            href="#"
+            id="navbarDropdown"
+            role="button"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+          >
+            <i class="fa fa-user-circle me-1 text-accent"></i>Account
+          </a>
+          <ul class="dropdown-menu">
+            <li>
+              <a class="dropdown-item" href="/profile">
+                <i class="fa fa-user me-2 text-muted"></i>Profile
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="/plan">
+                <i class="fa fa-crown me-2 text-muted"></i>My Plan
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="/documents">
+                <i class="fa fa-folder me-2 text-muted"></i>My Documents
+              </a>
+            </li>
+            <li><hr class="dropdown-divider" /></li>
+            <li>
+              <a class="dropdown-item" href="/logout">
+                <i class="fa fa-sign-out-alt me-2 text-muted"></i>Logout
+              </a>
+            </li>
+          </ul>
+        </li>
+        {% else %}
+        <!-- User is not logged in - show login/signup -->
+        <li class="nav-item">
+          <a
+            class="nav-link {% if current_page == 'login' %}active{% endif %}"
+            href="/login"
+            ><i class="fa fa-sign-in-alt me-1 text-accent"></i>Login</a
+          >
+        </li>
+        <li class="nav-item">
+          <a class="btn btn-theme px-3 py-2 ms-2" href="/signup"
+            ><i class="fa fa-user-plus me-1"></i>Sign Up</a
+          >
+        </li>
+        {% endif %}
       </ul>
     </div>
   </div>

@@ -1,0 +1,115 @@
+{% extends 'base.html' %} {% block title %}LegalEagle Pricing - Choose Your Plan{% endblock %} {% block content %}
+
+<!-- Hero Section -->
+<section class="hero-section small subscription position-relative d-flex align-items-center justify-content-center">
+  <div class="hero-overlay position-absolute top-0 start-0 w-100 h-100"></div>
+  <div class="container hero-container small position-relative z-2 text-center d-flex flex-column align-items-center justify-content-center">
+   
+    <h1 class="display-4 fw-bold text-white mb-3 hero-title">Simple, Transparent Pricing</h1>
+    <p class="lead text-white mb-0 opacity-90">Choose the perfect plan for your practice. All plans include 14-day free trial.</p>
+  </div>
+</section>
+
+<!-- Pricing Table -->
+<section class="py-5 bg-white">
+  <div class="container">
+    {% if plans %}
+    <div class="row g-4 justify-content-center">
+      {% for plan in plans %}
+      <!-- {{ plan.name }} Plan -->
+      <div class="col-lg-4 col-md-6">
+        <div class="feature-box subscription-card h-100 {% if plan.most_popular %}featured{% endif %}">
+          {% if plan.most_popular %}
+          <div class="position-absolute top-0 start-50 translate-middle" style="z-index: 10;">
+            <span class="badge popular-badge px-3 py-2 rounded-pill">Most Popular</span>
+          </div>
+          {% endif %}
+          
+          <div class="text-center mb-4">
+            <div class="mb-3">
+              {% if loop.index == 1 %}
+                <i class="fa-solid fa-user-tie fa-3x text-accent"></i>
+              {% elif loop.index == 2 %}
+                <i class="fa-solid fa-users fa-3x text-accent"></i>
+              {% else %}
+                <i class="fa-solid fa-building fa-3x text-accent"></i>
+              {% endif %}
+            </div>
+            <h3 class="card-title text-dark">{{ plan.name }}</h3>
+            <p class="text-dark">{{ plan.subtitle or 'Professional legal solution' }}</p>
+          </div>
+          
+          <div class="text-center mb-4">
+            <div class="price text-dark">₹{{ "%.0f"|format(plan.price) }}<small class="price-period text-muted">/month</small></div>
+            <small class="text-success">Save 20% with annual billing</small>
+          </div>
+          
+          <div class="mb-4 feature-list">
+            {{ plan.features|safe }}
+          </div>
+          
+          <div class="bg-info bg-opacity-10 p-3 rounded mb-3">
+            <div class="row text-center">
+              <div class="col-6">
+                <div class="fw-bold text-accent">{{ plan.max_documents or 'Unlimited' }}</div>
+                <small class="text-muted">Documents</small>
+              </div>
+              <div class="col-6">
+                <div class="fw-bold text-accent">{{ plan.max_chat_prompts or 'Unlimited' }}</div>
+                <small class="text-muted">Chat Prompts/Month</small>
+              </div>
+            </div>
+          </div>
+          
+          
+          <div class="text-center">
+            {% if plan.can_subscribe %}
+            <a href="/subscribe/{{ plan.id }}" class="btn {% if plan.most_popular %}btn-theme{% else %}btn-outline-theme{% endif %} w-100 py-3 fw-semibold rounded-pill">
+              <i class="fa-solid fa-crown me-2 text-accent"></i>
+              {% if user %}Upgrade Now{% else %}Subscribe Now{% endif %}
+            </a>
+            {% else %}
+            {% if user %}
+            <button class="btn btn-secondary w-100 py-3 fw-semibold rounded-pill" disabled>
+              <i class="fa-solid fa-check me-2"></i>Current Plan or Lower
+            </button>
+            {% else %}
+            <a href="/login" class="btn {% if plan.most_popular %}btn-theme{% else %}btn-outline-theme{% endif %} w-100 py-3 fw-semibold rounded-pill">
+              <i class="fa-solid fa-crown me-2 text-accent"></i>Subscribe Now
+            </a>
+            {% endif %}
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <!-- No Plans Available -->
+    <div class="row justify-content-center">
+      <div class="col-lg-6 text-center">
+        <div class="feature-box py-5">
+          <i class="fa-solid fa-exclamation-triangle fa-3x text-muted mb-3"></i>
+          <h4 class="text-dark">No Subscription Plans Available</h4>
+          <p class="text-muted">Please check back later or contact us for more information.</p>
+          <a href="/contact" class="btn btn-theme px-4 py-2">Contact Us</a>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+    </div>
+  </div>
+</section>
+
+
+{% from 'base_macros.html' import cta_section %}
+{{ cta_section(
+  title="Ready to Get Started?", 
+  subtitle="Join hundreds of law firms already using LegalEagle to work smarter",
+  primary_text="Start Free Trial",
+  primary_link="/contact",
+  secondary_text="Schedule Demo",
+  secondary_link="/contact"
+) }}
+
+{% endblock %}

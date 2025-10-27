@@ -1,0 +1,47 @@
+{% extends 'admin_base.html' %} {% block title %}Debug Contact Submissions{%
+endblock %} {% block admin_content %}
+<div class="container-fluid">
+  <h1>Debug Contact Submissions</h1>
+
+  <div class="alert alert-info">
+    <strong>Debug Info:</strong><br />
+    Contact Submissions Count: {{ contact_submissions | length }}<br />
+    Filters: {{ filters }}<br />
+    Current Page: {{ current_page }}<br />
+    User Name: {{ user_name }}
+  </div>
+
+  {% if contact_submissions %}
+  <div class="alert alert-success">
+    Found {{ contact_submissions | length }} submissions in template!
+  </div>
+
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Status</th>
+        <th>Created</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for contact in contact_submissions %}
+      <tr>
+        <td>{{ contact.id }}</td>
+        <td>{{ contact.first_name }} {{ contact.last_name }}</td>
+        <td>{{ contact.email }}</td>
+        <td>{{ contact.status }}</td>
+        <td>{{ contact.created_at }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="alert alert-warning">
+    No contact submissions found in template context!
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

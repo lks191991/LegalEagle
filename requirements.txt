@@ -10,3 +10,5 @@ openai>=1.0.0
 transformers==4.35.0
 torch==2.1.0
 numpy==1.24.3
+mysql-connector-python==8.2.0
+stripe==7.5.0

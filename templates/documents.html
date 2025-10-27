@@ -1,0 +1,319 @@
+{% extends 'base.html' %} {% block title %}My Documents - LegalEagle{% endblock
+%} {% block content %}
+<!-- Hero Section -->
+<section
+  class="hero-section small position-relative d-flex align-items-center justify-content-center"
+>
+  <div class="hero-overlay position-absolute top-0 start-0 w-100 h-100"></div>
+  <div
+    class="container hero-container small position-relative z-2 text-center d-flex flex-column align-items-center justify-content-center"
+  >
+    <h1 class="display-4 fw-bold text-white mb-3 hero-title">My Documents</h1>
+    <p class="lead text-white mb-4">
+      Manage and access your uploaded legal documents
+    </p>
+  </div>
+</section>
+
+<!-- Documents Content -->
+<section class="py-5 bg-white">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h4 class="fw-bold text-dark mb-0">
+        <i class="fa-solid fa-folder-open me-2 text-accent"></i>Document Library
+      </h4>
+      <a href="/upload" class="btn btn-theme">
+        <i class="fa-solid fa-upload me-2"></i>Upload New Document
+      </a>
+    </div>
+
+    {% if documents and documents|length > 0 %}
+    <!-- Documents Table -->
+    <div class="card-box">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              <th class="text-dark">Document Name</th>
+              <th class="text-dark">Upload Date</th>
+              <th class="text-dark">Size</th>
+              <th class="text-dark">Status</th>
+              <th class="text-dark">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for doc in documents %}
+            <tr>
+              <td class="text-dark">
+                <i
+                  class="fa-solid fa-file-{% if doc.file_type == 'application/pdf' %}pdf{% else %}alt{% endif %} me-2 text-accent"
+                ></i>
+                {{ doc.document_name }} {% if doc.tags %}
+                <div class="mt-1">
+                  {% for tag in doc.tags.split(',') if doc.tags %}
+                  <span class="badge bg-secondary badge-sm"
+                    >{{ tag.strip() }}</span
+                  >
+                  {% endfor %}
+                </div>
+                {% endif %}
+              </td>
+              <td class="text-dark">
+                {{ doc.upload_date.strftime('%d %b %Y') if doc.upload_date else
+                'Unknown' }}
+                <small class="d-block text-muted">
+                  {% if doc.file_size %} {{ (doc.file_size / 1024 /
+                  1024)|round(2) }} MB {% else %} Size unknown {% endif %}
+                </small>
+              </td>
+              <td class="text-dark">
+                {{ doc.chunk_count }} chunks
+                <small class="d-block text-muted"
+                  >{{ doc.original_filename }}</small
+                >
+              </td>
+              <td>
+                {% if doc.status == 'completed' %}
+                <span class="badge bg-success">Processed</span>
+                {% elif doc.status == 'processing' %}
+                <span class="badge bg-warning">Processing</span>
+                {% elif doc.status == 'failed' %}
+                <span class="badge bg-danger">Failed</span>
+                {% else %}
+                <span class="badge bg-secondary">{{ doc.status|title }}</span>
+                {% endif %}
+              </td>
+              <td>
+                <div class="btn-group btn-group-sm">
+                  <a
+                    href="/chat?doc={{ doc.document_name }}"
+                    class="btn btn-outline-theme"
+                    title="Ask Questions"
+                  >
+                    <i class="fa-solid fa-comments text-accent"></i>
+                  </a>
+                  <button
+                    class="btn btn-outline-theme delete-doc-btn"
+                    title="Delete"
+                    data-doc-id="{{ doc.id }}"
+                    data-doc-name="{{ doc.document_name }}"
+                  >
+                    <i class="fa-solid fa-trash text-accent"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% else %}
+    <!-- No Documents State -->
+    <div class="card-box text-center py-5">
+      <i class="fa-solid fa-folder-open fa-4x text-muted mb-4"></i>
+      <h4 class="text-dark mb-3">No Documents Yet</h4>
+      <p class="text-muted mb-4">
+        Upload your first legal document to get started with AI-powered analysis
+      </p>
+      <a href="/upload" class="btn btn-theme btn-lg px-4 py-3">
+        <i class="fa-solid fa-upload me-2"></i>Upload Your First Document
+      </a>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+<!-- Upload Tips Section -->
+<section class="py-5 bg-light-gray">
+  <div class="container">
+    <div class="text-center mb-4">
+      <h2 class="h1 mb-2 text-dark fw-bold">Document Upload Tips</h2>
+      <p class="lead text-dark mb-0">Best practices for optimal AI analysis</p>
+    </div>
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="feature-box text-center">
+          <div class="feature-icon mb-3">
+            <i class="fa-solid fa-file-pdf fa-2x text-accent"></i>
+          </div>
+          <h6 class="fw-bold text-dark">Supported Formats</h6>
+          <p class="text-dark small">PDF, DOC, DOCX, TXT files up to 10MB</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="feature-box text-center">
+          <div class="feature-icon mb-3">
+            <i class="fa-solid fa-shield-alt fa-2x text-accent"></i>
+          </div>
+          <h6 class="fw-bold text-dark">Secure Storage</h6>
+          <p class="text-dark small">
+            Your documents are encrypted and private
+          </p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="feature-box text-center">
+          <div class="feature-icon mb-3">
+            <i class="fa-solid fa-robot fa-2x text-accent"></i>
+          </div>
+          <h6 class="fw-bold text-dark">AI Processing</h6>
+          <p class="text-dark small">
+            Instant analysis and intelligent answers
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% from 'base_macros.html' import cta_section %} {{ cta_section( title="Ready to
+Maximize Your Document Analysis?", subtitle="Upload more documents and unlock
+the full power of AI-driven legal insights", primary_text="Upload More
+Documents", primary_link="/upload", secondary_text="Upgrade Plan",
+secondary_link="/subscription" ) }} {% endblock %} {% block scripts %}
+<script>
+  // Handle document deletion
+  document.addEventListener("DOMContentLoaded", function () {
+    const deleteButtons = document.querySelectorAll(".delete-doc-btn");
+
+    deleteButtons.forEach((button) => {
+      button.addEventListener("click", function () {
+        const docId = this.getAttribute("data-doc-id");
+        const docName = this.getAttribute("data-doc-name");
+
+        showConfirmModal(
+          `Are you sure you want to delete "${docName}"? This action cannot be undone.`,
+          "Delete Document",
+          () => {
+            // Show loading state
+            this.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+            this.disabled = true;
+
+            // Make delete request
+            fetch(`/documents/${docId}`, {
+              method: "DELETE",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              credentials: "same-origin",
+            })
+              .then((response) => response.json())
+              .then((data) => {
+                if (data.success) {
+                  // Remove the row from table
+                  this.closest("tr").remove();
+
+                  // Show success message
+                  showAlert("Document deleted successfully!", "success");
+
+                  // Check if no documents left
+                  const tbody = document.querySelector("tbody");
+                  if (tbody && tbody.children.length === 0) {
+                    location.reload();
+                  }
+                } else {
+                  throw new Error(data.error || "Failed to delete document");
+                }
+              })
+              .catch((error) => {
+                console.error("Error:", error);
+                showAlert(
+                  `Error deleting document: ${error.message}`,
+                  "danger"
+                );
+
+                // Reset button
+                this.innerHTML = '<i class="fa-solid fa-trash"></i>';
+                this.disabled = false;
+              });
+          }
+        );
+      });
+    });
+  });
+
+  // Show themed alert function
+  function showAlert(message, type) {
+    const alertDiv = document.createElement("div");
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show theme-alert`;
+    alertDiv.innerHTML = `
+        <i class="fa-solid ${
+          type === "success"
+            ? "fa-check-circle"
+            : type === "danger"
+            ? "fa-exclamation-triangle"
+            : "fa-info-circle"
+        } me-2"></i>
+        ${message}
+        <button type="button" class="btn-close theme-btn-close" data-bs-dismiss="alert"></button>
+    `;
+
+    const container = document.querySelector(".container");
+    container.insertBefore(alertDiv, container.firstChild);
+
+    // Auto dismiss after 5 seconds
+    setTimeout(() => {
+      if (alertDiv.parentNode) {
+        alertDiv.remove();
+      }
+    }, 5000);
+  }
+
+  // Custom themed confirm modal
+  function showConfirmModal(message, title, onConfirm) {
+    const modalHtml = `
+      <div class="modal fade theme-modal" id="confirmModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">
+                <i class="fa-solid fa-exclamation-triangle text-accent me-2"></i>
+                ${title || "Confirm Action"}
+              </h5>
+              <button type="button" class="btn-close theme-btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <p class="mb-0">${message}</p>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-outline-theme" data-bs-dismiss="modal">
+                <i class="fa-solid fa-times me-2"></i>Cancel
+              </button>
+              <button type="button" class="btn btn-theme" id="confirmBtn">
+                <i class="fa-solid fa-trash me-2"></i>Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Remove existing modal if any
+    const existingModal = document.getElementById("confirmModal");
+    if (existingModal) {
+      existingModal.remove();
+    }
+
+    // Add modal to body
+    document.body.insertAdjacentHTML("beforeend", modalHtml);
+
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById("confirmModal"));
+    modal.show();
+
+    // Handle confirm button
+    document.getElementById("confirmBtn").addEventListener("click", () => {
+      modal.hide();
+      onConfirm();
+    });
+
+    // Clean up modal after hide
+    document
+      .getElementById("confirmModal")
+      .addEventListener("hidden.bs.modal", () => {
+        document.getElementById("confirmModal").remove();
+      });
+  }
+</script>
+{% endblock %}

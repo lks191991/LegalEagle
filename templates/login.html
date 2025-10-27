@@ -1,0 +1,93 @@
+{% extends 'base.html' %} {% block title %}Login - LegalEagle{% endblock %} {%
+block content %}
+<!-- Enhanced Login Section -->
+<section class="auth-section">
+  <!-- Animated Background Elements -->
+  <div class="floating-shapes">
+    <div class="floating-shape shape-1"></div>
+    <div class="floating-shape shape-2"></div>
+    <div class="floating-shape shape-3"></div>
+    <div class="floating-shape shape-4"></div>
+  </div>
+
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-6 col-lg-5">
+        <div class="auth-card">
+          <div class="auth-header">
+            <div class="auth-icon">
+              <i class="fa-solid fa-scale-balanced"></i>
+            </div>
+            <h2 class="fw-bold mb-2">Welcome Back</h2>
+            <p class="mb-0 opacity-90">
+              Sign in to access your LegalEagle account
+            </p>
+          </div>
+
+          <div class="auth-body">
+            {% if error %}
+            <div class="alert alert-danger" role="alert">
+              <i class="fa-solid fa-exclamation-triangle me-2"></i>{{ error }}
+            </div>
+            {% endif %} {% if success %}
+            <div class="alert alert-success" role="alert">
+              <i class="fa-solid fa-check-circle me-2"></i>{{ success }}
+            </div>
+            {% endif %}
+
+            <form method="POST" action="/login">
+              <div class="form-floating">
+                <input
+                  type="email"
+                  class="form-control"
+                  id="email"
+                  name="email"
+                  placeholder=" "
+                  required
+                />
+                <label for="email">
+                  <i class="fa-solid fa-envelope me-2 text-accent"></i>Email
+                  Address
+                </label>
+              </div>
+
+              <div class="form-floating">
+                <input
+                  type="password"
+                  class="form-control"
+                  id="password"
+                  name="password"
+                  placeholder=" "
+                  required
+                />
+                <label for="password">
+                  <i class="fa-solid fa-lock me-2 text-accent"></i>Password
+                </label>
+              </div>
+
+              <div class="forgot-password">
+                <a href="/forgot-password">
+                  <i class="fa-solid fa-question-circle me-1"></i>Forgot
+                  Password?
+                </a>
+              </div>
+
+              <button type="submit" class="btn btn-auth text-white w-100">
+                <i class="fa-solid fa-sign-in-alt me-2"></i>Sign In
+              </button>
+            </form>
+
+            <div class="auth-links">
+              <p class="text-muted mb-3">Don't have an account?</p>
+              <a href="/signup">
+                <i class="fa-solid fa-user-plus me-1"></i>Create Account
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

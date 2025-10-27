@@ -1,0 +1,106 @@
+{% extends 'base.html' %} {% block title %}Payment Error - LegalEagle{% endblock
+%} {% block content %}
+<!-- Error Section -->
+<section class="py-5 bg-white">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-6">
+        <div class="card-box text-center">
+          <div class="mb-4">
+            <i
+              class="fa-solid fa-exclamation-triangle fa-4x text-danger mb-3"
+            ></i>
+            <h2 class="fw-bold text-dark">Payment Error</h2>
+            <p class="lead text-dark">Something went wrong with your payment</p>
+          </div>
+
+          <div class="alert alert-danger text-start">
+            <h6 class="fw-bold mb-2">Error Details:</h6>
+            <p class="mb-0">
+              {{ error if error else "An unexpected error occurred during
+              payment processing. Please try again or contact support." }}
+            </p>
+          </div>
+
+          <div class="bg-light-gray p-4 rounded mb-4">
+            <h6 class="fw-bold text-dark mb-3">What you can do:</h6>
+            <div class="text-start">
+              <div class="d-flex align-items-start mb-2">
+                <i class="fa-solid fa-check text-success me-3 mt-1"></i>
+                <small class="text-dark"
+                  >Try using a different payment method</small
+                >
+              </div>
+              <div class="d-flex align-items-start mb-2">
+                <i class="fa-solid fa-check text-success me-3 mt-1"></i>
+                <small class="text-dark"
+                  >Check your card details and try again</small
+                >
+              </div>
+              <div class="d-flex align-items-start mb-2">
+                <i class="fa-solid fa-check text-success me-3 mt-1"></i>
+                <small class="text-dark"
+                  >Contact your bank if the issue persists</small
+                >
+              </div>
+            </div>
+          </div>
+
+          <div class="d-grid gap-2">
+            <a href="/subscription" class="btn btn-theme px-4 py-2 fw-semibold">
+              <i class="fa-solid fa-redo me-2"></i>Try Again
+            </a>
+            <a
+              href="/contact"
+              class="btn btn-outline-theme px-4 py-2 fw-semibold"
+            >
+              <i class="fa-solid fa-headset me-2"></i>Contact Support
+            </a>
+            <a
+              href="/dashboard"
+              class="btn btn-outline-secondary px-4 py-2 fw-semibold"
+            >
+              <i class="fa-solid fa-tachometer-alt me-2"></i>Back to Dashboard
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Support Section -->
+<section class="py-5 bg-light-gray">
+  <div class="container">
+    <div class="text-center">
+      <h4 class="fw-bold text-dark mb-3">Need Help?</h4>
+      <p class="text-dark mb-4">
+        Our support team is here to help you with payment issues
+      </p>
+      <div class="row g-4">
+        <div class="col-md-4">
+          <div class="card-box text-center">
+            <i class="fa-solid fa-envelope fa-2x text-accent mb-3"></i>
+            <h6 class="fw-bold text-dark">Email Support</h6>
+            <p class="text-dark small">support@legaleagle.com</p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card-box text-center">
+            <i class="fa-solid fa-phone fa-2x text-accent mb-3"></i>
+            <h6 class="fw-bold text-dark">Phone Support</h6>
+            <p class="text-dark small">+1-555-LEGAL-01</p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card-box text-center">
+            <i class="fa-solid fa-comments fa-2x text-accent mb-3"></i>
+            <h6 class="fw-bold text-dark">Live Chat</h6>
+            <p class="text-dark small">Available 24/7</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

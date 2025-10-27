@@ -1,0 +1,429 @@
+{% extends 'base.html' %} {% block title %}Profile - LegalEagle{% endblock %} {%
+block content %}
+<!-- Hero Section -->
+<section class="hero-section small profile position-relative d-flex align-items-center justify-content-center">
+  <div class="hero-overlay position-absolute top-0 start-0 w-100 h-100"></div>
+  <div class="container hero-container small position-relative z-2 text-center d-flex flex-column align-items-center justify-content-center">
+   
+    <h1 class="display-4 fw-bold text-white mb-3 hero-title">
+      User Profile
+    </h1>
+    <p class="lead text-white mb-0 opacity-90">
+      Manage your account settings and preferences
+    </p>
+  </div>
+</section>
+
+<!-- Profile Content -->
+<section class="py-5 bg-white">
+  <div class="container">
+    <div class="row">
+      <!-- Profile Form -->
+      <div class="col-lg-8">
+        <div class="card-box">
+          <h4 class="fw-bold text-dark mb-4">
+            <i class="fa-solid fa-user-edit me-2 text-accent"></i>Profile
+            Information
+          </h4>
+
+          {% if request.query_params.get('updated') %}
+          <div class="alert alert-success">
+            <i class="fa-solid fa-check-circle me-2"></i>
+            Profile updated successfully!
+          </div>
+          {% endif %}
+          
+          {% if request.query_params.get('error') %}
+          <div class="alert alert-danger">
+            <i class="fa-solid fa-exclamation-circle me-2"></i>
+            Error updating profile. Please try again.
+          </div>
+          {% endif %}
+
+          <form method="POST" action="/update-profile">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label text-dark fw-semibold"
+                  >Full Name</label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  name="name"
+                  value="{{ user.name }}"
+                  required
+                />
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label text-dark fw-semibold"
+                  >Email Address</label
+                >
+                <input
+                  type="email"
+                  class="form-control"
+                  name="email"
+                  value="{{ user.email }}"
+                  required
+                />
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label text-dark fw-semibold"
+                  ><i class="fa-solid fa-phone me-2 text-accent"></i>Mobile Number</label
+                >
+                <input
+                  type="tel"
+                  class="form-control"
+                  name="mobile_number"
+                  value="{{ user.mobile_number or '' }}"
+                  placeholder="Enter your mobile number"
+                  pattern="[0-9+\-\s\(\)]{10,15}"
+                  title="Please enter a valid mobile number (10-15 digits)"
+                />
+                <small class="form-text text-muted">Optional - For better support and notifications</small>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label text-dark fw-semibold"
+                  >Account Type</label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  value="Free Plan"
+                  readonly
+                />
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label text-dark fw-semibold"
+                  >Member Since</label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  value="October 2025"
+                  readonly
+                />
+              </div>
+            </div>
+
+            <!-- Address Information -->
+            <hr class="my-4">
+            <h6 class="fw-bold text-dark mb-3">Address Information</h6>
+            
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label text-dark fw-semibold">Address Line 1</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="address-autocomplete"
+                  name="address_line1"
+                  value="{{ user.address_line1 or '' }}"
+                  placeholder="Start typing your address..."
+                  autocomplete="off"
+                />
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label text-dark fw-semibold">Address Line 2</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="address_line2"
+                  value="{{ user.address_line2 or '' }}"
+                  placeholder="Apartment, suite, unit, building, floor, etc."
+                />
+              </div>
+            </div>
+            
+            <div class="row">
+              <div class="col-md-6  mb-3">
+                <label class="form-label text-dark fw-semibold">City</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="city"
+                  value="{{ user.city or '' }}"
+                  placeholder="City"
+                />
+              </div>
+              <div class="col-md-6  mb-3">
+                <label class="form-label text-dark fw-semibold">State</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="state"
+                  value="{{ user.state or '' }}"
+                  placeholder="State/Province"
+                />
+              </div>
+              <div class="col-md-6  mb-3">
+                <label class="form-label text-dark fw-semibold">Postal Code</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="postal_code"
+                  value="{{ user.postal_code or '' }}"
+                  placeholder="ZIP/Postal Code"
+                />
+              </div>
+          
+              <div class="col-md-6 mb-3">
+                <label class="form-label text-dark fw-semibold">Country</label>
+                <select class="form-control" name="country">
+                  <option value="India" {{ 'selected' if user.country == 'India' else '' }}>India</option>
+                  <option value="United States" {{ 'selected' if user.country == 'United States' else '' }}>United States</option>
+                  <option value="United Kingdom" {{ 'selected' if user.country == 'United Kingdom' else '' }}>United Kingdom</option>
+                  <option value="Canada" {{ 'selected' if user.country == 'Canada' else '' }}>Canada</option>
+                  <option value="Australia" {{ 'selected' if user.country == 'Australia' else '' }}>Australia</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="row">
+              <button type="submit" class="btn btn-theme px-4">
+                <i class="fa-solid fa-save me-2"></i>Update Profile
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Profile Sidebar -->
+      <div class="col-lg-4">
+        <div class="card-box text-center mb-4">
+          <i class="fa-solid fa-user-circle fa-5x text-accent mb-3"></i>
+          <h5 class="fw-bold text-dark">{{ user.name }}</h5>
+          <p class="text-muted">{{ user.email }}</p>
+          <span class="badge bg-success px-3 py-2">Active Account</span>
+        </div>
+
+        <!-- Current Plan Status -->
+        <div class="card-box mb-4">
+          <h6 class="fw-bold text-dark mb-3">
+            <i class="fa-solid fa-crown me-2 text-accent"></i>Current Plan
+          </h6>
+          {% if user_plan %}
+          <div class="text-center p-3 bg-light rounded">
+            <h5 class="text-accent fw-bold">{{ user_plan.plan_name }}</h5>
+            <p class="mb-0 text-muted">{{ user_plan.plan_type|title }} Plan</p>
+            {% if user_plan.end_date %}
+              {% if user_plan.end_date is string %}
+                <small class="text-muted">Expires: {{ user_plan.end_date }}</small>
+              {% else %}
+                <small class="text-muted">Expires: {{ user_plan.end_date.strftime('%B %d, %Y') }}</small>
+              {% endif %}
+            {% endif %}
+          </div>
+          {% else %}
+          <div class="text-center p-3 bg-warning bg-opacity-10 rounded">
+            <i class="fa-solid fa-exclamation-triangle text-warning mb-2"></i>
+            <p class="mb-2 text-dark">No Active Plan</p>
+            <small class="text-muted">Purchase a plan to access all features</small>
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Available Plans for Purchase -->
+        {% if available_plans %}
+        {% set upgrade_plans = [] %}
+        {% for plan in available_plans %}
+          {% if user_plan %}
+            {# For users with existing plans, only show higher priced plans (upgrades only) #}
+            {% if plan.price > (user_plan.plan_price or 0) and plan.name.lower() != 'free' %}
+              {% set _ = upgrade_plans.append(plan) %}
+            {% endif %}
+          {% else %}
+            {# For users without plans, show all plans except free (free is one-time only) #}
+            {% if plan.name.lower() != 'free' %}
+              {% set _ = upgrade_plans.append(plan) %}
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+        
+        {% if upgrade_plans %}
+        <div class="card-box mb-4">
+          <h6 class="fw-bold text-dark mb-3">
+            <i class="fa-solid fa-arrow-up me-2 text-accent"></i>{% if user_plan %}Available Upgrades{% else %}Choose a Plan{% endif %}
+          </h6>
+          {% for plan in upgrade_plans %}
+          <div class="border rounded p-3 mb-2">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <h6 class="mb-1 fw-bold">{{ plan.name }}</h6>
+                <small class="text-muted">₹{{ "%.0f"|format(plan.price) }}/month</small>
+                {% if user_plan and plan.price > (user_plan.plan_price or 0) %}
+                <br><small class="text-success">
+                  <i class="fa-solid fa-arrow-up me-1"></i>Upgrade from {{ user_plan.plan_name }}
+                </small>
+                {% endif %}
+              </div>
+              <a href="/subscribe/{{ plan.id }}" class="btn btn-sm btn-theme">
+                <i class="fa-solid fa-arrow-up me-1"></i>{% if user_plan %}Upgrade{% else %}Subscribe{% endif %}
+              </a>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% elif user_plan %}
+        <div class="card-box mb-4">
+          <div class="text-center p-3 bg-success bg-opacity-10 rounded">
+            <i class="fa-solid fa-crown text-success mb-2"></i>
+            <h6 class="text-success fw-bold">Premium Plan Active</h6>
+            <p class="mb-0 text-muted">You have the highest tier plan available</p>
+          </div>
+        </div>
+        {% endif %}
+        {% endif %}
+
+        <div class="card-box profile-quick-actions">
+          <h6 class="fw-bold text-dark mb-3">Quick Actions</h6>
+          <div class="d-grid gap-2">
+            <a href="/dashboard" class="btn btn-outline-theme">
+              <i class="fa-solid fa-tachometer-alt me-2 text-accent"></i>Dashboard
+            </a>
+            <a href="/plan" class="btn btn-outline-theme">
+              <i class="fa-solid fa-crown me-2 text-accent"></i>{% if user_plan %}View Plan{% else %}Choose Plan{% endif %}
+            </a>
+            {% if user_plan %}
+            <a href="/documents" class="btn btn-outline-theme">
+              <i class="fa-solid fa-folder me-2 text-accent"></i>My Documents
+            </a>
+            {% endif %}
+            <a href="/logout" class="btn btn-outline-theme">
+              <i class="fa-solid fa-sign-out-alt me-2 text-accent"></i>Logout
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% from 'base_macros.html' import cta_section %}
+{{ cta_section(
+  title="Ready to Maximize Your Legal Workflow?", 
+  subtitle="Unlock the full power of AI-driven legal assistance with your documents",
+  primary_text="Upload Documents",
+  primary_link="/upload",
+  secondary_text="View Plans",
+  secondary_link="/subscription"
+) }}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Simple address autocomplete without external APIs
+document.addEventListener('DOMContentLoaded', function() {
+  const addressInput = document.getElementById('address-autocomplete');
+  const cityInput = document.querySelector('input[name="city"]');
+  
+  // Indian cities data
+  const indianCities = [
+    { city: 'Dhawa', state: 'Rajasthan', country: 'India' },
+    { city: 'Dhawas', state: 'Rajasthan', country: 'India' },
+    { city: 'Dhawalpuri', state: 'Maharashtra', country: 'India' },
+    { city: 'Dhawarsi', state: 'Uttar Pradesh', country: 'India' },
+    { city: 'Dhawda', state: 'Maharashtra', country: 'India' },
+    { city: 'Mumbai', state: 'Maharashtra', country: 'India' },
+    { city: 'Delhi', state: 'Delhi', country: 'India' },
+    { city: 'Bangalore', state: 'Karnataka', country: 'India' },
+    { city: 'Hyderabad', state: 'Telangana', country: 'India' },
+    { city: 'Chennai', state: 'Tamil Nadu', country: 'India' },
+    { city: 'Kolkata', state: 'West Bengal', country: 'India' },
+    { city: 'Pune', state: 'Maharashtra', country: 'India' },
+    { city: 'Jaipur', state: 'Rajasthan', country: 'India' },
+    { city: 'Surat', state: 'Gujarat', country: 'India' },
+    { city: 'Lucknow', state: 'Uttar Pradesh', country: 'India' }
+  ];
+
+  // Create dropdown container
+  const dropdownContainer = document.createElement('div');
+  dropdownContainer.className = 'position-relative';
+  addressInput.parentNode.appendChild(dropdownContainer);
+  addressInput.parentNode.removeChild(addressInput);
+  dropdownContainer.appendChild(addressInput);
+
+  // Create suggestions dropdown
+  const suggestionsDiv = document.createElement('div');
+  suggestionsDiv.className = 'position-absolute w-100 bg-white border rounded shadow-sm';
+  suggestionsDiv.style.display = 'none';
+  suggestionsDiv.style.zIndex = '1000';
+  suggestionsDiv.style.maxHeight = '200px';
+  suggestionsDiv.style.overflowY = 'auto';
+  dropdownContainer.appendChild(suggestionsDiv);
+
+  // Filter and show suggestions
+  addressInput.addEventListener('input', function() {
+    const query = this.value.toLowerCase().trim();
+    suggestionsDiv.innerHTML = '';
+    
+    if (query.length < 2) {
+      suggestionsDiv.style.display = 'none';
+      return;
+    }
+
+    const matches = indianCities.filter(city => 
+      city.city.toLowerCase().includes(query) || 
+      city.state.toLowerCase().includes(query)
+    ).slice(0, 5);
+
+    if (matches.length === 0) {
+      suggestionsDiv.style.display = 'none';
+      return;
+    }
+
+    matches.forEach(match => {
+      const item = document.createElement('div');
+      item.className = 'p-2 cursor-pointer border-bottom';
+      item.style.cursor = 'pointer';
+      item.innerHTML = `
+        <strong>${match.city}</strong><br>
+        <small class="text-muted">${match.state}, ${match.country}</small>
+      `;
+      
+      // Hover effect
+      item.addEventListener('mouseenter', function() {
+        this.style.backgroundColor = '#f8f9fa';
+      });
+      
+      item.addEventListener('mouseleave', function() {
+        this.style.backgroundColor = 'white';
+      });
+      
+      // Click to select
+      item.addEventListener('click', function() {
+        addressInput.value = match.city;
+        document.querySelector('input[name="city"]').value = match.city;
+        document.querySelector('input[name="state"]').value = match.state;
+        document.querySelector('select[name="country"]').value = 'India';
+        suggestionsDiv.style.display = 'none';
+      });
+      
+      suggestionsDiv.appendChild(item);
+    });
+
+    suggestionsDiv.style.display = 'block';
+  });
+
+  // Hide suggestions when clicking outside
+  document.addEventListener('click', function(e) {
+    if (!dropdownContainer.contains(e.target)) {
+      suggestionsDiv.style.display = 'none';
+    }
+  });
+
+  // Hide suggestions on escape key
+  addressInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      suggestionsDiv.style.display = 'none';
+    }
+  });
+});
+</script>
+{% endblock %}

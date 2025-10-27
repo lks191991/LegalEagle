@@ -1,0 +1,352 @@
+{% extends 'base.html' %} {% block title %}Checkout - {{ plan.name }} Plan{%
+endblock %} {% block content %}
+<!-- Hero Section -->
+<section
+  class="hero-section small checkout position-relative d-flex align-items-center justify-content-center"
+>
+  <div class="hero-overlay position-absolute top-0 start-0 w-100 h-100"></div>
+  <div
+    class="container hero-container small position-relative z-2 text-center d-flex flex-column align-items-center justify-content-center"
+  >
+    <div class="mb-3">
+      <div
+        class="bg-white bg-opacity-20 rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+        style="width: 80px; height: 80px"
+      >
+        <i class="fa-solid fa-shopping-cart fa-2x text-white"></i>
+      </div>
+    </div>
+    <h1 class="display-4 fw-bold text-white mb-3 hero-title">
+      Secure Checkout
+    </h1>
+    <p class="lead text-white mb-0 opacity-90">
+      Complete your {{ plan.name }} subscription safely and securely
+    </p>
+  </div>
+</section>
+
+<!-- Checkout Section -->
+<section class="py-5 bg-white">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-10">
+        <div class="row g-4">
+          <!-- Plan Details Card -->
+          <div class="col-md-6">
+            <div class="card-box h-100">
+              <div class="d-flex align-items-center mb-4">
+                <i class="fa-solid fa-crown fa-2x text-accent me-3"></i>
+                <div>
+                  <h4 class="fw-bold text-dark mb-1">{{ plan.name }} Plan</h4>
+                  <p class="text-muted mb-0">
+                    Perfect for professional legal practice
+                  </p>
+                </div>
+              </div>
+
+              <!-- Price Display -->
+              <div class="text-center mb-4 p-4 bg-light rounded">
+                <div class="display-4 fw-bold text-accent mb-2">
+                  ₹{{ "%.0f"|format(plan.price) }}
+                  <small class="fs-5 text-muted">/month</small>
+                </div>
+                <div
+                  class="d-flex justify-content-center gap-3 text-success small"
+                >
+                  <span
+                    ><i class="fa-solid fa-check me-1"></i>Monthly billing</span
+                  >
+                  <span
+                    ><i class="fa-solid fa-times me-1"></i>Cancel anytime</span
+                  >
+                </div>
+              </div>
+
+              <!-- Features -->
+              <div class="mb-4">
+                <h6 class="fw-bold text-dark mb-3">
+                  <i class="fa-solid fa-star text-warning me-2"></i>What's
+                  included:
+                </h6>
+                <div class="feature-list">{{ plan.features|safe }}</div>
+              </div>
+
+              <!-- Usage Limits -->
+              <div class="bg-accent bg-opacity-10 p-3 rounded mb-4">
+                <div class="row text-center">
+                  <div class="col-6">
+                    <div class="fw-bold h5 mb-1">
+                      {{ plan.max_documents or '∞' }}
+                    </div>
+                    <small class="">Documents</small>
+                  </div>
+                  <div class="col-6">
+                    <div class="fw-bold h5 mb-1">
+                      {{ plan.max_chat_prompts or '∞' }}
+                    </div>
+                    <small class="">AI Chats/Month</small>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Money Back Guarantee -->
+              <div
+                class="bg-success bg-opacity-10 p-3 rounded text-center border-start border-success border-4"
+              >
+                <div class="fw-bold text-success mb-1">
+                  <i class="fa-solid fa-shield-check me-2"></i>30-Day Money-Back
+                  Guarantee
+                </div>
+                <small class="text-dark"
+                  >Try risk-free for 30 days. Full refund if not
+                  satisfied.</small
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- Payment Card -->
+          <div class="col-md-6">
+            <div class="card-box h-100">
+              <div class="d-flex align-items-center mb-4">
+                <i class="fa-solid fa-credit-card fa-2x text-accent me-3"></i>
+                <div>
+                  <h4 class="fw-bold text-dark mb-1">Secure Payment</h4>
+                  <p class="text-muted mb-0">
+                    Complete your subscription safely
+                  </p>
+                </div>
+              </div>
+
+              <!-- User Billing Info -->
+              <div class="mb-4">
+                <label class="form-label text-dark fw-semibold mb-3">
+                  <i class="fa-solid fa-user me-2 text-accent"></i>Billing
+                  Account
+                </label>
+                <div
+                  class="bg-light p-3 rounded border-start border-primary border-4"
+                >
+                  <div class="d-flex align-items-center">
+                    <div
+                      class="bg-primary bg-opacity-10 rounded-circle p-2 me-3"
+                    >
+                      <i class="fa-solid fa-user text-primary"></i>
+                    </div>
+                    <div>
+                      <div class="fw-bold text-dark">{{ user.name }}</div>
+                      <div class="text-muted small">{{ user.email }}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Order Summary -->
+              <div
+                class="mb-4 bg-warning bg-opacity-10 p-3 rounded border-start border-warning border-4"
+              >
+                <h6 class="fw-bold text-dark mb-3">
+                  <i class="fa-solid fa-receipt me-2 text-warning"></i>Order
+                  Summary
+                </h6>
+                <div
+                  class="d-flex justify-content-between align-items-center mb-2"
+                >
+                  <span class="text-dark">{{ plan.name }} Plan (Monthly)</span>
+                  <span class="fw-bold text-dark"
+                    >₹{{ "%.0f"|format(plan.price) }}</span
+                  >
+                </div>
+                <div
+                  class="d-flex justify-content-between align-items-center mb-2"
+                >
+                  <span class="text-muted small">Setup Fee</span>
+                  <span class="text-success small fw-semibold">FREE</span>
+                </div>
+                <hr class="my-2" />
+                <div class="d-flex justify-content-between align-items-center">
+                  <span class="fw-bold text-dark">Total Today</span>
+                  <span class="h5 fw-bold text-accent mb-0"
+                    >₹{{ "%.0f"|format(plan.price) }}</span
+                  >
+                </div>
+              </div>
+
+              <!-- Checkout Form -->
+              <form id="checkout-form">
+                <input type="hidden" id="plan-id" value="{{ plan.id }}" />
+
+                <!-- Terms Agreement -->
+                <div class="mb-4 bg-light p-3 rounded">
+                  <div class="form-check">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      id="terms"
+                      required
+                    />
+                    <label class="form-check-label text-dark small" for="terms">
+                      I agree to the
+                      <a
+                        href="/terms"
+                        class="text-accent text-decoration-none fw-semibold"
+                        >Terms of Service</a
+                      >
+                      and
+                      <a
+                        href="/privacy"
+                        class="text-accent text-decoration-none fw-semibold"
+                        >Privacy Policy</a
+                      >
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Checkout Button -->
+                <div class="d-grid mb-3">
+                  <button
+                    type="submit"
+                    class="btn btn-theme btn-lg py-3 fw-semibold"
+                    id="checkout-button"
+                  >
+                    <i class="fa-solid fa-lock me-2"></i>
+                    Subscribe Securely - ₹{{ "%.0f"|format(plan.price) }}/month
+                  </button>
+                </div>
+
+                <!-- Security Info -->
+                <div class="text-center">
+                  <div class="d-flex justify-content-center gap-3 mb-2">
+                    <span
+                      class="badge bg-light text-primary border border-primary"
+                    >
+                      <i class="fab fa-stripe me-1"></i>Stripe Secure
+                    </span>
+                    <span
+                      class="badge bg-light text-success border border-success"
+                    >
+                      <i class="fa-solid fa-shield-alt me-1"></i>SSL Protected
+                    </span>
+                  </div>
+                  <small class="text-muted">
+                    <i class="fa-solid fa-info-circle me-1 text-accent"></i>
+                    Your payment information is encrypted and secure
+                  </small>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Trust Signals -->
+<section class="py-5 bg-light">
+  <div class="container">
+    <div class="text-center mb-4">
+      <h4 class="fw-bold text-dark">
+        <i class="fa-solid fa-award me-2 text-accent"></i>
+        Trusted by 1,000+ Legal Professionals
+      </h4>
+      <p class="text-muted">Join the professionals who rely on LegalEagle</p>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-lg-3 col-md-6 text-center">
+        <i class="fa-solid fa-shield-check fa-2x text-accent mb-3"></i>
+        <h6 class="fw-bold text-dark mb-2">Bank-Level Security</h6>
+        <small class="text-muted"
+          >256-bit SSL encryption protects all data</small
+        >
+      </div>
+
+      <div class="col-lg-3 col-md-6 text-center">
+        <i class="fa-solid fa-headset fa-2x text-accent mb-3"></i>
+        <h6 class="fw-bold text-dark mb-2">24/7 Expert Support</h6>
+        <small class="text-muted">Get help whenever you need it</small>
+      </div>
+
+      <div class="col-lg-3 col-md-6 text-center">
+        <i class="fa-solid fa-undo-alt fa-2x text-accent mb-3"></i>
+        <h6 class="fw-bold text-dark mb-2">Easy Cancellation</h6>
+        <small class="text-muted">Cancel anytime with one click</small>
+      </div>
+
+      <div class="col-lg-3 col-md-6 text-center">
+        <i class="fa-solid fa-clock fa-2x text-accent mb-3"></i>
+        <h6 class="fw-bold text-dark mb-2">Instant Access</h6>
+        <small class="text-muted">Start using features immediately</small>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %} {% block scripts %}
+<script>
+  document
+    .getElementById("checkout-form")
+    .addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const button = document.getElementById("checkout-button");
+      const planId = document.getElementById("plan-id").value;
+      const termsCheckbox = document.getElementById("terms");
+
+      if (!termsCheckbox.checked) {
+        alert(
+          "Please accept the Terms of Service and Privacy Policy to continue."
+        );
+        return;
+      }
+
+      // Show loading state
+      button.disabled = true;
+      button.innerHTML =
+        '<i class="fa-solid fa-spinner fa-spin me-2"></i>Processing Payment...';
+
+      try {
+        const response = await fetch("/create-checkout-session", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: `plan_id=${planId}`,
+        });
+
+        const data = await response.json();
+
+        if (data.checkout_url) {
+          button.innerHTML =
+            '<i class="fa-solid fa-check me-2"></i>Redirecting to Payment...';
+          setTimeout(() => {
+            window.location.href = data.checkout_url;
+          }, 1000);
+        } else {
+          throw new Error(data.error || "Failed to create checkout session");
+        }
+      } catch (error) {
+        console.error("Error:", error);
+
+        const errorDiv = document.createElement("div");
+        errorDiv.className = "alert alert-danger mt-3";
+        errorDiv.innerHTML = `
+      <i class="fa-solid fa-exclamation-triangle me-2"></i>
+      Payment processing failed. Please try again.
+    `;
+        button.parentNode.insertBefore(errorDiv, button.nextSibling);
+
+        button.disabled = false;
+        button.innerHTML =
+          '<i class="fa-solid fa-lock me-2"></i>Subscribe Securely - ₹{{ "%.0f"|format(plan.price) }}/month';
+
+        setTimeout(() => {
+          if (errorDiv.parentNode) {
+            errorDiv.remove();
+          }
+        }, 5000);
+      }
+    });
+</script>
+{% endblock %}

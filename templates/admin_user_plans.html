@@ -1,0 +1,230 @@
+{% extends 'admin_base.html' %} {% block title %}User Plans & Subscriptions - {{
+user.name }} - LegalEagle Admin{% endblock %} {% block page_title %}Plans &
+Subscriptions - {{ user.name }}{% endblock %} {% block content %}
+<!-- Top Actions -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <a href="/admin/users" class="btn btn-outline-secondary">
+      <i class="fa-solid fa-arrow-left"></i> Back to Users
+    </a>
+  </div>
+</div>
+
+<!-- User Info Card -->
+<div class="card mb-4">
+  <div class="card-body">
+    <div class="row align-items-center">
+      <div class="col-md-2">
+        {% if user.profile_photo %}
+        <img
+          src="/static/uploads/{{ user.profile_photo }}"
+          alt="Profile"
+          class="rounded-circle"
+          width="80"
+          height="80"
+        />
+        {% else %}
+        <div
+          class="bg-primary rounded-circle d-flex align-items-center justify-content-center text-white"
+          style="width: 80px; height: 80px"
+        >
+          <i class="fa-solid fa-user fa-2x"></i>
+        </div>
+        {% endif %}
+      </div>
+      <div class="col-md-10">
+        <h5 class="card-title mb-1">{{ user.name }}</h5>
+        <p class="text-muted mb-1">
+          <i class="fa-solid fa-envelope"></i> {{ user.email }}
+        </p>
+        <span
+          class="badge bg-{% if user.status == 'active' %}success{% else %}secondary{% endif %}"
+        >
+          {{ user.status|title }}
+        </span>
+        <span class="badge bg-info">{{ user.role|title }}</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Current Plan -->
+<div class="row">
+  <div class="col-md-6">
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fa-solid fa-star"></i> Current Active Plan
+        </h5>
+      </div>
+      <div class="card-body">
+        {% if user_plan %}
+        <div class="text-center">
+          <h4 class="text-primary">{{ user_plan.plan_name }}</h4>
+          <h3 class="text-success">₹{{ "%.2f"|format(user_plan.price) }}</h3>
+          <div class="mt-3">
+            <span
+              class="badge bg-{% if user_plan.status == 'active' %}success{% else %}secondary{% endif %} fs-6"
+            >
+              {{ user_plan.status|title }}
+            </span>
+          </div>
+          <div class="mt-3">
+            <div class="row">
+              <div class="col-6">
+                <div class="text-center">
+                  <i class="fa-solid fa-file-pdf fa-2x text-info"></i>
+                  <h6 class="mt-2">Documents</h6>
+                  <span class="badge bg-info"
+                    >{{ user_plan.max_documents }}</span
+                  >
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="text-center">
+                  <i class="fa-solid fa-comments fa-2x text-warning"></i>
+                  <h6 class="mt-2">Chat Prompts</h6>
+                  <span class="badge bg-warning"
+                    >{{ user_plan.max_chat_prompts }}</span
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+          <small class="text-muted d-block mt-3">
+            Plan Type: {{ user_plan.plan_type|title }}<br />
+            Activated: {{ user_plan.created_at if user_plan.created_at else
+            'N/A' }}
+          </small>
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+          <i class="fa-solid fa-exclamation-circle fa-3x text-muted mb-3"></i>
+          <h5 class="text-muted">No Active Plan</h5>
+          <p class="text-muted">This user currently has no active plan.</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Plan Statistics -->
+  <div class="col-md-6">
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fa-solid fa-chart-pie"></i> Subscription Stats
+        </h5>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-6 text-center mb-3">
+            <div class="card border-primary">
+              <div class="card-body">
+                <h6 class="card-title text-primary">Total Subscriptions</h6>
+                <h4 class="text-primary">{{ subscription_history|length }}</h4>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 text-center mb-3">
+            <div class="card border-success">
+              <div class="card-body">
+                <h6 class="card-title text-success">Active</h6>
+                <h4 class="text-success">
+                  {{ subscription_history|selectattr('status', 'equalto',
+                  'active')|list|length }}
+                </h4>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 text-center">
+            <div class="card border-warning">
+              <div class="card-body">
+                <h6 class="card-title text-warning">Expired</h6>
+                <h4 class="text-warning">
+                  {{ subscription_history|selectattr('status', 'equalto',
+                  'expired')|list|length }}
+                </h4>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 text-center">
+            <div class="card border-danger">
+              <div class="card-body">
+                <h6 class="card-title text-danger">Cancelled</h6>
+                <h4 class="text-danger">
+                  {{ subscription_history|selectattr('status', 'equalto',
+                  'cancelled')|list|length }}
+                </h4>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Subscription History -->
+<div class="card">
+  <div class="card-header">
+    <h5 class="mb-0">
+      <i class="fa-solid fa-history"></i> Subscription History
+    </h5>
+  </div>
+  <div class="card-body">
+    {% if subscription_history %}
+    <div class="table-responsive">
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Plan</th>
+            <th>Price</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Status</th>
+            <th>Created</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for subscription in subscription_history %}
+          <tr>
+            <td><strong>#{{ subscription.id }}</strong></td>
+            <td>
+              <span class="badge bg-primary">{{ subscription.plan_name }}</span>
+            </td>
+            <td><strong>₹{{ "%.2f"|format(subscription.price) }}</strong></td>
+            <td>
+              {{ subscription.start_date if subscription.start_date else 'N/A'
+              }}
+            </td>
+            <td>
+              {{ subscription.end_date if subscription.end_date else 'N/A' }}
+            </td>
+            <td>
+              <span
+                class="badge bg-{% if subscription.status == 'active' %}success{% elif subscription.status == 'expired' %}warning{% elif subscription.status == 'cancelled' %}danger{% else %}secondary{% endif %}"
+              >
+                {{ subscription.status|title }}
+              </span>
+            </td>
+            <td>
+              {{ subscription.created_at if subscription.created_at else 'N/A'
+              }}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="text-center py-4">
+      <i class="fa-solid fa-tags fa-3x text-muted mb-3"></i>
+      <h5 class="text-muted">No Subscription History</h5>
+      <p class="text-muted">This user has no subscription history yet.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,125 @@
+{% extends 'base.html' %} {% block title %}Activity - LegalEagle{% endblock %}
+{% block content %}
+<!-- Hero Section -->
+<section
+  class="hero-section position-relative d-flex align-items-center justify-content-center"
+  style="
+    min-height: 80px;
+    background: url('/static/hero-bg.jpg') center/cover no-repeat;
+  "
+>
+  <div
+    class="hero-overlay position-absolute top-0 start-0 w-100 h-100"
+    style="background: rgba(30, 30, 30, 0.65)"
+  ></div>
+  <div
+    class="container position-relative z-2 text-center d-flex flex-column align-items-center justify-content-center"
+    style="min-height: 80px"
+  >
+    <h1 class="display-4 fw-bold text-white mb-3" style="letter-spacing: 1px">
+      Activity Log
+    </h1>
+    <p class="lead text-white mb-4">
+      Track your LegalEagle usage and interactions
+    </p>
+  </div>
+</section>
+
+<!-- Activity Content -->
+<section class="py-5 bg-white">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h4 class="fw-bold text-dark mb-0">
+        <i class="fa-solid fa-history me-2 text-accent"></i>Recent Activity
+      </h4>
+      <div class="btn-group">
+        <button class="btn btn-outline-primary active">All</button>
+        <button class="btn btn-outline-primary">Uploads</button>
+        <button class="btn btn-outline-primary">Chats</button>
+        <button class="btn btn-outline-primary">Login</button>
+      </div>
+    </div>
+
+    {% if activities and activities|length > 0 %}
+    <!-- Activity Timeline -->
+    <div class="card-box">
+      {% for activity in activities %}
+      <div
+        class="d-flex align-items-start mb-4 pb-3 {% if not loop.last %}border-bottom{% endif %}"
+      >
+        <div class="flex-shrink-0 me-3">
+          <div
+            class="rounded-circle bg-accent text-white d-flex align-items-center justify-content-center"
+            style="width: 40px; height: 40px"
+          >
+            <i class="fa-solid fa-{{ activity.icon }} fa-sm"></i>
+          </div>
+        </div>
+        <div class="flex-grow-1">
+          <h6 class="fw-bold text-dark mb-1">{{ activity.title }}</h6>
+          <p class="text-dark mb-1">{{ activity.description }}</p>
+          <small class="text-muted">{{ activity.timestamp }}</small>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <!-- No Activity State -->
+    <div class="card-box text-center py-5">
+      <i class="fa-solid fa-history fa-4x text-muted mb-4"></i>
+      <h4 class="text-dark mb-3">No Activity Yet</h4>
+      <p class="text-muted mb-4">
+        Start using LegalEagle to see your activity here
+      </p>
+      <div class="d-flex justify-content-center gap-3">
+        <a href="/upload" class="btn btn-primary">
+          <i class="fa-solid fa-upload me-2"></i>Upload Document
+        </a>
+        <a href="/chat" class="btn btn-outline-primary">
+          <i class="fa-solid fa-comments me-2"></i>Start Chat
+        </a>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+<!-- Stats Section -->
+<section class="py-5 bg-light-gray">
+  <div class="container">
+    <div class="text-center mb-4">
+      <h4 class="fw-bold text-dark">Your Usage Statistics</h4>
+    </div>
+    <div class="row g-4">
+      <div class="col-md-3">
+        <div class="card-box text-center">
+          <i class="fa-solid fa-file-upload fa-2x text-accent mb-2"></i>
+          <div class="h3 fw-bold text-dark">0</div>
+          <small class="text-muted">Documents Uploaded</small>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card-box text-center">
+          <i class="fa-solid fa-comments fa-2x text-accent mb-2"></i>
+          <div class="h3 fw-bold text-dark">0</div>
+          <small class="text-muted">Questions Asked</small>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card-box text-center">
+          <i class="fa-solid fa-clock fa-2x text-accent mb-2"></i>
+          <div class="h3 fw-bold text-dark">0h</div>
+          <small class="text-muted">Time Saved</small>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card-box text-center">
+          <i class="fa-solid fa-calendar fa-2x text-accent mb-2"></i>
+          <div class="h3 fw-bold text-dark">0</div>
+          <small class="text-muted">Days Active</small>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -9,11 +9,19 @@ except ImportError:
     OPENAI_AVAILABLE = False
     print("OpenAI not installed. Install with: pip install openai")
 
-def query_rag(query, doc_filter=None):
+
+def query_rag(query, doc_filter=None, user_id=None):
     """
     RAG Pipeline: User Question → Vector Search → Context Retrieval → AI Processing → Intelligent Answer
     """
     print(f"🔍 Step 1: Processing user question: {query}")
+    
+    # Validate user_id is provided
+    if not user_id:
+        return {
+            "answer": "❌ User authentication required for document access.",
+            "sources": []
+        }
     
     # Step 2: Vector Search (MANDATORY document selection)
     if not doc_filter:
@@ -23,8 +31,8 @@ def query_rag(query, doc_filter=None):
         }
     
     try:
-        print(f"🔍 Step 2: Vector search in selected document: {doc_filter}")
-        vector_store = VectorStore()
+        print(f"🔍 Step 2: Vector search in user's selected document: {doc_filter}")
+        vector_store = VectorStore(user_id=user_id)
         
         # Primary search with original query - get more chunks for consistency
         raw_results = vector_store.search(query, limit=10, document_name=doc_filter)

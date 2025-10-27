@@ -1,0 +1,186 @@
+{% extends 'admin_base.html' %} {% block title %}Admin Dashboard - LegalEagle{%
+endblock %} {% block page_title %}Dashboard{% endblock %} {% block content %}
+<!-- Summary Cards -->
+<div class="row g-4 mb-4">
+  <div class="col-lg-3 col-md-6">
+    <div class="card-box text-center h-100">
+      <div class="d-flex align-items-center justify-content-between">
+        <div>
+          <h6
+            class="text-muted mb-2 fw-medium"
+            style="font-size: 0.8rem; letter-spacing: 0.5px"
+          >
+            Total Users
+          </h6>
+          <h3 class="fw-bold text-dark mb-1">
+            {{ "{:,}".format(stats.total_users) }}
+          </h3>
+          <small
+            class="{% if stats.users_change >= 0 %}text-success{% else %}text-danger{% endif %}"
+          >
+            <i
+              class="fa-solid fa-arrow-{% if stats.users_change >= 0 %}up{% else %}down{% endif %} me-1"
+            ></i
+            >{{ "{:+.1f}".format(stats.users_change) }}% this month
+          </small>
+        </div>
+        <div class="bg-accent rounded-circle p-3">
+          <i class="fa-solid fa-users fa-2x text-white"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-3 col-md-6">
+    <div class="card-box text-center h-100">
+      <div class="d-flex align-items-center justify-content-between">
+        <div>
+          <h6
+            class="text-muted mb-2 fw-medium"
+            style="font-size: 0.8rem; letter-spacing: 0.5px"
+          >
+            Active Subscriptions
+          </h6>
+          <h3 class="fw-bold text-dark mb-1">
+            {{ "{:,}".format(stats.active_subscriptions) }}
+          </h3>
+          <small
+            class="{% if stats.subscriptions_change >= 0 %}text-success{% else %}text-danger{% endif %}"
+          >
+            <i
+              class="fa-solid fa-arrow-{% if stats.subscriptions_change >= 0 %}up{% else %}down{% endif %} me-1"
+            ></i
+            >{{ "{:+.1f}".format(stats.subscriptions_change) }}% this month
+          </small>
+        </div>
+        <div class="bg-accent rounded-circle p-3">
+          <i class="fa-solid fa-credit-card fa-2x text-white"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-3 col-md-6">
+    <div class="card-box text-center h-100">
+      <div class="d-flex align-items-center justify-content-between">
+        <div>
+          <h6
+            class="text-muted mb-2 fw-medium"
+            style="font-size: 0.8rem; letter-spacing: 0.5px"
+          >
+            Revenue
+          </h6>
+          <h3 class="fw-bold text-dark mb-1">
+            ₹{{ "{:,.0f}".format(stats.revenue) }}
+          </h3>
+          <small
+            class="{% if stats.revenue_change >= 0 %}text-success{% else %}text-danger{% endif %}"
+          >
+            <i
+              class="fa-solid fa-arrow-{% if stats.revenue_change >= 0 %}up{% else %}down{% endif %} me-1"
+            ></i
+            >{{ "{:+.1f}".format(stats.revenue_change) }}% this month
+          </small>
+        </div>
+        <div class="bg-accent rounded-circle p-3">
+          <i class="fa-solid fa-inr fa-2x text-white"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-3 col-md-6">
+    <div class="card-box text-center h-100">
+      <div class="d-flex align-items-center justify-content-between">
+        <div>
+          <h6
+            class="text-muted mb-2 fw-medium"
+            style="font-size: 0.8rem; letter-spacing: 0.5px"
+          >
+            Transactions Today
+          </h6>
+          <h3 class="fw-bold text-dark mb-1">{{ stats.transactions_today }}</h3>
+          <small
+            class="{% if stats.transactions_change >= 0 %}text-success{% else %}text-danger{% endif %}"
+          >
+            <i
+              class="fa-solid fa-arrow-{% if stats.transactions_change >= 0 %}up{% else %}down{% endif %} me-1"
+            ></i
+            >{{ "{:+.1f}".format(stats.transactions_change) }}% vs yesterday
+          </small>
+        </div>
+        <div class="bg-accent rounded-circle p-3">
+          <i class="fa-solid fa-receipt fa-2x text-white"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="card-box">
+      <h5 class="fw-bold text-dark mb-4">Recent Transactions</h5>
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th class="text-dark">User</th>
+              <th class="text-dark">Plan</th>
+              <th class="text-dark">Amount</th>
+              <th class="text-dark">Status</th>
+              <th class="text-dark">Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for transaction in recent_transactions %}
+            <tr>
+              <td class="text-dark">{{ transaction.user_name }}</td>
+              <td class="text-dark">{{ transaction.plan_name }}</td>
+              <td class="text-dark">
+                ₹{{ "{:.0f}".format(transaction.amount) }}
+              </td>
+              <td>
+                <span
+                  class="badge bg-{% if transaction.status == 'completed' %}success{% elif transaction.status == 'pending' %}warning{% else %}danger{% endif %}"
+                >
+                  {{ transaction.status|title }}
+                </span>
+              </td>
+              <td class="text-muted">{{ transaction.date }}</td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="5" class="text-center text-muted">
+                No recent transactions
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card-box">
+      <h5 class="fw-bold text-dark mb-4">Quick Actions</h5>
+      <div class="d-grid gap-2">
+        <a href="/admin/users" class="btn btn-outline-primary">
+          <i class="fa-solid fa-user-plus me-2"></i>Add New User
+        </a>
+        <a href="/admin/plans" class="btn btn-outline-primary">
+          <i class="fa-solid fa-plus me-2"></i>Create Plan
+        </a>
+        <a href="/admin/transactions" class="btn btn-outline-primary">
+          <i class="fa-solid fa-eye me-2"></i>View All Transactions
+        </a>
+        <a href="/admin/settings" class="btn btn-outline-primary">
+          <i class="fa-solid fa-cog me-2"></i>System Settings
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

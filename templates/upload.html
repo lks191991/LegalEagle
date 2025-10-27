@@ -1,25 +1,22 @@
 {% extends 'base.html' %} {% block title %}LegalEagle - Upload{% endblock %} {%
 block content %}
-<div class="hero-section py-5">
+
+<!-- Upload Form Section -->
+<section class="py-5 bg-white">
   <div class="container">
     <div class="row justify-content-center">
-      <div class="col-md-8">
-        <div
-          class="card mb-4 shadow-lg"
-          style="background: rgba(13, 27, 42, 0.95); border: 1px solid #415a77"
-        >
-          <div class="card-body">
-            <h1 class="mb-4 text-center" style="color: #f1faee">
-              Upload Document
-            </h1>
-            <form
-              id="uploadForm"
-              action="/upload"
-              method="post"
-              enctype="multipart/form-data"
-            >
-              <div class="mb-3">
-                <label class="form-label" style="color: #a8dadc"
+      <div class="col-md-12">
+        <div class="card-box">
+          <h2 class="h3 fw-bold text-center mb-4 text-dark">Document Upload</h2>
+          <form
+            id="uploadForm"
+            action="/upload"
+            method="post"
+            enctype="multipart/form-data"
+          >
+            <div class="row">
+              <div class="mb-3 col-md-6">
+                <label class="form-label fw-semibold text-dark"
                   >Document Name</label
                 >
                 <input
@@ -29,37 +26,12 @@ block content %}
                   class="form-control"
                   placeholder="Enter document name (e.g., Contract Agreement)"
                   required
-                  style="
-                    background: #1b263b;
-                    color: #f1faee;
-                    border: 1px solid #415a77;
-                  "
                 />
               </div>
-
-              <div class="mb-3">
-                <label class="form-label" style="color: #a8dadc"
-                  >Tag Cloud</label
+              <div class="mb-3 col-md-6">
+                <label class="form-label fw-semibold text-dark"
+                  >Document Date</label
                 >
-                <input
-                  type="text"
-                  id="document-tags"
-                  name="document_tags"
-                  class="form-control"
-                  placeholder="Enter tags (e.g., contract, employment, legal)"
-                  style="
-                    background: #1b263b;
-                    color: #f1faee;
-                    border: 1px solid #415a77;
-                  "
-                />
-                <small class="text-muted"
-                  >Separate multiple tags with commas</small
-                >
-              </div>
-
-              <div class="mb-3">
-                <label class="form-label" style="color: #a8dadc">Document Date</label>
                 <div class="input-group">
                   <input
                     type="text"
@@ -68,179 +40,103 @@ block content %}
                     class="form-control"
                     required
                     placeholder="dd-mm-yyyy"
-                    style="
-                      background: #1b263b;
-                      color: #f1faee;
-                      border: 1px solid #415a77;
-                    "
                   />
-                  <span
-                    class="input-group-text"
-                    id="calendar-icon"
-                    style="
-                      background: #1b263b;
-                      color: #a8dadc;
-                      border: 1px solid #415a77;
-                      cursor: pointer;
-                    "
-                  >
-                    <i class="fa-regular fa-calendar"></i>
+                  <span class="input-group-text calendar-icon" id="calendar-icon">
+                    <i class="fa-regular fa-calendar text-accent"></i>
                   </span>
                 </div>
               </div>
-
-
-
               <div class="mb-3">
-                <label class="form-label" style="color: #a8dadc"
-                  >Upload File</label
+                <label class="form-label fw-semibold text-dark"
+                  >Tag Cloud</label
                 >
-                <div
-                  id="dropzone"
-                  class="border border-primary rounded-3 p-5 text-center"
-                  style="
-                    background: #1b263b;
-                    color: #f1faee;
-                    cursor: pointer;
-                    border: 2px dashed #0d6efd !important;
-                    transition: all 0.3s ease;
-                  "
+                <input
+                  type="text"
+                  id="document-tags"
+                  name="document_tags"
+                  class="form-control"
+                  placeholder="Enter tags (e.g., contract, employment, legal)"
+                />
+                <small class="text-dark"
+                  >Separate multiple tags with commas</small
                 >
-                  <i class="fas fa-cloud-upload-alt fa-3x mb-3"></i>
-                  <div id="drop-text" class="h5 mb-3">
-                    Drag & drop files here or click to select
-                  </div>
-                  <small class="text-muted">Supports PDF and TXT files</small>
-                  <input
-                    type="file"
-                    id="file"
-                    name="file"
-                    accept=".pdf,.txt"
-                    required
-                    class="d-none"
-                  />
-                </div>
-              </div>
-              <button
-                type="submit"
-                class="btn btn-primary w-100"
-                style="background: #415a77; border: none"
-              >
-                Upload
-              </button>
-            </form>
-          </div>
-        </div>
-        {% if result %}
-        <div
-          class="card mb-4 {% if success %}border-success{% else %}border-danger{% endif %}"
-        >
-          <div class="card-body">
-            <div
-              class="hero-section py-5"
-              style="
-                background: linear-gradient(120deg, #ffd700 60%, #f8faff 100%);
-              "
-            >
-              <div class="container">
-                <div class="row justify-content-center">
-                  <div class="col-md-8">
-                    <div
-                      class="card mb-4 shadow-lg border-0"
-                      style="background: #fff"
-                    >
-                      <div class="card-body">
-                        <h1 class="mb-4 text-center" style="color: #1a2238">
-                          <i class="fa-solid fa-file-upload me-2"></i> Upload
-                          Document
-                        </h1>
-                        <form
-                          id="uploadForm"
-                          action="/upload"
-                          method="post"
-                          enctype="multipart/form-data"
-                        >
-                          <div class="mb-3">
-                            <div
-                              id="dropzone"
-                              class="border border-warning rounded-3 p-5 text-center"
-                              style="
-                                background: #f8faff;
-                                color: #1a2238;
-                                cursor: pointer;
-                                border: 2px dashed #ffd700 !important;
-                                transition: all 0.3s ease;
-                              "
-                            >
-                              <i
-                                class="fa-solid fa-cloud-arrow-up fa-3x mb-3"
-                                style="color: #ffd700"
-                              ></i>
-                              <div id="drop-text" class="h5 mb-3">
-                                Drag & drop files here or click to select
-                              </div>
-                              <small class="text-muted"
-                                >Supports PDF and TXT files</small
-                              >
-                              <input
-                                type="file"
-                                id="file"
-                                name="file"
-                                accept=".pdf,.txt"
-                                required
-                                class="d-none"
-                              />
-                            </div>
-                          </div>
-                          <button
-                            type="submit"
-                            class="btn w-100"
-                            style="
-                              background: #ffd700;
-                              color: #1a2238;
-                              border: none;
-                            "
-                          >
-                            <i class="fa-solid fa-upload me-2"></i> Upload
-                          </button>
-                        </form>
-                      </div>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
-            <h4
-              class="card-title text-{% if success %}success{% else %}danger{% endif %}"
+
+            <div class="mb-3">
+              <label class="form-label fw-semibold text-dark"
+                >Upload File</label
+              >
+              <div
+                id="dropzone"
+                class="dropzone border rounded-3 p-5 text-center"
+              >
+                <i class="fas fa-cloud-upload-alt fa-3x mb-3 text-accent"></i>
+                <div id="drop-text" class="h5 mb-3 text-dark">
+                  Drag & drop files here or click to select
+                </div>
+                <small class="text-dark">Supports PDF and TXT files</small>
+                <input
+                  type="file"
+                  id="file"
+                  name="file"
+                  accept=".pdf,.txt"
+                  required
+                  class="d-none"
+                />
+              </div>
+            </div>
+            <button
+              type="submit"
+              class="btn btn-theme w-100 btn-lg fw-semibold rounded-pill"
             >
-              {% if success %}✅ Upload Successful{% else %}❌ Upload Failed{%
-              endif %}
-            </h4>
-            <pre
-              style="
-                max-height: 400px;
-                overflow: auto;
-                background: #f8f9fa;
-                padding: 12px;
-                border-radius: 8px;
-              "
-            >
-{{ result }}</pre
-            >
-          </div>
+              <i class="fa-solid fa-upload me-2"></i>Upload Document
+            </button>
+          </form>
+        </div>
+
+        {% if result %}
+        <div class="card-box mt-4">
+          <h4
+            class="text-{% if success %}success{% else %}danger{% endif %} text-dark"
+          >
+            {% if success %}✅ Upload Successful{% else %}❌ Upload Failed{%
+            endif %}
+          </h4>
+          <pre class="upload-result">{{ result }}</pre>
         </div>
         {% endif %} {% if error %}
-        <div class="card mb-4 border-danger">
-          <div class="card-body">
-            <h4 class="card-title text-danger">❌ Upload Failed</h4>
-            <div class="alert alert-danger">{{ error }}</div>
-          </div>
+        <div class="card-box mt-4">
+          <h4 class="text-danger text-dark">❌ Upload Failed</h4>
+          <div class="alert alert-danger">{{ error }}</div>
         </div>
         {% endif %}
       </div>
     </div>
   </div>
-</div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-3 bg-accent-gradient mb-0">
+  <div class="container text-center">
+    <h2 class="h1 fw-bold mb-3">Ready to Analyze Your Documents?</h2>
+    <p class="lead mb-4">
+      Upload your legal documents and start getting AI-powered insights
+    </p>
+    <div class="d-flex justify-content-center gap-3 mb-4 flex-wrap">
+      <a
+        href="/chat"
+        class="btn btn-primary btn-lg px-5 py-3 fw-semibold rounded-pill"
+        >Start Chatting</a
+      >
+      <a
+        href="/contact"
+        class="btn btn-outline-light btn-lg px-5 py-3 fw-semibold rounded-pill"
+        >Book Demo</a
+      >
+    </div>
+  </div>
+</section>
 {% endblock %} {% block scripts %}
 <script>
   $(document).ready(function () {
@@ -267,7 +163,7 @@ block content %}
       e.stopPropagation();
       $(this).css({
         "border-color": "#28a745",
-        background: "#0f2027",
+        background: "#f0f8f0",
       });
     });
 
@@ -275,8 +171,8 @@ block content %}
       e.preventDefault();
       e.stopPropagation();
       $(this).css({
-        "border-color": "#0d6efd",
-        background: "#1b263b",
+        "border-color": "#ef4524",
+        background: "#f8fafc",
       });
     });
 
@@ -309,7 +205,10 @@ block content %}
         format: "dd-mm-yyyy",
         autoclose: true,
         todayHighlight: true,
+        startDate: "01-01-1900",
+        endDate: "+0d",
       })
+      .datepicker("setDate", currentDate)
       .on("changeDate", function (e) {
         // Always update input value on date selection
         var selectedDate = e.date;
@@ -341,8 +240,6 @@ block content %}
           $("#document-date").val(day + "-" + month + "-" + year);
         }
       }
-      
-
 
       var formData = new FormData(this);
       var $submitBtn = $(this).find('button[type="submit"]');
@@ -364,7 +261,10 @@ block content %}
           "X-Requested-With": "XMLHttpRequest",
         },
         success: function (response) {
-          if (response.success) {
+          if (response.conflict) {
+            // Show conflict modal with existing document data
+            showConflictModal(response.existing_document, formData);
+          } else if (response.success) {
             $dropText.html(
               '<i class="fas fa-check-circle"></i> Upload complete'
             );
@@ -403,11 +303,202 @@ block content %}
           );
           $dropzone.css("border-color", "#dc3545");
         },
-        complete: function () {
+        complete: function (xhr, status) {
+          // Check if response has conflict - don't reset button if so
+          try {
+            var response = JSON.parse(xhr.responseText);
+            if (response && response.conflict) {
+              return; // Don't reset button for conflict
+            }
+          } catch (e) {}
+          // Reset button for non-conflict cases
           $submitBtn.prop("disabled", false).text("Upload");
         },
       });
     });
+
+    // Conflict modal function
+    function showConflictModal(existingDoc, formData) {
+      // Get all documents to find next available version
+      $.get("/get-documents", function (data) {
+        let version = 2;
+        let newName = `${existingDoc.document_name} v${version}`;
+
+        // Check if versioned names exist and increment
+        const allDocs = data.documents || [];
+        while (
+          allDocs.some(
+            (doc) => doc.document_name.toLowerCase() === newName.toLowerCase()
+          )
+        ) {
+          version++;
+          newName = `${existingDoc.document_name} v${version}`;
+        }
+
+        // Find all versions of this document
+        const baseName = existingDoc.document_name;
+        const allVersions = allDocs.filter(
+          (doc) =>
+            doc.document_name === baseName ||
+            doc.document_name.startsWith(baseName + " v")
+        );
+
+        const modalHtml = `
+        <div class="modal fade conflict-modal" id="conflictModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">Document Already Exists</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" onclick="$('#drop-text').html('Drag & drop files here or click to select'); $('#dropzone').css('border-color', '#0d6efd'); $('#uploadForm button[type=submit]').prop('disabled', false).text('Upload');"></button>
+              </div>
+              <div class="modal-body">
+                <div class="card">
+                  <div class="card-body">
+                    <h6 class="existing-doc-title">Existing Documents (${
+                      allVersions.length
+                    } versions):</h6>
+                    ${allVersions
+                      .map(function (doc) {
+                        return (
+                          '<div class="existing-doc-item">' +
+                          "<p><strong>" +
+                          doc.document_name +
+                          "</strong></p>" +
+                          (doc.tags
+                            ? "<small>Tags: " + doc.tags + "</small><br>"
+                            : "") +
+                          (doc.document_date
+                            ? "<small>Document Date: " +
+                              doc.document_date +
+                              "</small>"
+                            : "") +
+                          "</div>"
+                        );
+                      })
+                      .join("")}
+                  </div>
+                </div>
+                <br>
+                <form id="overwriteForm">
+                  <div class="mb-3">
+                    <label class="form-label">New Document Name</label>
+                    <input type="text" id="modal-doc-name" class="form-control" value="${
+                      existingDoc.document_name
+                    } v2">
+                  </div>
+                </form>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-outline-theme" data-bs-dismiss="modal" onclick="$('#drop-text').html('Drag & drop files here or click to select'); $('#dropzone').css('border-color', '#0d6efd'); $('#uploadForm button[type=submit]').prop('disabled', false).text('Upload');">Cancel</button>
+                <button type="button" class="btn btn-theme" id="overwriteBtn">Upload with New Name</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+        // Remove existing modal and add new one
+        $("#conflictModal").remove();
+        $("body").append(modalHtml);
+
+        // Show modal
+        $("#conflictModal").modal("show");
+
+        // Set the smart version in input
+        $("#modal-doc-name").val(newName);
+
+        // Handle overwrite
+        $("#overwriteBtn").click(function () {
+          // Update form data with new name
+          formData.set("document_name", $("#modal-doc-name").val());
+          formData.set("overwrite", "false");
+
+          // Close modal and resubmit
+          $("#conflictModal").modal("hide");
+          submitUpload(formData);
+        });
+
+        // Reset dropzone and button on modal close/cancel
+        $("#conflictModal").on("hidden.bs.modal", function () {
+          resetDropzone();
+          var $submitBtn = $("#uploadForm").find('button[type="submit"]');
+          $submitBtn.prop("disabled", false).text("Upload");
+        });
+
+        // Also handle direct clicks on close button and X icon
+        $(
+          "#conflictModal .btn-close, #conflictModal [data-bs-dismiss='modal']"
+        ).on("click", function () {
+          resetDropzone();
+          var $submitBtn = $("#uploadForm").find('button[type="submit"]');
+          $submitBtn.prop("disabled", false).text("Upload");
+        });
+      });
+    }
+
+    // Separate upload function
+    function submitUpload(formData) {
+      var $submitBtn = $("#uploadForm").find('button[type="submit"]');
+
+      $dropText.html('<i class="fas fa-spinner fa-spin"></i> Uploading...');
+      $submitBtn.prop("disabled", true).text("Uploading...");
+
+      $.ajax({
+        url: "/upload",
+        type: "POST",
+        data: formData,
+        processData: false,
+        contentType: false,
+        headers: {
+          "X-Requested-With": "XMLHttpRequest",
+        },
+        success: function (response) {
+          if (response.success) {
+            $dropText.html(
+              '<i class="fas fa-check-circle"></i> Upload complete'
+            );
+            $("#uploadForm").after(
+              '<div class="alert alert-success mt-3">✅ Upload successful!</div>'
+            );
+            $dropzone.css("border-color", "#28a745");
+
+            // Clear form
+            $("#document-name").val("");
+            $("#document-tags").val("");
+            $("#file").val("");
+            $("#document-date").val(currentDate);
+
+            setTimeout(function () {
+              $dropText.html("Drag & drop files here or click to select");
+              $dropzone.css("border-color", "#0d6efd");
+            }, 2000);
+          }
+        },
+        error: function (xhr) {
+          var errorMsg = "Upload failed";
+          if (xhr.responseJSON && xhr.responseJSON.result) {
+            errorMsg += ": " + xhr.responseJSON.result;
+          }
+          $dropText.html('<i class="fas fa-times-circle"></i> Upload failed');
+          $("#uploadForm").after(
+            '<div class="alert alert-danger mt-3">' + errorMsg + "</div>"
+          );
+          $dropzone.css("border-color", "#dc3545");
+        },
+        complete: function () {
+          $submitBtn.prop("disabled", false).text("Upload");
+        },
+      });
+    }
+
+    // Handle close button clicks globally
+    $(document).on(
+      "click",
+      '#conflictModal .btn-close, #conflictModal [data-bs-dismiss="modal"]',
+      function () {
+        resetDropzone();
+      }
+    );
   });
 </script>
 {% endblock %}

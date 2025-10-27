@@ -1,0 +1,132 @@
+{% extends 'admin_base.html' %} {% block title %}Settings - LegalEagle Admin{%
+endblock %} {% block page_title %}General Settings{% endblock %} {% block
+content %}
+<!-- Message Display -->
+<div id="messageArea"></div>
+
+<div class="card-box">
+  <h5 class="fw-bold text-dark mb-4">Site Configuration</h5>
+
+  <form id="settingsForm">
+    <div class="row">
+      {% for setting in settings %}
+      <div class="col-md-6 mb-4">
+        {% if setting.setting_type == 'boolean' %}
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" name="{{
+          setting.setting_key }}" {% if setting.setting_value == 'true'
+          %}checked{% endif %}>
+          <label class="form-check-label fw-semibold text-dark"
+            >{{ setting.description or setting.setting_key|title }}</label
+          >
+        </div>
+        {% elif setting.setting_type == 'number' %}
+        <label class="form-label fw-semibold text-dark"
+          >{{ setting.description or setting.setting_key|title }}</label
+        >
+        <input
+          type="number"
+          class="form-control"
+          name="{{ setting.setting_key }}"
+          value="{{ setting.setting_value }}"
+          required
+        />
+        {% elif setting.setting_type == 'email' %}
+        <label class="form-label fw-semibold text-dark"
+          >{{ setting.description or setting.setting_key|title }}</label
+        >
+        <input
+          type="email"
+          class="form-control"
+          name="{{ setting.setting_key }}"
+          value="{{ setting.setting_value }}"
+          required
+        />
+        {% else %}
+        <label class="form-label fw-semibold text-dark"
+          >{{ setting.description or setting.setting_key|title }}</label
+        >
+        <input
+          type="text"
+          class="form-control"
+          name="{{ setting.setting_key }}"
+          value="{{ setting.setting_value }}"
+          required
+        />
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="text-end mt-4">
+      <button
+        type="button"
+        class="btn btn-secondary me-2"
+        onclick="resetForm()"
+      >
+        Reset
+      </button>
+      <button
+        type="button"
+        class="btn btn-primary px-4"
+        onclick="saveSettings()"
+      >
+        <i class="fa-solid fa-save me-2"></i>Save Settings
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %} {% block scripts %}
+<script>
+  function saveSettings() {
+    const $form = $("#settingsForm");
+    const formData = {};
+
+    // Collect form data
+    $form.find("input").each(function () {
+      const $input = $(this);
+      const name = $input.attr("name");
+      if (name) {
+        if ($input.attr("type") === "checkbox") {
+          formData[name] = $input.is(":checked") ? "true" : "false";
+        } else {
+          formData[name] = $input.val();
+        }
+      }
+    });
+
+    $.ajax({
+      url: "/admin/settings",
+      method: "POST",
+      data: formData,
+      success: function (data) {
+        showMessage(data.message, data.success ? "success" : "error");
+      },
+      error: function () {
+        showMessage("Error saving settings", "error");
+      },
+    });
+  }
+
+  function resetForm() {
+    if (confirm("Are you sure you want to reset all settings?")) {
+      location.reload();
+    }
+  }
+
+  // Message display function
+  function showMessage(message, type) {
+    const alertClass = type === "success" ? "alert-success" : "alert-danger";
+    const alertHtml = `
+        <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    $("#messageArea").html(alertHtml);
+    setTimeout(() => {
+      $("#messageArea .alert").remove();
+    }, 5000);
+  }
+</script>
+{% endblock %}

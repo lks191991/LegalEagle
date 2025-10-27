@@ -1,0 +1,1152 @@
+{% extends 'admin_base.html' %}
+{% block title %}Manage Users - LegalEagle Admin{% endblock %}
+{% block page_title %}Manage Users{% endblock %}
+
+{% block content %}
+<!-- Message Display -->
+<div id="messageArea"></div>
+
+<!-- Top Actions -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex align-items-center gap-3">
+        <div class="d-flex align-items-center rounded px-3 py-2 border" style="border-color: #ef4524 !important; background-color: #ef4524;">
+            <i class="fa-solid fa-users text-white me-2"></i>
+            <span class="text-white me-1">Total Records:</span>
+            <span class="fw-bold text-white">{{ total }}</span>
+        </div>
+    </div>
+    <div class="d-flex gap-2">
+        <button class="btn btn-outline-secondary" onclick="exportUsers()">
+            <i class="fas fa-download me-2"></i>Export
+        </button>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createUserModal">
+            <i class="fa-solid fa-plus me-2"></i>Create User
+        </button>
+    </div>
+</div>
+
+<!-- Enhanced Filters -->
+<div class="card mb-4" style="border: 1px solid #e2e8f0; border-radius: 8px;">
+    <div class="card-header bg-light" style="border-bottom: 1px solid #e2e8f0;">
+        <h6 class="card-title mb-0 fw-bold text-dark">
+            <i class="fa-solid fa-filter me-2 text-primary"></i>Filter Users
+        </h6>
+    </div>
+    <div class="card-body" style="padding: 1.5rem;">
+        <form method="GET" action="/admin/users">
+            <div class="row g-3">
+                <!-- First Row -->
+                <div class="col-md-3">
+                    <label for="user_name" class="form-label">User Name</label>
+                    <input type="text" class="form-control" id="user_name" name="name" placeholder="Enter user name..." value="{{ name_filter or '' }}">
+                </div>
+                <div class="col-md-3">
+                    <label for="user_email" class="form-label">User Email</label>
+                    <input type="email" class="form-control" id="user_email" name="email" placeholder="Enter user email..." value="{{ email_filter or '' }}">
+                </div>
+                <div class="col-md-3">
+                    <label for="status" class="form-label">Status</label>
+                    <select class="form-select" id="status" name="status">
+                        <option value="">All Status</option>
+                        <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
+                        <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Inactive</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="role" class="form-label">User Role</label>
+                    <select class="form-select" id="role" name="role">
+                        <option value="">All Roles</option>
+                        <option value="admin" {% if role_filter == 'admin' %}selected{% endif %}>Admin</option>
+                        <option value="user" {% if role_filter == 'user' %}selected{% endif %}>User</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Second Row - Date Filters & Sorting -->
+            <div class="row g-3 mt-2">
+                <div class="col-md-4">
+                    <label for="date_from" class="form-label fw-medium">Registration From Date</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control admin-date-input" id="date_from" name="date_from" value="{{ date_from or '' }}" placeholder="dd-mm-yyyy" style="min-height: 38px;">
+                        <span class="input-group-text calendar-icon">
+                            <i class="fa-solid fa-calendar-days text-accent"></i>
+                        </span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label for="date_to" class="form-label fw-medium">Registration To Date</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control admin-date-input" id="date_to" name="date_to" value="{{ date_to or '' }}" placeholder="dd-mm-yyyy" style="min-height: 38px;">
+                        <span class="input-group-text calendar-icon">
+                            <i class="fa-solid fa-calendar-days text-accent"></i>
+                        </span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label for="sort_by" class="form-label fw-medium">Sort By</label>
+                    <select class="form-select" id="sort_by" name="sort_by" style="min-height: 38px;">
+                        <option value="id_desc" {% if sort_filter == 'id_desc' %}selected{% endif %}>Latest First</option>
+                        <option value="id_asc" {% if sort_filter == 'id_asc' %}selected{% endif %}>Oldest First</option>
+                        <option value="name_asc" {% if sort_filter == 'name_asc' %}selected{% endif %}>Name (A-Z)</option>
+                        <option value="name_desc" {% if sort_filter == 'name_desc' %}selected{% endif %}>Name (Z-A)</option>
+                        <option value="email_asc" {% if sort_filter == 'email_asc' %}selected{% endif %}>Email (A-Z)</option>
+                        <option value="email_desc" {% if sort_filter == 'email_desc' %}selected{% endif %}>Email (Z-A)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Third Row - Action Buttons -->
+            <div class="row g-3 mt-2">
+                <div class="col-12 d-flex justify-content-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="fa-solid fa-search me-1"></i>Apply Filters
+                    </button>
+                    <a href="/admin/users" class="btn btn-outline-secondary">
+                        <i class="fa-solid fa-times me-1"></i>Clear
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Filter Status Indicators -->
+            {% if name_filter or email_filter or status_filter or role_filter or date_from or date_to or sort_filter %}
+            <div class="mt-3 p-2 bg-light rounded">
+                <small class="text-muted">Active filters:</small>
+                {% if name_filter %}
+                    <span class="badge bg-info ms-1">Name: {{ name_filter }}</span>
+                {% endif %}
+                {% if email_filter %}
+                    <span class="badge bg-info ms-1">Email: {{ email_filter }}</span>
+                {% endif %}
+                {% if status_filter %}
+                    <span class="badge bg-info ms-1">Status: {{ status_filter|title }}</span>
+                {% endif %}
+                {% if role_filter %}
+                    <span class="badge bg-info ms-1">Role: {{ role_filter|title }}</span>
+                {% endif %}
+                {% if date_from %}
+                    <span class="badge bg-info ms-1">From: {{ date_from }}</span>
+                {% endif %}
+                {% if date_to %}
+                    <span class="badge bg-info ms-1">To: {{ date_to }}</span>
+                {% endif %}
+                {% if sort_filter %}
+                    <span class="badge bg-success ms-1">Sorted: {{ sort_filter.replace('_', ' ')|title }}</span>
+                {% endif %}
+            </div>
+            {% endif %}
+        </form>
+    </div>
+</div>
+
+<!-- Users Table -->
+<div class="card-box">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th class="text-dark">ID</th>
+                    <th class="text-dark">Photo</th>
+                    <th class="text-dark">Name</th>
+                    <th class="text-dark">Email</th>
+                    <th class="text-dark">Mobile</th>
+                    <th class="text-dark">Registration Date</th>
+                    <th class="text-dark">Role</th>
+                    <th class="text-dark">Status</th>
+                    <th class="text-dark">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td class="text-dark">#{{ "%03d"|format(user.id) }}</td>
+                    <td>
+                        {% if user.profile_photo %}
+                        <img src="/static/uploads/{{ user.profile_photo }}" alt="Profile" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover; cursor: pointer;" onclick="viewImage('/static/uploads/{{ user.profile_photo }}', '{{ user.name }}')">
+                        {% else %}
+                        <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                            <i class="fa-solid fa-user text-white"></i>
+                        </div>
+                        {% endif %}
+                    </td>
+                    <td class="text-dark">
+                        <a href="javascript:void(0)" onclick="viewUserDetails({{ user.id }})" class="text-primary text-decoration-none fw-bold">{{ user.name }}</a>
+                    </td>
+                    <td class="text-dark">
+                        <a href="javascript:void(0)" onclick="viewUserDetails({{ user.id }})" class="text-primary text-decoration-none">{{ user.email }}</a>
+                    </td>
+                    <td class="text-dark">
+                        {% if user.mobile_number %}
+                            <i class="fa-solid fa-phone me-1 text-muted"></i>{{ user.mobile_number }}
+                        {% else %}
+                            <span class="text-muted">Not provided</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-dark">
+                        {{ user.created_at if user.created_at else 'N/A' }}
+                    </td>
+                    <td><span class="badge bg-{% if user.role == 'admin' %}warning{% else %}primary{% endif %}">{{ user.role|title }}</span></td>
+                    <td><span class="badge bg-{% if user.status == 'active' %}success{% else %}danger{% endif %}">{{ user.status|title }}</span></td>
+                    <td>
+                        {% if user.role == 'admin' %}
+                        <div class="admin-actions d-flex gap-1">
+                            <button class="btn btn-outline-warning btn-sm" title="AI Settings" onclick="manageAISettings({{ user.id }})">
+                                <i class="fa-solid fa-robot"></i>
+                            </button>
+                            <button class="btn btn-outline-info btn-sm" title="Admin Settings" onclick="adminSettings({{ user.id }})">
+                                <i class="fa-solid fa-cog"></i>
+                            </button>
+                        </div>
+                        {% else %}
+                        <div class="admin-actions d-flex gap-1">
+                            <button class="btn btn-outline-primary btn-sm" title="Edit User" 
+                                   data-user-id="{{ user.id }}" 
+                                   data-user-name="{{ user.name }}" 
+                                   data-user-email="{{ user.email }}" 
+                                   data-user-mobile="{{ user.mobile_number or '' }}" 
+                                   data-user-status="{{ user.status }}" 
+                                   data-user-photo="{% if user.profile_photo %}{{ user.profile_photo }}{% endif %}"
+                                   onclick="editUserFromData(this)">
+                                <i class="fa-solid fa-edit"></i>
+                            </button>
+                            <a href="/admin/users/{{ user.id }}/transactions" class="btn btn-outline-success btn-sm" title="View Transactions">
+                                <i class="fa-solid fa-receipt"></i>
+                            </a>
+                            <a href="/admin/users/{{ user.id }}/plans" class="btn btn-outline-info btn-sm" title="View Plans & Subscriptions">
+                                <i class="fa-solid fa-crown"></i>
+                            </a>
+                            <button class="btn btn-outline-warning btn-sm" title="AI Settings" onclick="manageAISettings({{ user.id }})">
+                                <i class="fa-solid fa-robot"></i>
+                            </button>
+                            <button class="btn btn-outline-danger btn-sm" title="Delete User" onclick="deleteUser({{ user.id }})">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Pagination -->
+    <div class="d-flex justify-content-between align-items-center p-3 border-top">
+        <div class="text-muted">
+            Showing {{ ((page - 1) * per_page) + 1 }} to {{ ((page - 1) * per_page) + users|length }} of {{ total }} entries
+        </div>
+        <nav>
+            <ul class="pagination pagination-sm mb-0">
+                {% set query_params = "&name=" + (name_filter or "") + "&email=" + (email_filter or "") + "&status=" + (status_filter or "") + "&role=" + (role_filter or "") %}
+                <li class="page-item {% if page <= 1 %}disabled{% endif %}">
+                    <a class="page-link" href="?page={{ page - 1 if page > 1 else 1 }}{{ query_params }}">Previous</a>
+                </li>
+                {% for p in range(1, total_pages + 1) %}
+                    {% if p == page %}
+                        <li class="page-item active">
+                            <a class="page-link" href="?page={{ p }}{{ query_params }}">{{ p }}</a>
+                        </li>
+                    {% elif p <= 3 or p > total_pages - 3 or (p >= page - 1 and p <= page + 1) %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ p }}{{ query_params }}">{{ p }}</a>
+                        </li>
+                    {% elif p == 4 and page > 6 %}
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                    {% elif p == total_pages - 3 and page < total_pages - 5 %}
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                <li class="page-item {% if page >= total_pages %}disabled{% endif %}">
+                    <a class="page-link" href="?page={{ page + 1 if page < total_pages else total_pages }}{{ query_params }}">Next</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+<!-- Create User Modal -->
+<div class="modal fade" id="createUserModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-dark">Create New User</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createUserForm">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold text-dark">Name</label>
+                            <input type="text" class="form-control" name="name" required>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold text-dark">Email</label>
+                            <input type="email" class="form-control" name="email" required>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold text-dark">Mobile Number</label>
+                            <input type="tel" class="form-control" name="mobile_number" placeholder="Enter mobile number">
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold text-dark">Password</label>
+                            <input type="password" class="form-control" name="password" required>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold text-dark">Profile Photo</label>
+                            <input type="file" class="form-control" name="profile_photo" accept="image/*">
+                            <small class="text-muted">Optional. JPG, PNG, GIF up to 2MB</small>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold text-dark">Role</label>
+                            <select class="form-select" name="role" required>
+                                <option value="user">User</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="createUser()">Create User</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit User Modal -->
+<div class="modal fade" id="editUserModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-dark">Edit User</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editUserForm" enctype="multipart/form-data">
+                    <input type="hidden" name="user_id" id="editUserId">
+                    <div class="mb-3 text-center">
+                        <div class="mb-2" id="editPhotoContainer">
+                            <!-- Photo will be populated by JavaScript -->
+                        </div>
+                        <input type="file" class="form-control" name="profile_photo" accept="image/*">
+                        <small class="text-muted">JPG, PNG, GIF up to 2MB</small>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold text-dark">Name</label>
+                            <input type="text" class="form-control" name="name" id="editUserName" required>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold text-dark">Email</label>
+                            <input type="email" class="form-control" name="email" id="editUserEmail" required>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold text-dark">Mobile Number</label>
+                            <input type="tel" class="form-control" name="mobile_number" id="editUserMobile" placeholder="Enter mobile number">
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold text-dark">Status</label>
+                            <select class="form-select" name="status" id="editUserStatus" required>
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="updateUser()">Update User</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- AI Settings Modal -->
+<div class="modal fade" id="aiSettingsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-dark">AI Settings</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="aiSettingsForm">
+                    <input type="hidden" name="user_id" id="aiUserId">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold text-dark">OpenAI API Key</label>
+                            <input type="text" class="form-control" name="openai_key" id="aiOpenaiKey" placeholder="sk-...">
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold text-dark">OpenAI Model</label>
+                            <select class="form-select" name="openai_model" id="aiOpenaiModel">
+                                <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                                <option value="gpt-4">GPT-4</option>
+                                <option value="gpt-4-turbo">GPT-4 Turbo</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold text-dark">Qdrant URL</label>
+                            <input type="text" class="form-control" name="qdrant_url" id="aiQdrantUrl" placeholder="https://your-cluster.cloud.qdrant.io:6333">
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold text-dark">Qdrant API Key</label>
+                            <input type="text" class="form-control" name="qdrant_key" id="aiQdrantKey" placeholder="Your Qdrant API Key">
+                            <div class="invalid-feedback"></div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold text-dark">Qdrant Collection</label>
+                        <input type="text" class="form-control" name="qdrant_collection" id="aiQdrantCollection" value="user_docs">
+                        <small class="text-muted">Collection name for storing user documents</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" onclick="saveAISettings()">Save AI Settings</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Image View Modal -->
+<div class="modal fade" id="imageViewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-dark" id="imageViewTitle">Profile Photo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img src="" alt="Profile" class="img-fluid rounded" id="imageViewSrc" style="max-height: 500px;">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- User Details Modal -->
+<div class="modal fade" id="userDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-dark">
+                    <i class="fa-solid fa-user-circle"></i> User Details & Management
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Message Area for Modal -->
+                <div id="modalMessageArea"></div>
+                
+                <!-- User Basic Info -->
+                <div class="row mb-4">
+                    <div class="col-md-2" id="userDetailPhoto">
+                        <!-- Profile photo will be loaded here -->
+                    </div>
+                    <div class="col-md-10">
+                        <h4 id="userDetailName" class="text-primary">Loading...</h4>
+                        <p class="text-muted mb-1">
+                            <i class="fa-solid fa-envelope"></i> <span id="userDetailEmail">Loading...</span>
+                        </p>
+                        <p class="mb-2">
+                            <span class="badge bg-info me-2">ID: <span id="userDetailId">0</span></span>
+                            <span class="badge bg-secondary me-2">Role: <span id="userDetailRole">user</span></span>
+                            <span class="badge bg-success me-2">Status: <span id="userDetailStatus">active</span></span>
+                            <span class="badge bg-primary">Joined: <span id="userDetailCreatedAt">N/A</span></span>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Tabs for different sections -->
+                <ul class="nav nav-tabs" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-bs-toggle="tab" href="#currentPlanTab" role="tab">
+                            <i class="fa-solid fa-star text-warning"></i> Current Plan
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#assignPlanTab" role="tab">
+                            <i class="fa-solid fa-plus-circle text-success"></i> Assign Plan
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#transactionsTab" role="tab">
+                            <i class="fa-solid fa-credit-card text-info"></i> Recent Transactions
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <!-- Current Plan Tab -->
+                    <div class="tab-pane fade show active" id="currentPlanTab">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-gradient text-white" style="background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);">
+                                <h6 class="mb-0"><i class="fa-solid fa-star me-2"></i> Current Active Plan</h6>
+                            </div>
+                            <div class="card-body">
+                                <div id="currentPlanInfo">
+                                    <div class="text-center py-4">
+                                        <i class="fa-solid fa-spinner fa-spin fa-2x text-muted"></i>
+                                        <p class="text-muted mt-3 mb-0">Loading plan information...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Assign Plan Tab -->
+                    <div class="tab-pane fade" id="assignPlanTab">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-gradient text-white" style="background: linear-gradient(135deg, #ef4524 0%, #ff6b35 100%);">
+                                <h6 class="mb-0"><i class="fa-solid fa-gift me-2"></i> Assign New Plan to User</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold text-dark">
+                                            <i class="fa-solid fa-crown text-warning me-1"></i> Select Plan
+                                        </label>
+                                        <div class="position-relative">
+                                            <select class="form-select form-select-modern" id="assignPlanSelect" style="border: 2px solid #e2e8f0; border-radius: 8px;">
+                                                <option value="">Loading plans...</option>
+                                            </select>
+                                            <div id="planSelectIcon" class="position-absolute top-50 translate-middle-y" style="right: 35px; pointer-events: none; display: none; z-index: 10;">
+                                                <i class="fa-solid fa-crown text-warning"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold text-dark">
+                                            <i class="fa-solid fa-credit-card text-success me-1"></i> Payment Method
+                                        </label>
+                                        <div class="position-relative">
+                                            <select class="form-select form-select-modern" id="paymentMethodSelect" style="border: 2px solid #e2e8f0; border-radius: 8px;">
+                                                <option value="">Select payment method</option>
+                                                <option value="admin_assigned">Admin Assigned (Free)</option>
+                                                <option value="cash">Cash Payment</option>
+                                                <option value="bank_transfer">Bank Transfer</option>
+                                                <option value="credit_card">Credit Card</option>
+                                                <option value="other">Other</option>
+                                            </select>
+                                            <div id="paymentMethodIcon" class="position-absolute top-50 translate-middle-y" style="right: 35px; pointer-events: none; display: none; z-index: 10;">
+                                                <i class="fa-solid fa-gift text-success"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-3 d-grid">
+                                    <button class="btn btn-primary btn-lg" onclick="assignPlanToUser()" style="background: linear-gradient(135deg, #ef4524 0%, #ff6b35 100%); border: none;">
+                                        <i class="fa-solid fa-check me-2"></i> Assign Plan & Create Transaction
+                                    </button>
+                                </div>
+                                <div class="mt-3 p-3 bg-light rounded">
+                                    <small class="text-muted d-flex align-items-center">
+                                        <i class="fa-solid fa-info-circle text-primary me-2"></i> 
+                                        Assigning a plan will create a transaction record and activate the plan for this user.
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Transactions Tab -->
+                    <div class="tab-pane fade" id="transactionsTab">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-gradient text-white d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, #17a2b8 0%, #20c997 100%);">
+                                <h6 class="mb-0"><i class="fa-solid fa-history me-2"></i> Recent Transaction History</h6>
+                                <a href="#" onclick="window.open('/admin/users/'+$('#userDetailsModal').data('userId')+'/transactions', '_blank')" class="btn btn-sm btn-light">
+                                    <i class="fa-solid fa-external-link-alt me-1"></i> View All
+                                </a>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Plan</th>
+                                                <th>Amount</th>
+                                                <th>Status</th>
+                                                <th>Date</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="userTransactionsList">
+                                            <tr>
+                                                <td colspan="5" class="text-center text-muted">
+                                                    <i class="fa-solid fa-spinner fa-spin"></i> Loading transactions...
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fa-solid fa-times"></i> Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+function validateField(input, message) {
+    const $input = $(input);
+    const $feedback = $input.parent().find('.invalid-feedback');
+    if (message) {
+        $input.addClass('is-invalid');
+        $feedback.text(message).show();
+        return false;
+    } else {
+        $input.removeClass('is-invalid');
+        $feedback.hide();
+        return true;
+    }
+}
+
+function createUser() {
+    const $form = $('#createUserForm');
+    const nameInput = $form.find('[name="name"]')[0];
+    const emailInput = $form.find('[name="email"]')[0];
+    const passwordInput = $form.find('[name="password"]')[0];
+    
+    let isValid = true;
+    
+    // Validate name
+    const name = $(nameInput).val().trim();
+    if (!name || name.length < 2) {
+        validateField(nameInput, 'Name must be at least 2 characters long');
+        isValid = false;
+    } else {
+        validateField(nameInput, '');
+    }
+    
+    // Validate email
+    const email = $(emailInput).val().trim();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        validateField(emailInput, 'Please enter a valid email address');
+        isValid = false;
+    } else {
+        validateField(emailInput, '');
+    }
+    
+    // Validate password
+    const password = $(passwordInput).val();
+    if (!password || password.length < 6) {
+        validateField(passwordInput, 'Password must be at least 6 characters long');
+        isValid = false;
+    } else {
+        validateField(passwordInput, '');
+    }
+    
+    if (!isValid) return;
+    
+    const formData = new FormData($form[0]);
+    
+    $.ajax({
+        url: '/admin/users',
+        method: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function(data) {
+            showMessage(data.message, data.success ? 'success' : 'error');
+            if (data.success) {
+                $('#createUserModal').modal('hide');
+                setTimeout(() => location.reload(), 1500);
+            }
+        }
+    });
+}
+
+function editUserFromData(button) {
+    const userId = button.getAttribute('data-user-id');
+    const name = button.getAttribute('data-user-name');
+    const email = button.getAttribute('data-user-email');
+    const mobileNumber = button.getAttribute('data-user-mobile');
+    const status = button.getAttribute('data-user-status');
+    const profilePhoto = button.getAttribute('data-user-photo');
+    
+    editUser(userId, name, email, mobileNumber, status, profilePhoto);
+}
+
+function editUser(userId, name, email, mobileNumber, status, profilePhoto) {
+    $('#editUserId').val(userId);
+    $('#editUserName').val(name);
+    $('#editUserEmail').val(email);
+    $('#editUserMobile').val(mobileNumber || '');
+    $('#editUserStatus').val(status);
+    
+    // Use same template logic as table
+    let photoHtml = '';
+    if (profilePhoto && profilePhoto.trim() !== '' && profilePhoto !== 'None') {
+        photoHtml = `<img src="/static/uploads/${profilePhoto}" alt="Profile" class="rounded-circle" style="width: 80px; height: 80px; object-fit: cover;">`;
+    } else {
+        photoHtml = `<div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mx-auto" style="width: 80px; height: 80px;">
+                        <i class="fa-solid fa-user text-white fa-lg"></i>
+                     </div>`;
+    }
+    $('#editPhotoContainer').html(photoHtml);
+    
+    $('#editUserModal').modal('show');
+}
+
+function updateUser() {
+    const $form = $('#editUserForm');
+    const nameInput = $form.find('[name="name"]')[0];
+    const emailInput = $form.find('[name="email"]')[0];
+    
+    let isValid = true;
+    
+    // Validate name
+    const name = $(nameInput).val().trim();
+    if (!name || name.length < 2) {
+        validateField(nameInput, 'Name must be at least 2 characters long');
+        isValid = false;
+    } else {
+        validateField(nameInput, '');
+    }
+    
+    // Validate email
+    const email = $(emailInput).val().trim();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        validateField(emailInput, 'Please enter a valid email address');
+        isValid = false;
+    } else {
+        validateField(emailInput, '');
+    }
+    
+    if (!isValid) return;
+    
+    const userId = $('#editUserId').val();
+    
+    const formData = new FormData($form[0]);
+    
+    $.ajax({
+        url: `/admin/users/${userId}/edit`,
+        method: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function(data) {
+            showMessage(data.message, data.success ? 'success' : 'error');
+            if (data.success) {
+                $('#editUserModal').modal('hide');
+                setTimeout(() => location.reload(), 1500);
+            }
+        }
+    });
+}
+
+function deleteUser(userId) {
+    showDeleteConfirm('Are you sure you want to delete this user?', function() {
+        fetch(`/admin/users/${userId}`, {
+            method: 'DELETE'
+        })
+        .then(response => response.json())
+        .then(data => {
+            showMessage(data.message, data.success ? 'success' : 'error');
+            if (data.success) {
+                setTimeout(() => location.reload(), 1500);
+            }
+        });
+    });
+}
+
+// Message display function
+function showMessage(message, type) {
+    const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+    const alertHtml = `
+        <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    $('#messageArea').html(alertHtml);
+    setTimeout(() => {
+        $('#messageArea .alert').remove();
+    }, 5000);
+}
+
+// Modal message display function
+function showModalMessage(message, type) {
+    const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+    const iconClass = type === 'success' ? 'fa-solid fa-check-circle' : 'fa-solid fa-exclamation-triangle';
+    const borderStyle = type === 'success' ? 'border-left: 4px solid #28a745;' : 'border-left: 4px solid #dc3545;';
+    
+    const alertHtml = `
+        <div class="alert ${alertClass} alert-dismissible fade show mb-3" role="alert" style="${borderStyle}">
+            <div class="d-flex align-items-center">
+                <i class="${iconClass} me-2 fs-5"></i>
+                <span>${message}</span>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    $('#modalMessageArea').html(alertHtml);
+    
+    // Auto hide after 5 seconds for success, 7 seconds for error
+    const hideDelay = type === 'success' ? 5000 : 7000;
+    setTimeout(() => {
+        $('#modalMessageArea .alert').fadeOut(400, function() {
+            $(this).remove();
+        });
+    }, hideDelay);
+}
+
+// Server-side search is now handled by form submission
+
+function manageAISettings(userId) {
+    $('#aiUserId').val(userId);
+    
+    // Load existing AI settings
+    $.ajax({
+        url: `/admin/users/${userId}/ai-settings`,
+        method: 'GET',
+        success: function(data) {
+            if (data.success && data.settings) {
+                $('#aiOpenaiKey').val(data.settings.openai_api_key || '');
+                $('#aiOpenaiModel').val(data.settings.openai_model || 'gpt-3.5-turbo');
+                $('#aiQdrantUrl').val(data.settings.qdrant_url || '');
+                $('#aiQdrantKey').val(data.settings.qdrant_api_key || '');
+                $('#aiQdrantCollection').val(data.settings.qdrant_collection || 'user_docs');
+            } else {
+                // Set default values for new settings
+                $('#aiOpenaiKey').val('');
+                $('#aiOpenaiModel').val('gpt-3.5-turbo');
+                $('#aiQdrantUrl').val('');
+                $('#aiQdrantKey').val('');
+                $('#aiQdrantCollection').val('user_docs');
+            }
+            $('#aiSettingsModal').modal('show');
+        }
+    });
+}
+
+function saveAISettings() {
+    const $form = $('#aiSettingsForm');
+    const userId = $('#aiUserId').val();
+    
+    $.ajax({
+        url: `/admin/users/${userId}/ai-settings`,
+        method: 'POST',
+        data: $form.serialize(),
+        success: function(data) {
+            showMessage(data.message, data.success ? 'success' : 'error');
+            if (data.success) {
+                $('#aiSettingsModal').modal('hide');
+            }
+        }
+    });
+}
+
+function viewImage(imageSrc, userName) {
+    $('#imageViewSrc').attr('src', imageSrc);
+    $('#imageViewTitle').text(userName + ' - Profile Photo');
+    $('#imageViewModal').modal('show');
+}
+
+// User Details Modal Functions
+function viewUserDetails(userId) {
+    // Clear any existing modal messages
+    $('#modalMessageArea').empty();
+    
+    $.ajax({
+        url: `/admin/users/${userId}/details`,
+        method: 'GET',
+        success: function(data) {
+            if (data.success) {
+                populateUserDetailsModal(data.user, data.current_plan, data.recent_transactions, data.available_plans);
+                $('#userDetailsModal').modal('show');
+            } else {
+                showMessage(data.message, 'error');
+            }
+        }
+    });
+}
+
+function populateUserDetailsModal(user, currentPlan, recentTransactions, availablePlans) {
+    // Populate user basic info
+    $('#userDetailName').text(user.name);
+    $('#userDetailEmail').text(user.email);
+    $('#userDetailRole').text(user.role);
+    $('#userDetailStatus').text(user.status);
+    $('#userDetailId').text(user.id);
+    $('#userDetailCreatedAt').text(user.created_at || 'N/A');
+    
+    // Set user photo
+    if (user.profile_photo) {
+        $('#userDetailPhoto').html(`<img src="/static/uploads/${user.profile_photo}" alt="Profile" class="rounded-circle" width="80" height="80">`);
+    } else {
+        $('#userDetailPhoto').html(`<div class="bg-primary rounded-circle d-flex align-items-center justify-content-center text-white" style="width: 80px; height: 80px;"><i class="fa-solid fa-user fa-2x"></i></div>`);
+    }
+    
+    // Populate current plan
+    if (currentPlan) {
+        $('#currentPlanInfo').html(`
+            <div class="row">
+                <div class="col-12">
+                    <div class="p-4 rounded-3 mb-3 text-white" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); box-shadow: 0 4px 15px rgba(40, 167, 69, 0.2);">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <h5 class="mb-1 fw-bold text-white"><i class="fa-solid fa-crown me-2 text-warning"></i>${currentPlan.plan_name}</h5>
+                                <p class="mb-0 text-white" style="opacity: 0.9;">Active Subscription</p>
+                            </div>
+                            <div class="text-end">
+                                <h4 class="mb-0 fw-bold text-white">₹${currentPlan.price}</h4>
+                                <small class="text-white" style="opacity: 0.8;">per month</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <div class="bg-light p-3 rounded text-center">
+                                <i class="fa-solid fa-file-text fa-2x text-primary mb-2"></i>
+                                <h5 class="mb-1">${currentPlan.max_documents}</h5>
+                                <small class="text-muted">Documents</small>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="bg-light p-3 rounded text-center">
+                                <i class="fa-solid fa-comments fa-2x text-info mb-2"></i>
+                                <h5 class="mb-1">${currentPlan.max_chat_prompts}</h5>
+                                <small class="text-muted">Chat Prompts</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `);
+    } else {
+        $('#currentPlanInfo').html(`
+            <div class="text-center py-4">
+                <i class="fa-solid fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                <h5 class="text-muted">No Active Plan</h5>
+                <p class="text-muted mb-3">This user doesn't have any active subscription plan.</p>
+                <button class="btn btn-primary" onclick="$('.nav-link[href=\\"#assignPlanTab\\"]').tab('show')">
+                    <i class="fa-solid fa-plus me-2"></i>Assign a Plan
+                </button>
+            </div>
+        `);
+    }
+    
+    // Populate plan assignment dropdown
+    let planOptions = '<option value="">Select a plan to assign</option>';
+    availablePlans.forEach(plan => {
+        planOptions += `<option value="${plan.id}" data-price="${plan.price}">${plan.name} - ₹${plan.price}</option>`;
+    });
+    $('#assignPlanSelect').html(planOptions);
+    
+    // Populate recent transactions
+    let transactionHtml = '';
+    if (recentTransactions && recentTransactions.length > 0) {
+        recentTransactions.forEach(transaction => {
+            const statusBadge = transaction.status === 'completed' ? 'success' : 
+                              transaction.status === 'pending' ? 'warning' : 'danger';
+            transactionHtml += `
+                <tr>
+                    <td>#${transaction.id}</td>
+                    <td>${transaction.plan_name || 'N/A'}</td>
+                    <td>₹${transaction.amount}</td>
+                    <td><span class="badge bg-${statusBadge}">${transaction.status}</span></td>
+                    <td>${new Date(transaction.transaction_date).toLocaleDateString()}</td>
+                </tr>
+            `;
+        });
+    } else {
+        transactionHtml = '<tr><td colspan="5" class="text-center text-muted">No transactions found</td></tr>';
+    }
+    $('#userTransactionsList').html(transactionHtml);
+    
+    // Store user ID for plan assignment
+    $('#userDetailsModal').data('userId', user.id);
+}
+
+function assignPlanToUser() {
+    const userId = $('#userDetailsModal').data('userId');
+    const planId = $('#assignPlanSelect').val();
+    const paymentMethod = $('#paymentMethodSelect').val();
+    
+    if (!planId) {
+        showModalMessage('Please select a plan to assign', 'error');
+        return;
+    }
+    
+    if (!paymentMethod) {
+        showModalMessage('Please select a payment method', 'error');
+        return;
+    }
+    
+    $.ajax({
+        url: `/admin/users/${userId}/assign-plan`,
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        data: JSON.stringify({
+            plan_id: parseInt(planId),
+            payment_method: paymentMethod
+        }),
+        success: function(data) {
+            showModalMessage(data.message, data.success ? 'success' : 'error');
+            if (data.success) {
+                // Switch to Current Plan tab
+                $('.nav-link[href="#currentPlanTab"]').tab('show');
+                
+                // Refresh the modal data after short delay
+                setTimeout(() => {
+                    viewUserDetails(userId);
+                }, 1000);
+                
+                // Reset form
+                $('#assignPlanSelect').val('');
+                $('#paymentMethodSelect').val('');
+                $('#planSelectIcon').hide();
+                $('#paymentMethodIcon').hide();
+            }
+        },
+        error: function(xhr, status, error) {
+            showModalMessage('Failed to assign plan. Please try again.', 'error');
+        }
+    });
+}
+
+// Select Field Icon Handlers
+$(document).ready(function() {
+    // Payment Method Icon Handler
+    $('#paymentMethodSelect').change(function() {
+        const selectedValue = $(this).val();
+        const iconElement = $('#paymentMethodIcon');
+        
+        if (selectedValue) {
+            let iconClass = '';
+            let iconColor = '';
+            
+            switch(selectedValue) {
+                case 'admin_assigned':
+                    iconClass = 'fa-solid fa-gift';
+                    iconColor = 'text-success';
+                    break;
+                case 'cash':
+                    iconClass = 'fa-solid fa-money-bills';
+                    iconColor = 'text-success';
+                    break;
+                case 'bank_transfer':
+                    iconClass = 'fa-solid fa-building-columns';
+                    iconColor = 'text-primary';
+                    break;
+                case 'credit_card':
+                    iconClass = 'fa-solid fa-credit-card';
+                    iconColor = 'text-info';
+                    break;
+                case 'other':
+                    iconClass = 'fa-solid fa-ellipsis';
+                    iconColor = 'text-secondary';
+                    break;
+                default:
+                    iconElement.hide();
+                    return;
+            }
+            
+            iconElement.html(`<i class="${iconClass} ${iconColor}"></i>`);
+            iconElement.show();
+        } else {
+            iconElement.hide();
+        }
+    });
+    
+    // Plan Select Icon Handler
+    $('#assignPlanSelect').change(function() {
+        const selectedValue = $(this).val();
+        const iconElement = $('#planSelectIcon');
+        
+        if (selectedValue) {
+            iconElement.show();
+        } else {
+            iconElement.hide();
+        }
+    });
+
+    // Admin Datepicker Initialization
+    console.log("🔧 Initializing admin users datepickers...");
+    console.log("jQuery available:", typeof $ !== 'undefined');
+    console.log("Datepicker available:", typeof $.fn.datepicker !== 'undefined');
+    
+    // Wait for datepicker library to load
+    setTimeout(function() {
+      // Initialize datepickers for admin date fields
+      $(".admin-date-input").each(function() {
+      var $field = $(this);
+      var fieldId = $field.attr('id');
+      
+      try {
+        $field.datepicker({
+          format: "dd-mm-yyyy",
+          autoclose: true,
+          todayHighlight: true,
+          startDate: "01-01-1900",
+          endDate: "+0d",
+          weekStart: 1,
+          daysOfWeekHighlighted: "0,6",
+          showOnFocus: true,
+          orientation: "bottom left",
+          container: "body",
+          zIndexOffset: 50000
+        }).on("changeDate", function(e) {
+          var selectedDate = e.date;
+          if (selectedDate) {
+            var day = ("0" + selectedDate.getDate()).slice(-2);
+            var month = ("0" + (selectedDate.getMonth() + 1)).slice(-2);
+            var year = selectedDate.getFullYear();
+            $(this).val(day + "-" + month + "-" + year);
+          }
+        });
+        
+        console.log("✅ Datepicker initialized for:", fieldId);
+      } catch (error) {
+        console.error("❌ Error initializing datepicker for " + fieldId + ":", error);
+      }
+    });
+
+      // Calendar icon click handlers
+      $(".calendar-icon").on("click", function(e) {
+        e.preventDefault();
+        var $input = $(this).siblings('.admin-date-input');
+        if ($input.data('datepicker')) {
+          $input.datepicker("show");
+          console.log("📅 Datepicker opened for:", $input.attr('id'));
+        }
+      });
+      
+    }, 500); // End of setTimeout for datepicker loading
+});
+
+function exportUsers() {
+    alert('Export functionality would be implemented here');
+}
+</script>
+{% endblock %}

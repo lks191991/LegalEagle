@@ -1,0 +1,216 @@
+{% extends "base.html" %} {% block title %}Frequently Asked Questions -
+LegalEagle{% endblock %} {% block content %}
+<!-- Hero Section -->
+<section
+  class="hero-section small position-relative d-flex align-items-center justify-content-center"
+>
+  <div class="hero-overlay position-absolute top-0 start-0 w-100 h-100"></div>
+  <div
+    class="container hero-container small position-relative z-2 text-center d-flex flex-column align-items-center justify-content-center"
+  >
+    <h1 class="display-4 fw-bold text-white mb-3 hero-title">
+      <i class="fa-solid fa-question-circle me-3"></i>Frequently Asked Questions
+    </h1>
+    <p class="lead text-white mb-4">
+      Find answers to common questions about LegalEagle
+    </p>
+  </div>
+</section>
+
+<div class="container">
+  <div class="faq-container">
+    <!-- Filter Buttons -->
+    <div class="filter-buttons">
+      <button class="filter-btn active" data-category="all">All</button>
+      {% for category in faq_categories %}
+      <button class="filter-btn" data-category="{{ category }}">
+        {{ category }}
+      </button>
+      {% endfor %}
+    </div>
+
+    <!-- FAQ Items -->
+    <div id="faqContent">
+      {% if faqs %} {% set current_category = '' %} {% for faq in faqs %} {% if
+      faq.category != current_category %} {% set current_category = faq.category
+      %}
+      <div class="faq-category" data-category="{{ faq.category }}">
+        <h3 class="category-title">
+          <i class="fa fa-folder-open me-2"></i>{{ faq.category }}
+        </h3>
+        {% endif %}
+
+        <div class="faq-item" data-category="{{ faq.category }}">
+          <button class="faq-question" onclick="toggleFaq(this)">
+            <span>{{ faq.question }}</span>
+            <i class="fa fa-chevron-down faq-icon"></i>
+          </button>
+          <div class="faq-answer">{{ faq.answer|safe }}</div>
+        </div>
+
+        {% if loop.last or faqs[loop.index].category != current_category %}
+      </div>
+      {% endif %} {% endfor %} {% else %}
+      <div class="no-results">
+        <i class="fa fa-search fa-3x mb-3 text-muted"></i>
+        <h4>No FAQs Found</h4>
+        <p>We're working on adding more helpful content. Check back soon!</p>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- No Results Message (hidden by default) -->
+    <div id="noResults" class="no-results" style="display: none">
+      <i class="fa fa-search fa-3x mb-3 text-muted"></i>
+      <h4>No Results Found</h4>
+      <p>Try adjusting your search terms or browse by category.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Contact Section -->
+<div class="contact-section">
+  <div class="container">
+    <div class="contact-card">
+      <h3 class="mb-4">
+        <i class="fa fa-headset me-2 text-primary"></i>Still Have Questions?
+      </h3>
+      <p class="mb-4">
+        Can't find what you're looking for? Our support team is here to help!
+      </p>
+      <div class="row">
+        <div class="col-md-12 mb-3">
+          <a href="/contact" class="btn btn-theme feature-button">
+            <i class="fa fa-envelope me-2"></i>Contact Support
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // FAQ Toggle Function
+    function toggleFaq(button) {
+      const answer = button.nextElementSibling;
+      const icon = button.querySelector(".faq-icon");
+      const isOpen = answer.classList.contains("show");
+
+      // Close all other FAQs
+      document.querySelectorAll(".faq-answer.show").forEach((item) => {
+        if (item !== answer) {
+          item.classList.remove("show");
+          item.previousElementSibling
+            .querySelector(".faq-icon")
+            .classList.remove("rotated");
+        }
+      });
+
+      // Toggle current FAQ
+      if (isOpen) {
+        answer.classList.remove("show");
+        icon.classList.remove("rotated");
+      } else {
+        answer.classList.add("show");
+        icon.classList.add("rotated");
+      }
+    }
+
+    // Search Function
+    document
+      .getElementById("faqSearch")
+      .addEventListener("input", function (e) {
+        const searchTerm = e.target.value.toLowerCase();
+        const faqItems = document.querySelectorAll(".faq-item");
+        const categories = document.querySelectorAll(".faq-category");
+        const noResults = document.getElementById("noResults");
+        let hasResults = false;
+
+        faqItems.forEach((item) => {
+          const question = item
+            .querySelector(".faq-question span")
+            .textContent.toLowerCase();
+          const answer = item
+            .querySelector(".faq-answer")
+            .textContent.toLowerCase();
+
+          if (question.includes(searchTerm) || answer.includes(searchTerm)) {
+            item.style.display = "block";
+            hasResults = true;
+          } else {
+            item.style.display = "none";
+          }
+        });
+
+        // Show/hide categories based on visible items
+        categories.forEach((category) => {
+          const visibleItems = category.querySelectorAll(
+            '.faq-item[style="display: block;"], .faq-item:not([style*="display: none"])'
+          );
+          if (visibleItems.length > 0) {
+            category.style.display = "block";
+          } else {
+            category.style.display = "none";
+          }
+        });
+
+        // Show no results message if needed
+        noResults.style.display = hasResults ? "none" : "block";
+      });
+
+    // Category Filter Function
+    document.querySelectorAll(".filter-btn").forEach((btn) => {
+      btn.addEventListener("click", function () {
+        const category = this.getAttribute("data-category");
+
+        // Update active button
+        document
+          .querySelectorAll(".filter-btn")
+          .forEach((b) => b.classList.remove("active"));
+        this.classList.add("active");
+
+        // Clear search
+        document.getElementById("faqSearch").value = "";
+
+        // Show/hide categories
+        const categories = document.querySelectorAll(".faq-category");
+        const noResults = document.getElementById("noResults");
+        let hasResults = false;
+
+        categories.forEach((cat) => {
+          if (
+            category === "all" ||
+            cat.getAttribute("data-category") === category
+          ) {
+            cat.style.display = "block";
+            hasResults = true;
+          } else {
+            cat.style.display = "none";
+          }
+        });
+
+        // Reset all FAQ items display
+        document.querySelectorAll(".faq-item").forEach((item) => {
+          item.style.display = "block";
+        });
+
+        noResults.style.display = hasResults ? "none" : "block";
+      });
+    });
+
+    // Auto-expand FAQ if there's a hash in URL
+    document.addEventListener("DOMContentLoaded", function () {
+      if (window.location.hash) {
+        const targetId = window.location.hash.substring(1);
+        const targetFaq = document.getElementById(targetId);
+        if (targetFaq) {
+          const button = targetFaq.querySelector(".faq-question");
+          if (button) {
+            toggleFaq(button);
+            targetFaq.scrollIntoView({ behavior: "smooth", block: "center" });
+          }
+        }
+      }
+    });
+  </script>
+  {% endblock %}
+</div>

@@ -1,0 +1,70 @@
+{% extends 'admin_base.html' %} {% block title %}Contact Submissions -
+LegalEagle Admin{% endblock %} {% block admin_content %}
+<div class="container-fluid">
+  <h1 class="h2 mb-4">Contact Submissions</h1>
+
+  <!-- Simple Debug Info -->
+  <div class="alert alert-info mb-4">
+    <strong>Debug:</strong> Found {{ contact_submissions | length }} contact
+    submissions
+  </div>
+
+  <!-- Simple Table -->
+  {% if contact_submissions %}
+  <div class="card">
+    <div class="card-header">
+      <h5 class="mb-0">
+        Contact Submissions ({{ contact_submissions | length }})
+      </h5>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Status</th>
+              <th>Created</th>
+              <th>Message</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for contact in contact_submissions %}
+            <tr>
+              <td>{{ contact.id }}</td>
+              <td>{{ contact.first_name }} {{ contact.last_name }}</td>
+              <td>{{ contact.email }}</td>
+              <td>{{ contact.phone }}</td>
+              <td>
+                <span
+                  class="badge {% if contact.status == 'new' %}bg-primary{% elif contact.status == 'replied' %}bg-success{% else %}bg-secondary{% endif %}"
+                >
+                  {{ contact.status|title }}
+                </span>
+              </td>
+              <td>
+                {{ contact.created_at.strftime('%Y-%m-%d %H:%M') if
+                contact.created_at else 'N/A' }}
+              </td>
+              <td>
+                {{ contact.message[:50] }}{% if contact.message|length > 50
+                %}...{% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="alert alert-warning">
+    <h5>No Contact Submissions Found</h5>
+    <p>There are no contact submissions in the database yet.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

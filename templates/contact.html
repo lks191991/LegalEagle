@@ -1,0 +1,443 @@
+{% extends 'base.html' %} {% block title %}Contact LegalEagle - Book Demo{%
+endblock %} {% block content %}
+
+<!-- Hero Section -->
+<section
+  class="hero-section small contact position-relative d-flex align-items-center justify-content-center"
+>
+  <div class="hero-overlay position-absolute top-0 start-0 w-100 h-100"></div>
+  <div
+    class="container hero-container small position-relative z-2 text-center d-flex flex-column align-items-center justify-content-center"
+  >
+    <h1 class="display-3 fw-bold text-white mb-3 hero-title">
+      Let's Transform Your Legal Practice
+    </h1>
+    <p class="lead text-white mb-4 opacity-90 hero-subtitle">
+      Schedule a personalized demo and discover how LegalEagle can revolutionize
+      your document analysis workflow
+    </p>
+    <div class="row text-white mt-4">
+      <div class="col-md-4 mb-2 mb-md-0">
+        <i class="fa-solid fa-clock me-2"></i>
+        <span class="small">15-minute setup</span>
+      </div>
+      <div class="col-md-4 mb-2 mb-md-0">
+        <i class="fa-solid fa-shield-check me-2"></i>
+        <span class="small">Enterprise security</span>
+      </div>
+      <div class="col-md-4">
+        <i class="fa-solid fa-headset me-2"></i>
+        <span class="small">24/7 support</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Contact Form Section -->
+<section class="py-5 bg-white">
+  <div class="container">
+    <div class="row">
+      <!-- Contact Information -->
+      <div class="col-lg-4 mb-5 mb-lg-0">
+        <div class="h-100">
+          <h2 class="h3 fw-bold mb-4 text-dark">Get in Touch</h2>
+          <p class="text-muted mb-4">
+            Ready to see how LegalEagle can transform your legal document
+            workflow? We're here to help.
+          </p>
+
+          <div class="contact-info">
+            <div class="contact-item mb-4">
+              <div class="d-flex align-items-center">
+                <i class="fa-solid fa-envelope fa-lg text-accent me-3"></i>
+                <div>
+                  <h6 class="fw-semibold text-dark mb-1">Email Us</h6>
+                  <p class="text-muted small mb-0">
+                    {{ settings.contact_email or 'support@legaleagle.ai' }}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="contact-item mb-4">
+              <div class="d-flex align-items-center">
+                <i class="fa-solid fa-phone fa-lg text-accent me-3"></i>
+                <div>
+                  <h6 class="fw-semibold text-dark mb-1">Call Us</h6>
+                  <p class="text-muted small mb-0">
+                    {{ settings.contact_phone or '+1 (555) 123-4567' }}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="contact-item mb-4">
+              <div class="d-flex align-items-center">
+                <i class="fa-solid fa-clock fa-lg text-accent me-3"></i>
+                <div>
+                  <h6 class="fw-semibold text-dark mb-1">Business Hours</h6>
+                  <p class="text-muted small mb-0">
+                    {{ settings.business_hours or 'Mon - Fri: 9AM - 6PM EST' }}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="contact-item">
+              <div class="d-flex align-items-center">
+                <i class="fa-solid fa-headset fa-lg text-accent me-3"></i>
+                <div>
+                  <h6 class="fw-semibold text-dark mb-1">Support</h6>
+                  <p class="text-muted small mb-0">
+                    {{ settings.support_description or '24/7 Priority Support
+                    for Enterprise' }}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contact Form -->
+      <div class="col-lg-8">
+        <div class="card-box">
+          <h2 class="h3 fw-bold text-center mb-4 text-dark">
+            <i class="fa-solid fa-envelope text-accent me-2"></i>
+            Contact Us
+          </h2>
+          <p class="text-center text-muted mb-4">
+            Tell us about your needs and we'll get back to you with the right
+            solution
+          </p>
+
+          <form
+            id="contact-form"
+            action="/submit-contact"
+            method="POST"
+            class="needs-validation"
+            novalidate
+          >
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="name" class="form-label fw-semibold text-dark"
+                  >Full Name *</label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  id="name"
+                  name="name"
+                  required
+                  placeholder="Enter your full name"
+                  {%
+                  if
+                  user
+                  %}value="{{ user.name if user.name else '' }}"
+                  {%
+                  endif
+                  %}
+                />
+                <div class="invalid-feedback">
+                  Please provide your full name.
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label for="email" class="form-label fw-semibold text-dark"
+                  >Email Address *</label
+                >
+                <input
+                  type="email"
+                  class="form-control"
+                  id="email"
+                  name="email"
+                  required
+                  placeholder="Enter your email address"
+                  {%
+                  if
+                  user
+                  %}value="{{ user.email }}"
+                  {%
+                  endif
+                  %}
+                />
+                <div class="invalid-feedback">
+                  Please provide a valid email address.
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label for="phone" class="form-label fw-semibold text-dark"
+                  >Phone Number *</label
+                >
+                <input
+                  type="tel"
+                  class="form-control"
+                  id="phone"
+                  name="phone"
+                  required
+                  placeholder="Enter your phone number"
+                  {%
+                  if
+                  user
+                  and
+                  user.mobile_number
+                  %}value="{{ user.mobile_number }}"
+                  {%
+                  endif
+                  %}
+                />
+                <div class="invalid-feedback">
+                  Please provide your phone number.
+                </div>
+              </div>
+              <div class="col-12">
+                <label for="message" class="form-label fw-semibold text-dark"
+                  >Tell us about your needs *</label
+                >
+                <textarea
+                  class="form-control"
+                  id="message"
+                  name="message"
+                  rows="5"
+                  required
+                  placeholder="Please describe your legal practice needs, challenges you're facing, or how we can help you..."
+                ></textarea>
+                <div class="invalid-feedback">
+                  Please tell us about your needs.
+                </div>
+              </div>
+              <div class="col-12 text-center mt-4">
+                <button
+                  type="submit"
+                  class="btn btn-theme btn-lg px-5 py-3 fw-semibold rounded-pill"
+                >
+                  <i class="fa-solid fa-paper-plane me-2"></i>Send Message
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- What You'll See in the Demo -->
+<section class="py-5 bg-light-gray">
+  <div class="container">
+    <div class="row justify-content-center mb-5">
+      <div class="col-lg-8 text-center">
+        <h2 class="h1 fw-bold text-dark mb-3">What You'll See in Your Demo</h2>
+        <p class="lead text-muted">
+          A personalized walkthrough tailored to your practice
+        </p>
+      </div>
+    </div>
+    <div class="row g-4">
+      <div class="col-lg-4 col-md-6">
+        <div class="demo-feature bg-white rounded-3 p-4 h-100 text-center">
+          <i class="fa-solid fa-upload fa-3x text-accent mb-3"></i>
+          <h5 class="fw-bold text-dark mb-3">Document Upload Process</h5>
+          <p class="text-muted mb-0">
+            See how quickly you can upload and process your legal documents with
+            our AI-powered system.
+          </p>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-6">
+        <div class="demo-feature bg-white rounded-3 p-4 h-100 text-center">
+          <i class="fa-solid fa-comments fa-3x text-accent mb-3"></i>
+          <h5 class="fw-bold text-dark mb-3">Interactive Q&A</h5>
+          <p class="text-muted mb-0">
+            Ask questions about your documents and get instant, accurate
+            responses with source citations.
+          </p>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-6">
+        <div class="demo-feature bg-white rounded-3 p-4 h-100 text-center">
+          <i class="fa-solid fa-search fa-3x text-accent mb-3"></i>
+          <h5 class="fw-bold text-dark mb-3">Advanced Search</h5>
+          <p class="text-muted mb-0">
+            Experience semantic search that understands legal context, not just
+            keywords.
+          </p>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-6">
+        <div class="demo-feature bg-white rounded-3 p-4 h-100 text-center">
+          <i class="fa-solid fa-shield-alt fa-3x text-accent mb-3"></i>
+          <h5 class="fw-bold text-dark mb-3">Security Features</h5>
+          <p class="text-muted mb-0">
+            Learn about our enterprise-grade security measures that protect your
+            sensitive data.
+          </p>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-6">
+        <div class="demo-feature bg-white rounded-3 p-4 h-100 text-center">
+          <i class="fa-solid fa-chart-bar fa-3x text-accent mb-3"></i>
+          <h5 class="fw-bold text-dark mb-3">Analytics Dashboard</h5>
+          <p class="text-muted mb-0">
+            View usage analytics, document insights, and optimize your legal
+            research workflow.
+          </p>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-6">
+        <div class="demo-feature bg-white rounded-3 p-4 h-100 text-center">
+          <i class="fa-solid fa-cogs fa-3x text-accent mb-3"></i>
+          <h5 class="fw-bold text-dark mb-3">Integration Options</h5>
+          <p class="text-muted mb-0">
+            Discover how LegalEagle integrates with your existing legal tech
+            stack and workflows.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Contact Info Section -->
+<section class="py-5 bg-white">
+  <div class="container">
+    <div class="text-center mb-5">
+      <h2 class="h1 fw-bold text-dark mb-3">
+        We're Here to Support Your Success
+      </h2>
+      <p class="lead text-muted">
+        Multiple ways to get help when you need it most
+      </p>
+    </div>
+    <div class="row g-4">
+      <div class="col-lg-3 col-md-6 text-center">
+        <div class="support-box bg-light-gray rounded-3 p-4 h-100">
+          <div class="mb-3">
+            <i class="fa-solid fa-phone fa-3x text-accent"></i>
+          </div>
+          <h5 class="fw-bold text-dark mb-3">Phone Support</h5>
+          <p class="text-muted mb-3">
+            {{ settings.contact_phone or '+1 (555) 123-4567' }}
+          </p>
+          <small class="text-muted"
+            >{{ settings.business_hours or 'Mon - Fri: 9AM - 6PM EST' }}</small
+          >
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6 text-center">
+        <div class="support-box bg-light-gray rounded-3 p-4 h-100">
+          <div class="mb-3">
+            <i class="fa-solid fa-envelope fa-3x text-accent"></i>
+          </div>
+          <h5 class="fw-bold text-dark mb-3">Email Support</h5>
+          <p class="text-muted mb-3">
+            {{ settings.contact_email or 'support@legaleagle.ai' }}
+          </p>
+          <small class="text-muted"
+            >{{ settings.support_response_time or 'Response within 2 hours
+            during business hours' }}</small
+          >
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6 text-center">
+        <div class="support-box bg-light-gray rounded-3 p-4 h-100">
+          <div class="mb-3">
+            <i class="fa-solid fa-headset fa-3x text-accent"></i>
+          </div>
+          <h5 class="fw-bold text-dark mb-3">Live Chat</h5>
+          <p class="text-muted mb-3">
+            {{ settings.live_chat_description or 'Instant help available' }}
+          </p>
+          <small class="text-muted"
+            >{{ settings.live_chat_availability or '24/7 for Enterprise
+            customers' }}</small
+          >
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6 text-center">
+        <div class="support-box bg-light-gray rounded-3 p-4 h-100">
+          <div class="mb-3">
+            <i class="fa-solid fa-book fa-3x text-accent"></i>
+          </div>
+          <h5 class="fw-bold text-dark mb-3">Knowledge Base</h5>
+          <p class="text-muted mb-3">
+            {{ settings.knowledge_base_description or 'Comprehensive
+            documentation' }}
+          </p>
+          <small class="text-muted"
+            >{{ settings.knowledge_base_details or 'Self-service help articles &
+            guides' }}</small
+          >
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% from 'base_macros.html' import cta_section %} {{ cta_section( title="Ready to
+Get Started?", subtitle="Join hundreds of law firms already using LegalEagle to
+revolutionize their practice", primary_text="Start Free Trial",
+primary_link="/upload", secondary_text="View Pricing",
+secondary_link="/subscription" ) }} {% endblock %} {% block scripts %}
+<script>
+  $(document).ready(function () {
+    // Form validation and submission
+    $("#contact-form").on("submit", function (e) {
+      e.preventDefault();
+
+      if (this.checkValidity()) {
+        // Show loading state
+        const submitBtn = $(this).find('button[type="submit"]');
+        const originalBtnText = submitBtn.html();
+        submitBtn
+          .html('<i class="fa-solid fa-spinner fa-spin me-2"></i>Sending...')
+          .prop("disabled", true);
+
+        // Get form data
+        const formData = new FormData(this);
+        const data = Object.fromEntries(formData);
+
+        // Submit form data to backend
+        $.ajax({
+          url: "/submit-contact",
+          type: "POST",
+          data: formData,
+          processData: false,
+          contentType: false,
+          success: function (response) {
+            if (response.success) {
+              // Show success message
+              $("#contact-form").html(`
+                <div class="text-center py-5">
+                  <i class="fa-solid fa-check-circle fa-4x text-success mb-3"></i>
+                  <h3 class="fw-bold text-success">Message Sent!</h3>
+                  <p class="lead">Thank you ${
+                    data.firstName
+                  }! We have received your message and will get back to you within 24 hours.</p>
+                  <p class="text-muted">Our team will contact you at ${
+                    data.phone
+                  } or ${data.email}.</p>
+                  ${
+                    response.email_sent
+                      ? '<p class="small text-success"><i class="fa-solid fa-envelope me-1"></i> Email notification sent to admin</p>'
+                      : ""
+                  }
+                </div>
+              `);
+            } else {
+              alert("Error: " + response.error);
+              submitBtn.html(originalBtnText).prop("disabled", false);
+            }
+          },
+          error: function (xhr) {
+            alert("Error submitting form. Please try again.");
+            submitBtn.html(originalBtnText).prop("disabled", false);
+          },
+        });
+      }
+
+      this.classList.add("was-validated");
+    });
+  });
+</script>
+{% endblock %}

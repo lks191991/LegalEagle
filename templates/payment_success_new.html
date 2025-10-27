@@ -1,0 +1,293 @@
+{% extends 'base.html' %} {% block title %}Payment Successful - Welcome to
+LegalEagle{% endblock %} {% block content %}
+<!-- Hero Section -->
+<section
+  class="hero-section small success position-relative d-flex align-items-center justify-content-center"
+>
+  <div class="hero-overlay position-absolute top-0 start-0 w-100 h-100"></div>
+  <div
+    class="container hero-container small position-relative z-2 text-center d-flex flex-column align-items-center justify-content-center"
+  >
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <div class="mb-4">
+          <div
+            class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-4"
+            style="width: 100px; height: 100px"
+          >
+            <i
+              class="fa-solid fa-check text-success"
+              style="font-size: 3rem"
+            ></i>
+          </div>
+        </div>
+        <h1 class="display-4 fw-bold text-white mb-4">
+          Payment Successful! 🎉
+        </h1>
+        <p class="lead text-white mb-5">
+          Welcome to LegalEagle! Your subscription is now active and you have
+          full access to all features.
+        </p>
+        <div class="d-flex justify-content-center gap-3">
+          <a
+            href="/dashboard"
+            class="btn btn-theme btn-lg px-4 py-3 rounded-pill"
+          >
+            <i class="fa-solid fa-gauge-high me-2"></i>Go to Dashboard
+          </a>
+          <a
+            href="/upload"
+            class="btn btn-outline-light btn-lg px-4 py-3 rounded-pill"
+          >
+            <i class="fa-solid fa-upload me-2"></i>Upload Documents
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Subscription Details -->
+<section class="py-5 bg-white">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <div class="card-box">
+          <div class="text-center mb-4">
+            <h3 class="fw-bold text-dark mb-3">
+              <i class="fa-solid fa-crown text-warning me-2"></i>Your
+              Subscription Details
+            </h3>
+          </div>
+
+          <div class="row g-4">
+            <!-- Plan Info -->
+            <div class="col-md-6">
+              <div class="bg-light p-4 rounded">
+                <h5 class="fw-bold text-dark mb-3">Plan Information</h5>
+                <div class="mb-3">
+                  <div
+                    class="d-flex justify-content-between align-items-center mb-2"
+                  >
+                    <span class="text-muted">Plan Name:</span>
+                    <span class="fw-bold text-dark"
+                      >{{ plan.name if plan else 'Premium Plan' }}</span
+                    >
+                  </div>
+                  <div
+                    class="d-flex justify-content-between align-items-center mb-2"
+                  >
+                    <span class="text-muted">Monthly Cost:</span>
+                    <span class="fw-bold text-accent"
+                      >₹{{ "%.0f"|format(plan.price) if plan else '8200'
+                      }}/month</span
+                    >
+                  </div>
+                  <div
+                    class="d-flex justify-content-between align-items-center"
+                  >
+                    <span class="text-muted">Status:</span>
+                    <span class="badge bg-success px-3 py-2">Active</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Usage Limits -->
+            <div class="col-md-6">
+              <div class="bg-accent bg-opacity-10 p-4 rounded">
+                <h5 class="fw-bold text-dark mb-3">Your Limits</h5>
+                <div class="row text-center">
+                  <div class="col-6">
+                    <div class="fw-bold h4 text-accent mb-1">
+                      {{ plan.max_documents if plan else '50' }}
+                    </div>
+                    <small class="text-muted">Documents</small>
+                  </div>
+                  <div class="col-6">
+                    <div class="fw-bold h4 text-accent mb-1">
+                      {{ plan.max_chat_prompts if plan else '500' }}
+                    </div>
+                    <small class="text-muted">AI Chats/Month</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Next Steps -->
+          <div class="mt-5">
+            <h4 class="fw-bold text-dark mb-4 text-center">
+              <i class="fa-solid fa-rocket text-primary me-2"></i>Next Steps
+            </h4>
+            <div class="row g-4">
+              <div class="col-md-4 text-center">
+                <div
+                  class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                  style="width: 60px; height: 60px"
+                >
+                  <i class="fa-solid fa-upload text-primary fa-lg"></i>
+                </div>
+                <h6 class="fw-bold text-dark mb-2">1. Upload Documents</h6>
+                <p class="text-muted small">
+                  Start by uploading your legal documents for AI analysis
+                </p>
+              </div>
+
+              <div class="col-md-4 text-center">
+                <div
+                  class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                  style="width: 60px; height: 60px"
+                >
+                  <i class="fa-solid fa-comments text-success fa-lg"></i>
+                </div>
+                <h6 class="fw-bold text-dark mb-2">2. Chat with AI</h6>
+                <p class="text-muted small">
+                  Ask questions about your documents and get instant insights
+                </p>
+              </div>
+
+              <div class="col-md-4 text-center">
+                <div
+                  class="bg-warning bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                  style="width: 60px; height: 60px"
+                >
+                  <i class="fa-solid fa-chart-line text-warning fa-lg"></i>
+                </div>
+                <h6 class="fw-bold text-dark mb-2">3. Track Progress</h6>
+                <p class="text-muted small">
+                  Monitor your usage and get detailed analytics
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Support Info -->
+          <div class="bg-info bg-opacity-10 p-4 rounded mt-4">
+            <div class="row align-items-center">
+              <div class="col-md-8">
+                <h6 class="fw-bold text-dark mb-2">
+                  <i class="fa-solid fa-headset text-info me-2"></i>Need Help
+                  Getting Started?
+                </h6>
+                <p class="text-muted mb-0">
+                  Our support team is here to help you make the most of
+                  LegalEagle
+                </p>
+              </div>
+              <div class="col-md-4 text-end">
+                <a href="/contact" class="btn btn-outline-info px-4 py-2">
+                  <i class="fa-solid fa-phone me-2"></i>Contact Support
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Features Showcase -->
+<section class="py-5 bg-light">
+  <div class="container">
+    <div class="text-center mb-5">
+      <h3 class="fw-bold text-dark mb-3">What You Can Do Now</h3>
+      <p class="text-muted">
+        Explore the powerful features now available in your subscription
+      </p>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-lg-4 col-md-6">
+        <div class="feature-box text-center h-100">
+          <div class="mb-3">
+            <i class="fa-solid fa-brain fa-3x text-primary"></i>
+          </div>
+          <h5 class="fw-bold text-dark mb-3">AI Document Analysis</h5>
+          <p class="text-muted">
+            Get instant insights, summaries, and key points from your legal
+            documents
+          </p>
+        </div>
+      </div>
+
+      <div class="col-lg-4 col-md-6">
+        <div class="feature-box text-center h-100">
+          <div class="mb-3">
+            <i class="fa-solid fa-magnifying-glass fa-3x text-success"></i>
+          </div>
+          <h5 class="fw-bold text-dark mb-3">Smart Search</h5>
+          <p class="text-muted">
+            Find specific clauses, terms, and information across all your
+            documents
+          </p>
+        </div>
+      </div>
+
+      <div class="col-lg-4 col-md-6">
+        <div class="feature-box text-center h-100">
+          <div class="mb-3">
+            <i class="fa-solid fa-robot fa-3x text-warning"></i>
+          </div>
+          <h5 class="fw-bold text-dark mb-3">Legal AI Assistant</h5>
+          <p class="text-muted">
+            Ask questions and get expert-level answers about your legal
+            documents
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %} {% block scripts %}
+<script>
+  // Confetti animation for celebration
+  function createConfetti() {
+    const colors = ["#ef4524", "#28a745", "#ffc107", "#17a2b8", "#6f42c1"];
+    const confettiCount = 50;
+
+    for (let i = 0; i < confettiCount; i++) {
+      setTimeout(() => {
+        const confetti = document.createElement("div");
+        confetti.style.cssText = `
+                position: fixed;
+                top: -10px;
+                left: ${Math.random() * 100}vw;
+                width: 10px;
+                height: 10px;
+                background: ${
+                  colors[Math.floor(Math.random() * colors.length)]
+                };
+                z-index: 1000;
+                pointer-events: none;
+                animation: fall 3s linear forwards;
+            `;
+
+        document.body.appendChild(confetti);
+
+        setTimeout(() => {
+          confetti.remove();
+        }, 3000);
+      }, i * 100);
+    }
+  }
+
+  // Add CSS for confetti animation
+  const style = document.createElement("style");
+  style.textContent = `
+    @keyframes fall {
+        to {
+            transform: translateY(100vh) rotate(360deg);
+        }
+    }
+`;
+  document.head.appendChild(style);
+
+  // Start confetti animation
+  document.addEventListener("DOMContentLoaded", () => {
+    setTimeout(createConfetti, 500);
+  });
+</script>
+{% endblock %}

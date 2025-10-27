@@ -1,0 +1,133 @@
+{% extends 'base.html' %} {% block title %}Payment Successful - LegalEagle{%
+endblock %} {% block content %}
+<!-- Success Section -->
+<section class="py-5 bg-white">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-6">
+        <div class="card-box text-center">
+          <div class="mb-4">
+            <i class="fa-solid fa-check-circle fa-4x text-success mb-3"></i>
+            <h2 class="fw-bold text-dark">Payment Successful!</h2>
+            <p class="lead text-dark">Welcome to your new subscription</p>
+          </div>
+
+          <div class="bg-light-gray p-4 rounded mb-4">
+            <h5 class="fw-bold text-dark mb-3">Subscription Details</h5>
+            <div class="row">
+              <div class="col-6 text-start">
+                <strong class="text-dark">Plan:</strong>
+              </div>
+              <div class="col-6 text-end">
+                <span class="text-dark"
+                  >{{ plan.name if plan else 'Premium Plan' }}</span
+                >
+              </div>
+            </div>
+            <hr />
+            <div class="row">
+              <div class="col-6 text-start">
+                <strong class="text-dark">Amount:</strong>
+              </div>
+              <div class="col-6 text-end">
+                <span class="text-dark"
+                  >₹{{ "%.0f"|format(plan.price) }}/month</span
+                >
+              </div>
+            </div>
+            <hr />
+            <div class="row">
+              <div class="col-6 text-start">
+                <strong class="text-dark">Next Billing:</strong>
+              </div>
+              <div class="col-6 text-end">
+                <span class="text-dark"
+                  >{{ (session.created + 2592000) | strftime('%B %d, %Y') if
+                  session and session.created else 'November 8, 2025' }}</span
+                >
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <h6 class="fw-bold text-dark mb-3">What happens now?</h6>
+            <div class="text-start">
+              <div class="d-flex align-items-start mb-2">
+                <i class="fa-solid fa-check text-success me-3 mt-1"></i>
+                <small class="text-dark"
+                  >Your account has been upgraded immediately</small
+                >
+              </div>
+              <div class="d-flex align-items-start mb-2">
+                <i class="fa-solid fa-check text-success me-3 mt-1"></i>
+                <small class="text-dark"
+                  >You now have access to all premium features</small
+                >
+              </div>
+              <div class="d-flex align-items-start mb-2">
+                <i class="fa-solid fa-check text-success me-3 mt-1"></i>
+                <small class="text-dark"
+                  >A receipt has been sent to your email</small
+                >
+              </div>
+            </div>
+          </div>
+
+          <div class="d-grid gap-2">
+            <a href="/dashboard" class="btn btn-theme px-4 py-2 fw-semibold">
+              <i class="fa-solid fa-tachometer-alt me-2"></i>Go to Dashboard
+            </a>
+            <a
+              href="/upload"
+              class="btn btn-outline-theme px-4 py-2 fw-semibold"
+            >
+              <i class="fa-solid fa-upload me-2"></i>Upload Your First Document
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Features Preview -->
+<section class="py-5 bg-light-gray">
+  <div class="container">
+    <div class="text-center mb-4">
+      <h4 class="fw-bold text-dark">Your Premium Features Are Now Active</h4>
+    </div>
+    <div class="row g-4">
+      <div class="col-md-3">
+        <div class="card-box text-center">
+          <i class="fa-solid fa-infinity fa-2x text-accent mb-3"></i>
+          <h6 class="fw-bold text-dark">Unlimited Documents</h6>
+          <p class="text-dark small">Upload as many documents as you need</p>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card-box text-center">
+          <i class="fa-solid fa-brain fa-2x text-accent mb-3"></i>
+          <h6 class="fw-bold text-dark">Advanced AI</h6>
+          <p class="text-dark small">
+            Get more detailed and accurate responses
+          </p>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card-box text-center">
+          <i class="fa-solid fa-headset fa-2x text-accent mb-3"></i>
+          <h6 class="fw-bold text-dark">Priority Support</h6>
+          <p class="text-dark small">Get help faster with priority queue</p>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card-box text-center">
+          <i class="fa-solid fa-users fa-2x text-accent mb-3"></i>
+          <h6 class="fw-bold text-dark">Team Collaboration</h6>
+          <p class="text-dark small">Share documents with your team</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

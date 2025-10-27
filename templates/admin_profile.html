@@ -1,0 +1,285 @@
+{% extends 'admin_base.html' %} {% block title %}Profile - LegalEagle Admin{%
+endblock %} {% block page_title %}My Profile{% endblock %} {% block content %}
+<!-- Message Display -->
+<div id="messageArea"></div>
+
+<div class="row">
+  <div class="col-md-8">
+    <div class="card-box">
+      <h5 class="text-dark mb-4">Profile Information</h5>
+      <form id="profileForm" enctype="multipart/form-data">
+        <div class="mb-4 text-center">
+          <div class="mb-3">
+            {% if user.profile_photo %}
+            <img
+              src="/static/uploads/{{ user.profile_photo }}"
+              alt="Profile"
+              class="rounded-circle"
+              style="width: 100px; height: 100px; object-fit: cover"
+              id="currentProfilePhoto"
+            />
+            {% else %}
+            <div
+              class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mx-auto"
+              style="width: 100px; height: 100px"
+              id="defaultProfileIcon"
+            >
+              <i class="fa-solid fa-user text-white fa-2x"></i>
+            </div>
+            {% endif %}
+          </div>
+          <input
+            type="file"
+            class="form-control"
+            name="profile_photo"
+            accept="image/*"
+            id="profilePhotoInput"
+          />
+          <small class="text-muted">JPG, PNG, GIF up to 2MB</small>
+        </div>
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label fw-semibold text-dark">Name</label>
+            <input
+              type="text"
+              class="form-control"
+              name="name"
+              value="{{ user.name }}"
+              required
+            />
+            <div class="invalid-feedback"></div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label fw-semibold text-dark">Email</label>
+            <input
+              type="email"
+              class="form-control"
+              name="email"
+              value="{{ user.email }}"
+              required
+            />
+            <div class="invalid-feedback"></div>
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold text-dark">Role</label>
+          <input
+            type="text"
+            class="form-control"
+            value="{{ user.role|title }}"
+            readonly
+          />
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold text-dark">Status</label>
+          <span
+            class="badge bg-{% if user.status == 'active' %}success{% else %}danger{% endif %} ms-2"
+            >{{ user.status|title }}</span
+          >
+        </div>
+        <button type="button" class="btn btn-primary" onclick="updateProfile()">
+          Update Profile
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card-box">
+      <h5 class="text-dark mb-4">Change Password</h5>
+      <form id="passwordForm">
+        <div class="mb-3">
+          <label class="form-label fw-semibold text-dark"
+            >Current Password</label
+          >
+          <input
+            type="password"
+            class="form-control"
+            name="current_password"
+            required
+          />
+          <div class="invalid-feedback"></div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold text-dark">New Password</label>
+          <input
+            type="password"
+            class="form-control"
+            name="new_password"
+            required
+          />
+          <div class="invalid-feedback"></div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold text-dark"
+            >Confirm New Password</label
+          >
+          <input
+            type="password"
+            class="form-control"
+            name="confirm_password"
+            required
+          />
+          <div class="invalid-feedback"></div>
+        </div>
+        <button
+          type="button"
+          class="btn btn-warning"
+          onclick="changePassword()"
+        >
+          Change Password
+        </button>
+      </form>
+    </div>
+
+    <div class="card-box mt-4">
+      <h6 class="text-dark mb-3">Account Information</h6>
+      <div class="mb-2">
+        <small class="text-muted">Member Since:</small><br />
+        <span class="text-dark"
+          >{{ user.created_at if user.created_at else 'N/A' }}</span
+        >
+      </div>
+      <div class="mb-2">
+        <small class="text-muted">Last Updated:</small><br />
+        <span class="text-dark"
+          >{{ user.updated_at if user.updated_at else 'N/A' }}</span
+        >
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block scripts %}
+<script>
+  function validateField(input, message) {
+    const $input = $(input);
+    const $feedback = $input.parent().find(".invalid-feedback");
+    if (message) {
+      $input.addClass("is-invalid");
+      $feedback.text(message).show();
+      return false;
+    } else {
+      $input.removeClass("is-invalid");
+      $feedback.hide();
+      return true;
+    }
+  }
+
+  function updateProfile() {
+    const $form = $("#profileForm");
+    const nameInput = $form.find('[name="name"]')[0];
+    const emailInput = $form.find('[name="email"]')[0];
+
+    let isValid = true;
+
+    // Validate name
+    const name = $(nameInput).val().trim();
+    if (!name || name.length < 2) {
+      validateField(nameInput, "Name must be at least 2 characters long");
+      isValid = false;
+    } else {
+      validateField(nameInput, "");
+    }
+
+    // Validate email
+    const email = $(emailInput).val().trim();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      validateField(emailInput, "Please enter a valid email address");
+      isValid = false;
+    } else {
+      validateField(emailInput, "");
+    }
+
+    if (!isValid) return;
+
+    $.ajax({
+      url: "/admin/profile",
+      method: "POST",
+      data: new FormData($form[0]),
+      processData: false,
+      contentType: false,
+      success: function (data) {
+        showMessage(data.message, data.success ? "success" : "error");
+        if (data.success) {
+          setTimeout(() => location.reload(), 1500);
+        }
+      },
+    });
+  }
+
+  function changePassword() {
+    const $form = $("#passwordForm");
+    const currentPasswordInput = $form.find('[name="current_password"]')[0];
+    const newPasswordInput = $form.find('[name="new_password"]')[0];
+    const confirmPasswordInput = $form.find('[name="confirm_password"]')[0];
+
+    let isValid = true;
+
+    // Validate current password
+    const currentPassword = $(currentPasswordInput).val();
+    if (!currentPassword) {
+      validateField(currentPasswordInput, "Current password is required");
+      isValid = false;
+    } else {
+      validateField(currentPasswordInput, "");
+    }
+
+    // Validate new password
+    const newPassword = $(newPasswordInput).val();
+    if (!newPassword || newPassword.length < 6) {
+      validateField(
+        newPasswordInput,
+        "New password must be at least 6 characters long"
+      );
+      isValid = false;
+    } else {
+      validateField(newPasswordInput, "");
+    }
+
+    // Validate confirm password
+    const confirmPassword = $(confirmPasswordInput).val();
+    if (confirmPassword !== newPassword) {
+      validateField(confirmPasswordInput, "Passwords do not match");
+      isValid = false;
+    } else {
+      validateField(confirmPasswordInput, "");
+    }
+
+    if (!isValid) return;
+
+    const formData = {
+      name: $('#profileForm [name="name"]').val(),
+      email: $('#profileForm [name="email"]').val(),
+      current_password: currentPassword,
+      new_password: newPassword,
+    };
+
+    $.ajax({
+      url: "/admin/profile",
+      method: "POST",
+      data: formData,
+      success: function (data) {
+        showMessage(data.message, data.success ? "success" : "error");
+        if (data.success) {
+          $form[0].reset();
+        }
+      },
+    });
+  }
+
+  // Message display function
+  function showMessage(message, type) {
+    const alertClass = type === "success" ? "alert-success" : "alert-danger";
+    const alertHtml = `
+        <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    $("#messageArea").html(alertHtml);
+    setTimeout(() => {
+      $("#messageArea .alert").remove();
+    }, 5000);
+  }
+</script>
+{% endblock %}

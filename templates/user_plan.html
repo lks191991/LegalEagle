@@ -1,0 +1,260 @@
+{% extends 'base.html' %} {% block title %}My Plan - LegalEagle{% endblock %} {%
+block content %}
+
+<!-- Hero Section -->
+<section
+  class="hero-section small position-relative d-flex align-items-center justify-content-center"
+>
+  <div class="hero-overlay position-absolute top-0 start-0 w-100 h-100"></div>
+  <div
+    class="container hero-container small position-relative z-2 text-center d-flex flex-column align-items-center justify-content-center"
+  >
+    <h1 class="display-4 fw-bold text-white mb-3 hero-title">
+      My Plan & Usage
+    </h1>
+    <p class="lead text-white mb-4">Monitor your usage and upgrade your plan</p>
+  </div>
+</section>
+
+<!-- Plan Dashboard -->
+<section class="py-5 bg-white">
+  <div class="container">
+    <!-- Access Message Alert -->
+    {% if request.query_params.get('message') %}
+    <div class="row mb-4">
+      <div class="col-12">
+        <div
+          class="alert alert-warning alert-dismissible fade show"
+          role="alert"
+        >
+          <i class="fa-solid fa-exclamation-triangle me-2"></i>
+          <strong>Access Restricted:</strong> You need an active plan to access
+          <strong
+            >{{ request.query_params.get('feature', 'this feature') }}</strong
+          >. Please choose a plan below to continue.
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="alert"
+            aria-label="Close"
+          ></button>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="row">
+      <!-- Current Plan Info -->
+      <div class="col-lg-8">
+        <div class="card-box mb-4">
+          <h4 class="fw-bold text-dark mb-4">
+            <i class="fa-solid fa-crown me-2 text-accent"></i>Current Plan
+          </h4>
+
+          {% if user_plan %}
+          <div class="row">
+            <div class="col-md-6">
+              <div
+                class="bg-light-gray p-4 rounded text-center border"
+                style="border-color: #ef4524 !important"
+              >
+                <h3 class="text-accent mb-2">{{ user_plan.plan_name }}</h3>
+                {% if user_plan.plan_type == 'free' %}
+                <span class="badge bg-secondary">Free Plan</span>
+                {% else %}
+                <span
+                  class="badge"
+                  style="background-color: #ef4524; color: white"
+                  >₹{{ user_plan.plan_price or 0 }}/month</span
+                >
+                {% endif %} {% if user_plan.end_date %}
+                <p class="mt-2 mb-0 text-muted">
+                  <small
+                    >Expires: {{ user_plan.end_date.strftime('%B %d, %Y') if
+                    user_plan.end_date else 'Never' }}</small
+                  >
+                </p>
+                {% endif %}
+              </div>
+            </div>
+            <div class="col-md-6">
+              <h6 class="fw-bold text-dark mb-3">Usage Summary</h6>
+              <div class="mb-3">
+                <div class="d-flex justify-content-between mb-1">
+                  <small class="text-muted">Documents</small>
+                  <small class="text-muted"
+                    >{{ user_plan.used_documents }}/{{ user_plan.max_documents
+                    }}</small
+                  >
+                </div>
+                <div class="progress">
+                  <div
+                    class="progress-bar {% if doc_percentage > 80 %}bg-danger{% elif doc_percentage > 60 %}bg-warning{% else %}progress-bar-theme{% endif %}"
+                    style="width: {{ doc_percentage }}%"
+                  ></div>
+                </div>
+              </div>
+              <div class="mb-3">
+                <div class="d-flex justify-content-between mb-1">
+                  <small class="text-muted">Chat Prompts</small>
+                  <small class="text-muted"
+                    >{{ user_plan.used_prompts }}/{{ user_plan.max_prompts
+                    }}</small
+                  >
+                </div>
+                <div class="progress">
+                  <div
+                    class="progress-bar {% if prompt_percentage > 80 %}bg-danger{% elif prompt_percentage > 60 %}bg-warning{% else %}progress-bar-theme{% endif %}"
+                    style="width: {{ prompt_percentage }}%"
+                  ></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% else %}
+          <!-- No Plan State -->
+          <div class="text-center py-4">
+            <i class="fa-solid fa-crown fa-3x text-muted mb-3"></i>
+            <h4 class="text-dark mb-3">No Active Plan</h4>
+            <p class="text-muted mb-4">
+              You haven't purchased any plan yet. Choose a plan below to get
+              started with LegalEagle's AI-powered legal assistance.
+            </p>
+            <div class="row">
+              <div class="col-md-6 mx-auto">
+                <div
+                  class="card border-2"
+                  style="border-color: #ef4524 !important"
+                >
+                  <div class="card-body text-center">
+                    <h5 class="card-title text-accent">Free Trial Available</h5>
+                    <p class="card-text text-muted">
+                      Limited features • 2 Documents • 10 Chat prompts
+                    </p>
+                    <small class="text-muted"
+                      >Choose a paid plan for unlimited access</small
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+
+        {% if user_plan and (doc_percentage > 80 or prompt_percentage > 80) %}
+        <div class="card-box mb-4">
+          <div class="alert alert-warning">
+            <h5 class="alert-heading">
+              <i class="fa-solid fa-exclamation-triangle me-2"></i>Usage Alert
+            </h5>
+            <p class="mb-0">
+              {% if doc_percentage > 80 %} You're running low on document
+              uploads ({{ user_plan.used_documents }}/{{ user_plan.max_documents
+              }} used). {% endif %} {% if prompt_percentage > 80 %} You're
+              running low on chat prompts ({{ user_plan.used_prompts }}/{{
+              user_plan.max_prompts }} used). {% endif %} Consider upgrading
+              your plan to continue using LegalEagle without interruption.
+            </p>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Upgrade Options -->
+      <div class="col-lg-4">
+        <div class="card-box">
+          <h5 class="fw-bold text-dark mb-4">
+            <i class="fa-solid fa-rocket me-2 text-accent"></i>Upgrade Your Plan
+          </h5>
+
+          {% if user_plan and user_plan.plan_type == 'free' %}
+          <div
+            class="alert"
+            style="
+              background-color: rgba(239, 69, 36, 0.1);
+              border-color: #ef4524;
+              color: #d63d1f;
+            "
+          >
+            <small
+              >You're currently on the Free Plan. Upgrade to get more
+              features!</small
+            >
+          </div>
+          {% endif %}
+
+          <!-- Smart Plan Display Logic -->
+          {% set shown_plans = [] %} {% for plan in available_plans %} {% set
+          show_plan = false %} {% if user_plan %} {# User has a plan - only show
+          upgrades (higher priced plans) #} {% if plan.price >
+          (user_plan.plan_price or 0) and plan.name.lower() != 'free' %} {% set
+          show_plan = true %} {% endif %} {% else %} {# User has no plan - show
+          all paid plans (no free plan, it's one-time only) #} {% if
+          plan.name.lower() != 'free' %} {% set show_plan = true %} {% endif %}
+          {% endif %} {% if show_plan %} {% set _ = shown_plans.append(plan) %}
+          <div
+            class="border rounded p-3 mb-3"
+            style="border-color: #ef4524 !important"
+          >
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <h6 class="fw-bold text-dark mb-0">{{ plan.name }}</h6>
+              {% if user_plan and plan.price > (user_plan.plan_price or 0) %}
+              <span class="badge bg-success">Upgrade</span>
+              {% endif %}
+            </div>
+            <div class="h5 text-accent mb-2">
+              ₹{{ "%.0f"|format(plan.price) }}/month {% if user_plan and
+              plan.price > (user_plan.plan_price or 0) %}
+              <small class="text-muted d-block"
+                >+₹{{ "%.0f"|format(plan.price - (user_plan.plan_price or 0)) }}
+                from current plan</small
+              >
+              {% endif %}
+            </div>
+            <ul class="list-unstyled small mb-3">
+              <li>
+                <i class="fa-solid fa-check text-accent me-2"></i>{{
+                plan.max_documents }} Documents
+              </li>
+              <li>
+                <i class="fa-solid fa-check text-accent me-2"></i>{{
+                plan.max_chat_prompts }} Chat Prompts/month
+              </li>
+            </ul>
+            <a
+              href="/subscribe/{{ plan.id }}"
+              class="btn btn-theme btn-sm w-100"
+            >
+              {% if user_plan %}
+              <i class="fa-solid fa-arrow-up me-1"></i>Upgrade to {{ plan.name
+              }} {% else %} <i class="fa-solid fa-crown me-1"></i>Choose {{
+              plan.name }} {% endif %}
+            </a>
+          </div>
+          {% endif %} {% endfor %} {% if not shown_plans %}
+          <div class="text-center p-4 bg-success bg-opacity-10 rounded">
+            <i class="fa-solid fa-star fa-2x text-success mb-3"></i>
+            <h5 class="text-success fw-bold">You're on the Premium Plan!</h5>
+            <p class="text-muted mb-0">
+              You have access to all available features.
+            </p>
+          </div>
+          {% endif %}
+
+          <div class="text-center mt-4">
+            <a href="/subscription" class="btn btn-outline-theme">
+              <i class="fa-solid fa-eye me-2 text-accent"></i>View All Plans
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% from 'base_macros.html' import cta_section %} {{ cta_section( title="Need
+More Features?", subtitle="Upgrade your plan to unlock unlimited documents, chat
+prompts, and premium support", primary_text="Upgrade Plan",
+primary_link="/subscription", secondary_text="Contact Support",
+secondary_link="/contact" ) }} {% endblock %}

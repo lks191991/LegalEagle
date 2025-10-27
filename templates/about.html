@@ -1,0 +1,417 @@
+{% extends 'base.html' %} {% block title %}About LegalEagle - AI Legal
+Assistant{% endblock %} {% block content %}
+
+<!-- Hero Section -->
+<section
+  class="hero-section small about position-relative d-flex align-items-center justify-content-center"
+  style="
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    min-height: 250px;
+  "
+>
+  <div
+    class="hero-overlay position-absolute top-0 start-0 w-100 h-100"
+    style="background: rgba(0, 0, 0, 0.5)"
+  ></div>
+  <div class="container position-relative text-center" style="z-index: 10">
+    <h1
+      class="display-3 fw-bold text-white mb-4"
+      style="
+        text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+        color: #ffffff !important;
+      "
+    >
+      Transforming Legal Practice with AI
+    </h1>
+    <p
+      class="lead text-white mb-4"
+      style="
+        text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7);
+        color: #ffffff !important;
+        opacity: 0.95;
+      "
+    >
+      LegalEagle combines cutting-edge artificial intelligence with deep legal
+      expertise to revolutionize how legal professionals interact with
+      documents.
+    </p>
+    <div class="d-flex justify-content-center gap-3 flex-wrap">
+      <a href="/contact" class="btn btn-theme px-4 py-3 fw-semibold">
+        <i class="fa-solid fa-calendar me-2"></i>Schedule Demo
+      </a>
+      <a
+        href="/subscription"
+        class="btn btn-outline-light px-4 py-3 fw-semibold"
+      >
+        <i class="fa-solid fa-tags me-2"></i>View Pricing
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Mission Section -->
+<section class="py-4 bg-white">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-lg-6 mb-3 mb-lg-0">
+        <h2 class="h1 fw-bold text-dark mb-4">Our Mission</h2>
+        <p class="lead text-muted mb-4">
+          We believe that legal professionals should spend their time on
+          high-value strategic work, not searching through documents for
+          information.
+        </p>
+        <p class="text-muted mb-4">
+          LegalEagle was born from the frustration of countless hours spent
+          manually reviewing contracts, agreements, and legal documents. Our
+          AI-powered platform transforms this tedious process into an
+          intelligent, instant conversation with your documents.
+        </p>
+        <div class="row g-3">
+          <div class="col-sm-6">
+            <div class="d-flex align-items-center">
+              <i class="fa-solid fa-check-circle text-accent me-2"></i>
+              <span class="text-dark fw-semibold"
+                >Save 90% of research time</span
+              >
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="d-flex align-items-center">
+              <i class="fa-solid fa-check-circle text-accent me-2"></i>
+              <span class="text-dark fw-semibold">99.9% accuracy rate</span>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="d-flex align-items-center">
+              <i class="fa-solid fa-check-circle text-accent me-2"></i>
+              <span class="text-dark fw-semibold"
+                >Enterprise-grade security</span
+              >
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="d-flex align-items-center">
+              <i class="fa-solid fa-check-circle text-accent me-2"></i>
+              <span class="text-dark fw-semibold">24/7 support</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="position-relative">
+          <div class="bg-accent rounded-3 p-5 text-white text-center">
+            <i class="fa-solid fa-quote-left fa-3x mb-4 opacity-50"></i>
+            <h4 class="fw-bold mb-3" style="color: #fff">
+              "Legal technology should enhance human intelligence, not replace
+              it."
+            </h4>
+            <p class="mb-0 opacity-90">- LegalEagle Founding Team</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Technology Stack Section -->
+<section class="py-4 bg-light-gray">
+  <div class="container">
+    <div class="row justify-content-center mb-3">
+      <div class="col-lg-8 text-center">
+        <h2 class="h1 mb-3 text-dark fw-bold">Cutting-Edge Technology Stack</h2>
+        <p class="lead text-muted">
+          Built on proven technologies and industry-leading AI models for
+          maximum reliability and performance
+        </p>
+      </div>
+    </div>
+
+    <div class="row g-4 mb-5">
+      <div class="col-lg-6">
+        <div class="technology-box bg-white rounded-3 p-4 h-100 border">
+          <div class="d-flex align-items-center mb-3">
+            <i class="fa-solid fa-robot fa-2x text-accent me-3"></i>
+            <h4 class="fw-bold text-dark mb-0">Advanced AI Models</h4>
+          </div>
+          <p class="text-muted mb-3">
+            Powered by OpenAI's GPT-4 and specialized legal language models
+            trained on vast legal corpora. Our multi-tier AI system ensures
+            accurate, contextual responses.
+          </p>
+          <ul class="list-unstyled">
+            <li class="mb-1">
+              <i class="fa-solid fa-check text-accent me-2"></i>Natural language
+              processing
+            </li>
+            <li class="mb-1">
+              <i class="fa-solid fa-check text-accent me-2"></i>Legal context
+              understanding
+            </li>
+            <li>
+              <i class="fa-solid fa-check text-accent me-2"></i>Multi-document
+              analysis
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="technology-box bg-white rounded-3 p-4 h-100 border">
+          <div class="d-flex align-items-center mb-3">
+            <i class="fa-solid fa-database fa-2x text-accent me-3"></i>
+            <h4 class="fw-bold text-dark mb-0">Vector Database Technology</h4>
+          </div>
+          <p class="text-muted mb-3">
+            Qdrant vector database with advanced semantic search capabilities.
+            Your documents are converted to embeddings for lightning-fast,
+            context-aware retrieval.
+          </p>
+          <ul class="list-unstyled">
+            <li class="mb-1">
+              <i class="fa-solid fa-check text-accent me-2"></i>Semantic search
+            </li>
+            <li class="mb-1">
+              <i class="fa-solid fa-check text-accent me-2"></i>Real-time
+              indexing
+            </li>
+            <li>
+              <i class="fa-solid fa-check text-accent me-2"></i>Scalable
+              architecture
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="technology-box bg-white rounded-3 p-4 h-100 border">
+          <div class="d-flex align-items-center mb-3">
+            <i class="fa-solid fa-shield-alt fa-2x text-accent me-3"></i>
+            <h4 class="fw-bold text-dark mb-0">Enterprise Security</h4>
+          </div>
+          <p class="text-muted mb-3">
+            Bank-level encryption, secure cloud infrastructure, and compliance
+            with legal industry standards. Your data is protected at every
+            layer.
+          </p>
+          <ul class="list-unstyled">
+            <li class="mb-1">
+              <i class="fa-solid fa-check text-accent me-2"></i>End-to-end
+              encryption
+            </li>
+            <li class="mb-1">
+              <i class="fa-solid fa-check text-accent me-2"></i>SOC 2 compliance
+            </li>
+            <li>
+              <i class="fa-solid fa-check text-accent me-2"></i>Data residency
+              options
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="technology-box bg-white rounded-3 p-4 h-100 border">
+          <div class="d-flex align-items-center mb-3">
+            <i class="fa-solid fa-cogs fa-2x text-accent me-3"></i>
+            <h4 class="fw-bold text-dark mb-0">FastAPI Backend</h4>
+          </div>
+          <p class="text-muted mb-3">
+            High-performance Python backend with FastAPI framework. Ensures
+            rapid response times and seamless integration capabilities.
+          </p>
+          <ul class="list-unstyled">
+            <li class="mb-1">
+              <i class="fa-solid fa-check text-accent me-2"></i>RESTful API
+              design
+            </li>
+            <li class="mb-1">
+              <i class="fa-solid fa-check text-accent me-2"></i>Async processing
+            </li>
+            <li>
+              <i class="fa-solid fa-check text-accent me-2"></i>Auto-scaling
+              infrastructure
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- How It Works Steps -->
+    <div class="row justify-content-center mb-4">
+      <div class="col-lg-8 text-center">
+        <h3 class="h2 mb-4 text-dark fw-bold">How LegalEagle Works</h3>
+      </div>
+    </div>
+    <div class="row g-4">
+      <div class="col-lg-2 col-md-4">
+        <div class="feature-box text-center h-100 py-4">
+          <i class="fa-solid fa-upload fa-3x text-accent mb-3"></i>
+          <h6 class="fw-bold mb-2 text-dark">1. Upload</h6>
+          <p class="text-dark small mb-0">
+            Secure document ingestion with OCR processing
+          </p>
+        </div>
+      </div>
+      <div class="col-lg-2 col-md-4">
+        <div class="feature-box text-center h-100 py-4">
+          <i class="fa-solid fa-file-lines fa-3x text-accent mb-3"></i>
+          <h6 class="fw-bold mb-2 text-dark">2. Extract</h6>
+          <p class="text-dark small mb-0">Advanced text & structure analysis</p>
+        </div>
+      </div>
+      <div class="col-lg-2 col-md-4">
+        <div class="feature-box text-center h-100 py-4">
+          <i class="fa-solid fa-microchip fa-3x text-accent mb-3"></i>
+          <h6 class="fw-bold mb-2 text-dark">3. Process</h6>
+          <p class="text-dark small mb-0">
+            AI understanding & knowledge creation
+          </p>
+        </div>
+      </div>
+      <div class="col-lg-2 col-md-4">
+        <div class="feature-box text-center h-100 py-4">
+          <i class="fa-solid fa-magnifying-glass fa-3x text-accent mb-3"></i>
+          <h6 class="fw-bold mb-2 text-dark">4. Search</h6>
+          <p class="text-dark small mb-0">Intelligent document retrieval</p>
+        </div>
+      </div>
+      <div class="col-lg-2 col-md-4">
+        <div class="feature-box text-center h-100 py-4">
+          <i class="fa-solid fa-scale-balanced fa-3x text-accent mb-3"></i>
+          <h6 class="fw-bold mb-2 text-dark">5. Analyze</h6>
+          <p class="text-dark small mb-0">Legal analysis & recommendations</p>
+        </div>
+      </div>
+      <div class="col-lg-2 col-md-4">
+        <div class="feature-box text-center h-100 py-4">
+          <i class="fa-solid fa-comments fa-3x text-accent mb-3"></i>
+          <h6 class="fw-bold mb-2 text-dark">6. Respond</h6>
+          <p class="text-dark small mb-0">Instant AI-powered answers</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Why Choose LegalEagle -->
+<section class="py-5 bg-light-gray">
+  <div class="container">
+    <div class="row justify-content-center mb-5">
+      <div class="col-lg-8 text-center">
+        <h2 class="h1 mb-3 text-dark fw-bold">
+          Why Law Firms Choose LegalEagle
+        </h2>
+        <p class="lead text-dark">
+          Transform your practice with proven results that matter
+        </p>
+      </div>
+    </div>
+    <div class="row g-4">
+      <div class="col-lg-4">
+        <div class="feature-box h-100 text-center p-4">
+          <i class="fa-solid fa-clock fa-3x text-accent mb-3"></i>
+          <h5 class="fw-bold mb-3 text-dark">Save 40+ Hours Weekly</h5>
+          <p class="text-dark mb-0">
+            Eliminate tedious research tasks. Get comprehensive legal answers in
+            seconds, not hours, and focus on high-value client work.
+          </p>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="feature-box h-100 text-center p-4">
+          <i class="fa-solid fa-rocket fa-3x text-accent mb-3"></i>
+          <h5 class="fw-bold mb-3 text-dark">10x Faster Results</h5>
+          <p class="text-dark mb-0">
+            Complete document reviews and legal research in minutes. Deliver
+            faster turnarounds that impress clients and win cases.
+          </p>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="feature-box h-100 text-center p-4">
+          <i class="fa-solid fa-chart-line fa-3x text-accent mb-3"></i>
+          <h5 class="fw-bold mb-3 text-dark">Scale Without Hiring</h5>
+          <p class="text-dark mb-0">
+            Handle 5x more cases with your current team. AI-powered research
+            scales your capacity without overhead costs.
+          </p>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="feature-box h-100 text-center p-4">
+          <i class="fa-solid fa-shield-check fa-3x text-accent mb-3"></i>
+          <h5 class="fw-bold mb-3 text-dark">Reduce Legal Risks</h5>
+          <p class="text-dark mb-0">
+            Multi-layer AI verification catches what humans miss. Never overlook
+            critical clauses or precedents again.
+          </p>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="feature-box h-100 text-center p-4">
+          <i class="fa-solid fa-trophy fa-3x text-accent mb-3"></i>
+          <h5 class="fw-bold mb-3 text-dark">Win More Cases</h5>
+          <p class="text-dark mb-0">
+            Superior research quality leads to stronger arguments. Build winning
+            cases with comprehensive AI-powered analysis.
+          </p>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="feature-box h-100 text-center p-4">
+          <i class="fa-solid fa-handshake fa-3x text-accent mb-3"></i>
+          <h5 class="fw-bold mb-3 text-dark">Happier Clients</h5>
+          <p class="text-dark mb-0">
+            Faster responses and thorough analysis increase client satisfaction
+            by 60%. Build lasting relationships with superior service.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Stats Section -->
+<section class="py-5 bg-white">
+  <div class="container">
+    <div class="row justify-content-center mb-5">
+      <div class="col-lg-8 text-center">
+        <h2 class="h1 mb-3 text-dark fw-bold">
+          Trusted by Legal Professionals
+        </h2>
+        <p class="lead text-dark">
+          Join the growing community of law firms transforming their practice
+        </p>
+      </div>
+    </div>
+    <div class="row g-4 text-center">
+      <div class="col-lg-3 col-md-6">
+        <div class="feature-box h-100 p-4">
+          <div class="h2 fw-bold text-accent mb-2">500+</div>
+          <h6 class="fw-bold text-dark mb-0">Law Firms</h6>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6">
+        <div class="feature-box h-100 p-4">
+          <div class="h2 fw-bold text-accent mb-2">10M+</div>
+          <h6 class="fw-bold text-dark mb-0">Documents Processed</h6>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6">
+        <div class="feature-box h-100 p-4">
+          <div class="h2 fw-bold text-accent mb-2">98%</div>
+          <h6 class="fw-bold text-dark mb-0">Accuracy Rate</h6>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6">
+        <div class="feature-box h-100 p-4">
+          <div class="h2 fw-bold text-accent mb-2">24/7</div>
+          <h6 class="fw-bold text-dark mb-0">AI Availability</h6>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% from 'base_macros.html' import cta_section %} {{ cta_section( title="Ready to
+Transform Your Practice?", subtitle="Join 500+ law firms already using
+LegalEagle to work smarter, faster, and more profitably", primary_text="Schedule
+Free Demo", primary_link="/contact", secondary_text="View Pricing Plans",
+secondary_link="/subscription" ) }} {% endblock %}

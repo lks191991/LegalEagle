@@ -1,101 +1,305 @@
-{% extends 'base.html' %} {% block title %}LegalEagle - Home{% endblock %} {%
-block content %}
-<div class="container py-5" style="min-height: 100vh">
-  <div class="row justify-content-center">
-    <div class="col-md-10">
-      <div class="card shadow-lg border-0" style="background: #ffffff">
-        <div
-          class="card-header"
-          style="background: #2563eb; color: #fff; border-radius: 8px 8px 0 0"
-        >
-          <h2 class="mb-0">
-            <i
-              class="fa-solid fa-scale-balanced me-2"
-              style="color: #ffd700"
-            ></i>
-            LegalEagle
-          </h2>
-          <small style="color: #e0e7ef"
-            >AI-powered legal document assistant using RAG technology</small
-          >
+{% extends 'base.html' %} {% block title %}LegalEagle - AI Legal Assistant{%
+endblock %} {% block content %}
+
+<!-- Hero Section -->
+<section
+  class="hero-section position-relative d-flex align-items-center justify-content-center"
+>
+  <div class="hero-overlay position-absolute top-0 start-0 w-100 h-100"></div>
+  <div class="container position-relative text-center hero-content">
+    <h1 class="display-2 fw-bold text-white mb-4">
+      AI-Powered Legal Document Intelligence
+    </h1>
+    <p class="lead text-white mb-4">
+      Upload your legal documents and get instant, intelligent answers powered
+      by advanced AI technology. Transform your legal practice with document
+      analysis that understands context.
+    </p>
+    <div class="d-flex justify-content-center gap-3 flex-wrap mb-4">
+      <a href="/signup" class="btn btn-theme btn-lg px-5 py-3 fw-semibold">
+        <i class="fa-solid fa-rocket me-2"></i>Start Free Trial
+      </a>
+      <a
+        href="/about"
+        class="btn btn-outline-light btn-lg px-5 py-3 fw-semibold"
+      >
+        <i class="fa-solid fa-play me-2"></i>Learn More
+      </a>
+    </div>
+    <p class="text-white small mb-0">
+      <i class="fa-solid fa-shield-check me-1"></i>
+      Trusted by 500+ legal professionals • Enterprise-grade security
+    </p>
+  </div>
+</section>
+
+<!-- Stats Section -->
+<section class="py-3 stats-section">
+  <div class="container">
+    <div class="row text-center text-white g-0">
+      <div class="col-3">
+        <div class="stat-item py-2">
+          <h4 class="fw-bold mb-1">10,000+</h4>
+          <p class="small mb-0">Documents Analyzed</p>
         </div>
-        <div class="card-body" style="background: #f4f7fb">
-          <div class="row text-center mb-4">
-            <div class="col-md-12">
-              <p class="lead" style="color: #2563eb; font-size: 1.25rem">
-                Upload your legal documents and ask questions to get instant,
-                contextual answers.
-              </p>
-              <div class="d-flex justify-content-center gap-3 mb-4">
-                <a
-                  href="/upload"
-                  class="btn btn-primary btn-lg"
-                  style="background: #415a77; border: none"
-                >
-                  <i class="fa-solid fa-file-upload me-2"></i> Upload Documents
-                </a>
-                <a href="/chat" class="btn btn-outline-primary btn-lg">
-                  <i class="fa-solid fa-comments me-2"></i> Start Chatting
-                </a>
-              </div>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-md-4 mb-4">
-              <div class="card h-100 shadow-sm border-0">
-                <div class="card-body text-center">
-                  <h5 class="card-title">
-                    <i
-                      class="fa-solid fa-file-upload me-2"
-                      style="color: #2563eb"
-                    ></i>
-                    Upload Documents
-                  </h5>
-                  <p class="card-text">
-                    Upload PDF or text files containing legal documents,
-                    contracts, or regulations.
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-4 mb-4">
-              <div class="card h-100 shadow-sm border-0">
-                <div class="card-body text-center">
-                  <h5 class="card-title">
-                    <i
-                      class="fa-solid fa-magnifying-glass me-2"
-                      style="color: #2563eb"
-                    ></i>
-                    Semantic Search
-                  </h5>
-                  <p class="card-text">
-                    Advanced vector search finds relevant information from your
-                    documents instantly.
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-4 mb-4">
-              <div class="card h-100 shadow-sm border-0">
-                <div class="card-body text-center">
-                  <h5 class="card-title">
-                    <i
-                      class="fa-solid fa-robot me-2"
-                      style="color: #2563eb"
-                    ></i>
-                    AI Answers
-                  </h5>
-                  <p class="card-text">
-                    Get intelligent answers powered by OpenAI GPT with source
-                    citations.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
+      </div>
+      <div class="col-3">
+        <div class="stat-item py-2">
+          <h4 class="fw-bold mb-1">500+</h4>
+          <p class="small mb-0">Legal Professionals</p>
+        </div>
+      </div>
+      <div class="col-3">
+        <div class="stat-item py-2">
+          <h4 class="fw-bold mb-1">90%</h4>
+          <p class="small mb-0">Time Saved</p>
+        </div>
+      </div>
+      <div class="col-3">
+        <div class="stat-item py-2">
+          <h4 class="fw-bold mb-1">99.9%</h4>
+          <p class="small mb-0">Accuracy Rate</p>
         </div>
       </div>
     </div>
   </div>
-</div>
-{% endblock %}
+</section>
+<!-- How It Works Section -->
+<section class="how-it-works-section">
+  <div class="container">
+    <div class="row justify-content-center mb-5">
+      <div class="col-lg-8 text-center">
+        <h2 class="section-title display-4">How It Works</h2>
+        <p class="section-subtitle">
+          From upload to intelligent answers in seconds
+        </p>
+      </div>
+    </div>
+    <div class="row g-4 justify-content-center">
+      <div class="col-lg-4 col-md-6">
+        <div class="step-box text-center">
+          <div class="step-icon">
+            <span class="step-number">1</span>
+            <i class="fa-solid fa-cloud-upload-alt"></i>
+          </div>
+          <h5 class="step-title">Upload Document</h5>
+          <p class="step-description">
+            Upload your legal documents in PDF or text format. Our system
+            supports contracts, agreements, and all legal document types.
+          </p>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-6">
+        <div class="step-box text-center">
+          <div class="step-icon">
+            <span class="step-number">2</span>
+            <i class="fa-solid fa-cogs"></i>
+          </div>
+          <h5 class="step-title">AI Processing</h5>
+          <p class="step-description">
+            Advanced AI extracts text, creates intelligent chunks, and generates
+            vector embeddings for semantic understanding.
+          </p>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-6">
+        <div class="step-box text-center">
+          <div class="step-icon">
+            <span class="step-number">3</span>
+            <i class="fa-solid fa-comments"></i>
+          </div>
+          <h5 class="step-title">Ask Questions</h5>
+          <p class="step-description">
+            Ask questions in plain English and get instant, accurate answers
+            with exact document references and explanations.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- Key Features Section -->
+<section class="features-section">
+  <div class="container">
+    <div class="row justify-content-center mb-5">
+      <div class="col-lg-8 text-center">
+        <h2 class="display-4 fw-bold text-dark">
+          Why Legal Professionals Choose LegalEagle
+        </h2>
+        <p class="lead text-muted">
+          Advanced AI technology designed specifically for legal document
+          analysis
+        </p>
+      </div>
+    </div>
+    <div class="row g-4">
+      <div class="col-lg-4 col-md-6">
+        <div class="feature-box text-center">
+          <div class="feature-icon mb-3">
+            <i class="fa-solid fa-clock fa-3x"></i>
+          </div>
+          <h5 class="feature-title mb-3">Save 90% Research Time</h5>
+          <p class="feature-description">
+            Get instant answers from your legal documents. No more hours of
+            manual searching through pages of contracts and agreements.
+          </p>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-6">
+        <div class="feature-box text-center">
+          <div class="feature-icon mb-3">
+            <i class="fa-solid fa-brain fa-3x"></i>
+          </div>
+          <h5 class="feature-title mb-3">Advanced AI Understanding</h5>
+          <p class="feature-description">
+            Our AI doesn't just search keywords - it understands legal context,
+            clauses, and relationships within your documents.
+          </p>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-6">
+        <div class="feature-box text-center">
+          <div class="feature-icon mb-3">
+            <i class="fa-solid fa-shield-alt fa-3x"></i>
+          </div>
+          <h5 class="feature-title mb-3">Enterprise Security</h5>
+          <p class="feature-description">
+            Bank-level encryption, secure storage, and complete data privacy.
+            Your sensitive legal documents remain confidential.
+          </p>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-6">
+        <div class="feature-box text-center">
+          <div class="feature-icon mb-3">
+            <i class="fa-solid fa-search fa-3x"></i>
+          </div>
+          <h5 class="feature-title mb-3">Smart Document Search</h5>
+          <p class="feature-description">
+            Vector-based semantic search finds relevant information even when
+            you don't know the exact terms or phrases.
+          </p>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-6">
+        <div class="feature-box text-center">
+          <div class="feature-icon mb-3">
+            <i class="fa-solid fa-comments fa-3x"></i>
+          </div>
+          <h5 class="feature-title mb-3">Interactive Q&A</h5>
+          <p class="feature-description">
+            Ask questions in plain English and get detailed answers with exact
+            document references and source citations.
+          </p>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-6">
+        <div class="feature-box text-center">
+          <div class="feature-icon mb-3">
+            <i class="fa-solid fa-chart-line fa-3x"></i>
+          </div>
+          <h5 class="feature-title mb-3">Usage Analytics</h5>
+          <p class="feature-description">
+            Track your document usage, query patterns, and optimize your legal
+            research workflow with detailed insights.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="testimonials-section">
+  <div class="container">
+    <div class="row justify-content-center mb-5">
+      <div class="col-lg-8 text-center">
+        <h2 class="display-4 fw-bold text-dark">
+          Trusted by Legal Professionals
+        </h2>
+        <p class="lead text-muted">See what our users say about LegalEagle</p>
+      </div>
+    </div>
+    <div class="row g-4">
+      <div class="col-lg-4">
+        <div class="testimonial-box">
+          <div class="stars mb-3">
+            <i class="fa-solid fa-star"></i>
+            <i class="fa-solid fa-star"></i>
+            <i class="fa-solid fa-star"></i>
+            <i class="fa-solid fa-star"></i>
+            <i class="fa-solid fa-star"></i>
+          </div>
+          <p class="mb-3">
+            "LegalEagle has revolutionized how I handle document review. What
+            used to take hours now takes minutes."
+          </p>
+          <div class="author">
+            <strong>Sarah Johnson</strong><br />
+            <small>Corporate Lawyer, Johnson & Associates</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="testimonial-box">
+          <div class="stars mb-3">
+            <i class="fa-solid fa-star"></i>
+            <i class="fa-solid fa-star"></i>
+            <i class="fa-solid fa-star"></i>
+            <i class="fa-solid fa-star"></i>
+            <i class="fa-solid fa-star"></i>
+          </div>
+          <p class="mb-3">
+            "The AI understands legal nuances better than any other tool I've
+            used. Highly accurate and reliable."
+          </p>
+          <div class="author">
+            <strong>Michael Chen</strong><br />
+            <small>Partner, Chen Legal Group</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="testimonial-box">
+          <div class="stars mb-3">
+            <i class="fa-solid fa-star"></i>
+            <i class="fa-solid fa-star"></i>
+            <i class="fa-solid fa-star"></i>
+            <i class="fa-solid fa-star"></i>
+            <i class="fa-solid fa-star"></i>
+          </div>
+          <p class="mb-3">
+            "Security and privacy were my biggest concerns, but LegalEagle
+            exceeded all expectations."
+          </p>
+          <div class="author">
+            <strong>Emma Rodriguez</strong><br />
+            <small>Solo Practitioner</small>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row mt-5 justify-content-center">
+      <div class="col-lg-6 text-center">
+        <a
+          href="/signup"
+          class="btn btn-theme btn-lg px-5 py-3 fw-semibold me-3"
+        >
+          <i class="fa-solid fa-user-plus me-2"></i>Start Free Trial
+        </a>
+        <a
+          href="/contact"
+          class="btn btn-outline-theme btn-lg px-5 py-3 fw-semibold"
+        >
+          <i class="fa-solid fa-calendar me-2"></i>Schedule Demo
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% from 'base_macros.html' import cta_section %} {{ cta_section( title="Ready to
+Transform Your Legal Workflow?", subtitle="Sign up now and experience AI-powered
+legal assistance that will revolutionize your practice", primary_text="Start
+Free Trial", primary_link="/signup", secondary_text="Contact Us",
+secondary_link="/contact" ) }} {% endblock %}

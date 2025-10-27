@@ -1,150 +1,617 @@
 {% extends 'base.html' %} {% block title %}LegalEagle - Chat{% endblock %} {%
 block content %}
-<div class="container py-5" style="min-height: 100vh">
-  <div class="row justify-content-center">
-    <div class="col-md-10">
-      <div class="card shadow-lg border-0" style="background: #ffffff">
-        <div
-          class="card-header"
-          style="background: #2563eb; color: #fff; border-radius: 8px 8px 0 0"
-        >
-          <div class="d-flex justify-content-between align-items-center">
+
+<!-- Chat Interface Section -->
+<section class="py-5 bg-white chat-section">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-12">
+        <div class="card-box">
+          <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
-              <h3 class="mb-0">
-                <i class="fa-solid fa-comments me-2"></i> LegalEagle Chat
-                Assistant
+              <h3 class="mb-0 text-dark">
+                <i class="fa-solid fa-comments me-2 text-accent"></i> LegalEagle
+                Chat Assistant
               </h3>
-              <small style="color: #e0e7ef" id="chat-subtitle"
+              <small class="text-dark" id="chat-subtitle"
                 >Ask questions about your uploaded legal documents</small
               >
             </div>
-            <div class="ms-3">
-              <select
-                id="document-select-header"
-                class="form-select"
-                required
-                style="
-                  min-width: 250px;
-                  background: #fff;
-                  color: #333;
-                  border: 2px solid #dc3545;
-                "
-              >
-                <option value="">Loading documents...</option>
-              </select>
+            <div class="ms-3 document-selector-container">
+              <!-- Autocomplete Document Selector -->
+              <div class="autocomplete-wrapper position-relative">
+                <div class="input-group">
+                  <span class="input-group-text bg-light">
+                    <i class="fa-solid fa-file-text text-muted"></i>
+                  </span>
+                  <input
+                    type="text"
+                    class="form-control autocomplete-input"
+                    id="document-autocomplete"
+                    placeholder="Select or search documents..."
+                    autocomplete="off"
+                    readonly
+                    style="min-width: 280px; cursor: pointer"
+                  />
+                  <button
+                    class="btn btn-outline-secondary dropdown-toggle-btn"
+                    type="button"
+                    id="document-dropdown-btn"
+                    title="Show all documents"
+                  >
+                    <i class="fa-solid fa-chevron-down"></i>
+                  </button>
+                </div>
+
+                <!-- Autocomplete Dropdown -->
+                <div
+                  class="autocomplete-dropdown"
+                  id="autocomplete-dropdown"
+                  style="display: none"
+                >
+                  <!-- Items will be populated here -->
+                </div>
+
+                <!-- Hidden select for form submission -->
+                <select
+                  id="document-select-hidden"
+                  style="display: none"
+                  name="selected_document"
+                >
+                  <option value="">No document selected</option>
+                </select>
+              </div>
+
+              <!-- Document Count Info -->
+              <small class="text-muted d-block mt-1">
+                <span id="document-count-info">Loading...</span>
+              </small>
             </div>
           </div>
-        </div>
-        <div class="card-body" style="background: #f4f7fb">
-          <div
-            id="chat-window"
-            style="
-              height: 500px;
-              overflow-y: auto;
-              background: #f4f7fb;
-              border-radius: 8px;
-              padding: 15px;
-              margin-bottom: 20px;
-              border: 1px solid #e3e8ee;
-            "
-          >
-            <div class="text-muted text-center py-5">
-              <i
-                class="fa-solid fa-comments fa-3x mb-3"
-                style="color: #2563eb"
-              ></i>
-              <p style="color: #6b7280">
-                Welcome! Upload documents first, then ask your legal questions
-                here.
+
+          <div id="chat-window" class="chat-window">
+            <div class="text-center py-5" id="welcome-message">
+              <i class="fa-solid fa-balance-scale fa-3x mb-3 text-accent"></i>
+              <h4 class="text-dark mb-3">LegalEagle AI Assistant</h4>
+              <p class="text-muted">
+                Welcome! Select a document and ask your legal questions. I can
+                help you analyze contracts, agreements, and legal documents.
               </p>
+              <div class="mt-3">
+                <span class="badge bg-light text-dark me-2">
+                  <i class="fa-solid fa-file-contract me-1"></i>Contract
+                  Analysis
+                </span>
+                <span class="badge bg-light text-dark me-2">
+                  <i class="fa-solid fa-gavel me-1"></i>Legal Research
+                </span>
+                <span class="badge bg-light text-dark">
+                  <i class="fa-solid fa-search me-1"></i>Document Search
+                </span>
+              </div>
+            </div>
+            <!-- Typing indicator -->
+            <div
+              id="typing-indicator"
+              class="typing-indicator"
+              style="display: none"
+            >
+              <div class="chat-message">
+                <div class="d-flex">
+                  <div class="flex-shrink-0">
+                    <div class="avatar bot-avatar">
+                      <i class="fa-solid fa-balance-scale"></i>
+                    </div>
+                  </div>
+                  <div class="flex-grow-1 ms-3">
+                    <div class="chat-bubble bot-message">
+                      <div class="typing-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                      </div>
+                      <small class="text-muted">LegalEagle is typing...</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
+
+          <!-- Quick Suggestions -->
+          <div
+            id="quick-suggestions"
+            class="quick-suggestions mb-3"
+            style="display: none"
+          >
+            <small class="text-muted d-block mb-2">
+              <i class="fa-solid fa-lightbulb me-1"></i>Quick Questions:
+            </small>
+            <div class="d-flex flex-wrap gap-2">
+              <button
+                type="button"
+                class="btn btn-outline-secondary btn-sm suggestion-pill"
+                data-question="What are the key terms in this document?"
+              >
+                <i class="fa-solid fa-key me-1"></i>Key Terms
+              </button>
+              <button
+                type="button"
+                class="btn btn-outline-secondary btn-sm suggestion-pill"
+                data-question="Summarize the main points of this document"
+              >
+                <i class="fa-solid fa-list-ul me-1"></i>Summarize
+              </button>
+              <button
+                type="button"
+                class="btn btn-outline-secondary btn-sm suggestion-pill"
+                data-question="Are there any potential risks or concerns?"
+              >
+                <i class="fa-solid fa-exclamation-triangle me-1"></i>Risks
+              </button>
+              <button
+                type="button"
+                class="btn btn-outline-secondary btn-sm suggestion-pill"
+                data-question="What are the obligations and responsibilities?"
+              >
+                <i class="fa-solid fa-tasks me-1"></i>Obligations
+              </button>
+            </div>
+          </div>
+
           <form id="chat-form">
-            <div class="input-group">
+            <div class="input-group position-relative">
+              <!-- Suggestions dropdown -->
+              <div
+                id="suggestions-dropdown"
+                class="suggestions-dropdown"
+                style="display: none"
+              ></div>
+
               <input
                 type="text"
                 id="user-input"
-                class="form-control"
-                placeholder="Ask your legal question..."
+                class="form-control chat-input"
+                placeholder="Ask your legal question... (e.g., 'What are the key terms?')"
                 required
-                style="
-                  background: #e3f0ff;
-                  border: 1px solid #2563eb;
-                  color: #222;
-                "
+                autocomplete="off"
               />
               <button
                 type="submit"
-                class="btn"
+                class="btn btn-theme"
                 id="send-btn"
                 disabled
-                style="background: #6c757d; color: #fff; cursor: not-allowed"
+                style="cursor: not-allowed"
               >
-                Select Document First
+                <i class="fas fa-spinner fa-spin"></i> Loading...
               </button>
             </div>
+            <small class="text-muted mt-1">
+              <i class="fa-solid fa-info-circle me-1"></i>
+              Press Enter to send, or click suggestions above
+            </small>
           </form>
         </div>
       </div>
     </div>
   </div>
-</div>
-{% endblock %} {% block styles %}
+</section>
+
+{% from 'base_macros.html' import cta_section %} {{ cta_section( title="Need
+Help Getting Started?", subtitle="Upload your legal documents and start getting
+AI-powered insights instantly", primary_text="Upload Documents",
+primary_link="/upload", secondary_text="Book Demo", secondary_link="/contact" )
+}} {% endblock %} {% block styles %}
 <style>
-  .chat-message {
-    animation: fadeIn 0.3s ease-in;
+  /* Enhanced Chat Styles */
+  .chat-section {
+    background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
+    min-height: 80vh;
   }
-  @keyframes fadeIn {
+
+  /* Chat Window Enhancements */
+  .chat-window {
+    height: 500px;
+    overflow-y: auto;
+    padding: 20px;
+    background: #ffffff;
+    border: 1px solid #e9ecef;
+    border-radius: 15px;
+    scroll-behavior: smooth;
+  }
+
+  .chat-window::-webkit-scrollbar {
+    width: 6px;
+  }
+  .chat-window::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+  }
+  .chat-window::-webkit-scrollbar-thumb {
+    background: #ef4524;
+    border-radius: 10px;
+  }
+
+  /* Avatar Styles */
+  .avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .bot-avatar {
+    background: linear-gradient(135deg, #ef4524 0%, #ff6b4a 100%);
+    color: white;
+  }
+  .user-avatar {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+  }
+
+  /* Enhanced Chat Messages */
+  .chat-message {
+    animation: slideInUp 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    margin-bottom: 20px;
+  }
+  @keyframes slideInUp {
     from {
       opacity: 0;
-      transform: translateY(10px);
+      transform: translateY(20px) scale(0.95);
     }
     to {
       opacity: 1;
-      transform: translateY(0);
+      transform: translateY(0) scale(1);
     }
   }
-  .chat-bubble.bg-light {
-    background: #e3f0ff !important;
-    color: #222 !important;
-    border: 1px solid #c7d2fe;
+
+  /* Reset all chat bubble styles first */
+  .chat-bubble {
+    all: unset;
+    display: inline-block;
+    box-sizing: border-box;
+    max-width: 100%;
+    word-wrap: break-word;
   }
-  .chat-bubble.bg-primary {
-    background: #2563eb !important;
-    color: #fff !important;
-    border: 1px solid #2563eb;
+  /* Chat bubble base styling - colors handled in specific message classes */
+  .chat-bubble {
+    box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
+    display: inline-block;
+    border-radius: 18px;
+    padding: 12px 18px;
+    position: relative;
+    animation: popIn 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   }
-  .chat-bubble.bg-danger {
-    background: #fee2e2 !important;
-    color: #b91c1c !important;
-    border: 1px solid #fca5a5;
+  @keyframes popIn {
+    0% {
+      transform: scale(0.8);
+      opacity: 0;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  /* Typing Indicator */
+  .typing-dots {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 0;
+  }
+  .typing-dots span {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ef4524;
+    animation: typing 1.4s infinite ease-in-out;
+  }
+  .typing-dots span:nth-child(1) {
+    animation-delay: 0s;
+  }
+  .typing-dots span:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+  .typing-dots span:nth-child(3) {
+    animation-delay: 0.4s;
+  }
+  @keyframes typing {
+    0%,
+    60%,
+    100% {
+      transform: scale(0.7);
+      opacity: 0.5;
+    }
+    30% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  /* Quick Suggestions */
+  .quick-suggestions {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 15px;
+    border: 1px solid #e9ecef;
+  }
+  .suggestion-pill {
+    border-radius: 20px !important;
+    font-size: 13px;
+    transition: all 0.3s ease;
+  }
+  .suggestion-pill:hover {
+    background: #ef4524 !important;
+    border-color: #ef4524 !important;
+    color: white !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(239, 69, 36, 0.3);
+  }
+
+  /* Enhanced Input */
+  .chat-input {
+    border-radius: 25px !important;
+    border: 2px solid #e9ecef !important;
+    padding: 12px 20px !important;
+    transition: all 0.3s ease !important;
+    font-size: 15px !important;
+  }
+  .chat-input:focus {
+    border-color: #ef4524 !important;
+    box-shadow: 0 0 0 0.2rem rgba(239, 69, 36, 0.15) !important;
+  }
+
+  /* Suggestions Dropdown */
+  .suggestions-dropdown {
+    position: absolute;
+    top: -10px;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    max-height: 200px;
+    overflow-y: auto;
+    transform: translateY(-100%);
+  }
+  .suggestion-item {
+    padding: 12px 16px;
+    cursor: pointer;
+    border-bottom: 1px solid #f1f3f4;
+    transition: background 0.2s ease;
+  }
+  .suggestion-item:hover {
+    background: #f8f9fa;
+  }
+  .suggestion-item:last-child {
+    border-bottom: none;
+  }
+
+  /* Chat message alignment styles */
+  .chat-message.user-message {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    margin-left: 20%;
+    margin-bottom: 20px;
+    padding: 0;
+  }
+
+  .chat-message.assistant-message {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-right: 20%;
+    margin-bottom: 20px;
+    padding: 0;
+  }
+
+  /* Badge alignment */
+  .chat-message.user-message .mb-2 {
+    text-align: right;
+    margin-right: 10px;
+  }
+
+  .chat-message.assistant-message .mb-2 {
+    text-align: left;
+    margin-left: 10px;
+  }
+
+  /* CRITICAL: User Messages - Right Side - Red Background - Version 2.0 */
+  body #chat-window .chat-message.user-message .chat-bubble {
+    background-color: #ef4524 !important;
+    background: #ef4524 !important;
+    color: #ffffff !important;
+    border: 0 !important;
+    border-style: none !important;
+    max-width: 100% !important;
+    text-align: left !important;
+    word-wrap: break-word !important;
+    margin-left: auto !important;
+    margin-right: 0 !important;
+    box-shadow: 0 3px 15px rgba(239, 69, 36, 0.3) !important;
+    border-radius: 18px 18px 4px 18px !important;
+    padding: 16px 20px !important;
+    line-height: 1.7 !important;
+    font-size: 15px !important;
+    display: inline-block !important;
+    width: auto !important;
+  }
+
+  /* CRITICAL: AI Messages - Left Side - Light Blue/Gray Background - Version 2.0 */
+  body #chat-window .chat-message.assistant-message .chat-bubble {
+    background-color: #e2e8f0 !important;
+    background: #e2e8f0 !important;
+    color: #1e293b !important;
+    border: 2px solid #cbd5e1 !important;
+    border-style: solid !important;
+    max-width: 100% !important;
+    text-align: left !important;
+    word-wrap: break-word !important;
+    margin-right: auto !important;
+    margin-left: 0 !important;
+    box-shadow: 0 3px 15px rgba(30, 41, 59, 0.15) !important;
+    border-radius: 18px 18px 18px 4px !important;
+    padding: 16px 20px !important;
+    line-height: 1.7 !important;
+    font-size: 15px !important;
+    display: inline-block !important;
+    width: auto !important;
   }
   #chat-window {
     font-size: 14px;
   }
-  #chat-window p {
-    margin-bottom: 18px;
+  /* Default paragraph styles - only for welcome message */
+  #chat-window p:not(.chat-bubble) {
+    margin-bottom: 12px;
     text-align: left;
     display: block;
     width: 100%;
     background: #f1f3f4;
-    border-radius: 8px;
-    padding: 12px 18px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    border-radius: 12px;
+    padding: 15px 20px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    line-height: 1.6;
   }
-  #chat-window p:last-child {
-    margin-bottom: 0;
+
+  /* Override any conflicting styles for chat messages */
+  .chat-message .chat-bubble {
+    display: inline-block !important;
+    width: auto !important;
+    margin-bottom: 8px !important;
   }
-  /* Remove yellow color from modal and header */
-  .card-header,
-  #chatLoaderLabel {
-    background: #2563eb !important;
-    color: #fff !important;
+
+  .suggestion-item {
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none !important;
   }
+
+  .suggestion-item:hover {
+    background-color: #f8fafc !important;
+    color: #ef4524 !important;
+  }
+
+  .suggestion-loading {
+    color: #6c757d;
+    font-style: italic;
+  }
+
   .modal-content {
-    background: #f4f7fb !important;
+    background: #f8fafc !important;
     border-radius: 16px;
     box-shadow: 0 2px 16px rgba(0, 0, 0, 0.08);
+  }
+
+  /* Autocomplete Document Selector Styling */
+  .document-selector-container {
+    min-width: 320px;
+  }
+
+  .autocomplete-wrapper {
+    position: relative;
+  }
+
+  .autocomplete-input {
+    font-size: 0.9rem;
+    border-color: #e2e8f0;
+    background-color: white;
+    cursor: pointer;
+  }
+
+  .autocomplete-input:focus {
+    border-color: #ef4524;
+    box-shadow: 0 0 0 0.2rem rgba(239, 69, 36, 0.25);
+    cursor: text;
+  }
+
+  .autocomplete-input[readonly] {
+    background-color: white;
+    cursor: pointer;
+  }
+
+  .autocomplete-input[readonly]:focus {
+    background-color: white;
+  }
+
+  .input-group-text {
+    background-color: #f8fafc;
+    border-color: #e2e8f0;
+    color: #64748b;
+  }
+
+  .autocomplete-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 2px solid #ef4524;
+    border-top: none;
+    border-radius: 0 0 0.375rem 0.375rem;
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 9999;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    display: none;
+  }
+
+  .autocomplete-dropdown.show {
+    display: block;
+  }
+
+  .autocomplete-item {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #f1f5f9;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    background: white;
+  }
+
+  .autocomplete-item:hover,
+  .autocomplete-item.highlighted {
+    background-color: #f8fafc;
+  }
+
+  .autocomplete-item:last-child {
+    border-bottom: none;
+  }
+
+  .autocomplete-item .doc-name {
+    font-weight: 500;
+    color: #1e293b;
+    display: block;
+  }
+
+  .autocomplete-item .doc-meta {
+    font-size: 0.8rem;
+    color: #64748b;
+    margin-top: 0.25rem;
+  }
+
+  .autocomplete-no-results {
+    padding: 1rem;
+    text-align: center;
+    color: #64748b;
+    font-style: italic;
+  }
+
+  .autocomplete-loading {
+    padding: 1rem;
+    color: #64748b;
+  }
+
+  /* Chat Messages */
+  .chat-messages {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 1rem;
   }
 </style>
 <!-- Loader Modal -->
@@ -166,9 +633,9 @@ block content %}
     >
       <div class="modal-body text-center py-5">
         <div class="mb-3">
-          <i class="fas fa-spinner fa-spin fa-3x" style="color: #2563eb"></i>
+          <i class="fas fa-spinner fa-spin fa-3x text-accent"></i>
         </div>
-        <h5 id="chatLoaderLabel" style="color: #2563eb">
+        <h5 id="chatLoaderLabel" class="text-dark">
           Finding the best answer...
         </h5>
         <small class="text-muted"
@@ -182,120 +649,662 @@ block content %}
 <script>
   $(document).ready(function () {
     let firstMessage = true;
+    let allDocuments = [];
+    let filteredDocuments = [];
+    let selectedDocument = "";
+    let searchTimeout;
+    let highlightedIndex = -1;
 
-    // Load available documents
-    loadAvailableDocuments();
+    // Initialize autocomplete
+    initializeAutocomplete();
 
-    function loadAvailableDocuments() {
-      const $select = $("#document-select-header");
-      
-      // Show loading state with animated loader
-      $select.prop('disabled', true);
-      
-      // Animated spinning loader with ↻ emoji
-      const spinningChars = ['↻', '↺', '↻', '↺'];
-      let spinIndex = 0;
-      const loadingInterval = setInterval(() => {
-        $select.html(`<option value="">${spinningChars[spinIndex]} Loading documents...</option>`);
-        spinIndex = (spinIndex + 1) % spinningChars.length;
-      }, 300);
-      
+    // Load chat history
+    loadChatHistory();
+
+    function initializeAutocomplete() {
+      // Load initial documents
+      loadDocuments("", 5);
+
+      // Set up autocomplete events
+      const $input = $("#document-autocomplete");
+      const $dropdown = $("#autocomplete-dropdown");
+
+      // Input events
+      $input.on("input", handleAutocompleteInput);
+      $input.on("focus", handleAutocompleteFocus);
+      $input.on("keydown", handleAutocompleteKeydown);
+
+      // Dropdown button click
+      $("#document-dropdown-btn").on("click", function () {
+        const $dropdown = $("#autocomplete-dropdown");
+        if ($dropdown.hasClass("show")) {
+          hideDropdown();
+        } else {
+          $input.focus(); // This will trigger handleAutocompleteFocus
+        }
+      });
+
+      // Click outside to close
+      $(document).on("click", function (e) {
+        if (!$(e.target).closest(".autocomplete-wrapper").length) {
+          hideDropdown();
+        }
+      });
+    }
+
+    function loadDocuments(searchQuery = "", limit = 10) {
+      // Show loader for initial load
+      const $countInfo = $("#document-count-info");
+      const $dropdownBtn = $("#document-dropdown-btn");
+      const originalBtnHtml = $dropdownBtn.html();
+
+      $dropdownBtn.html('<i class="fas fa-spinner fa-spin"></i>');
+      $dropdownBtn.prop("disabled", true);
+      $countInfo.html(
+        '<i class="fas fa-spinner fa-spin me-1"></i>Loading documents...'
+      );
+
       $.ajax({
         url: "/get-documents",
         type: "GET",
+        data: {
+          limit: limit,
+          offset: 0,
+          search: searchQuery,
+          sort_by: "recent",
+        },
         success: function (data) {
-          clearInterval(loadingInterval);
-          console.log("DEBUG: Received documents:", data);
-          $select.prop('disabled', false).empty().append('<option value="">📄 Select Document *</option>');
+          allDocuments = data.documents || [];
+          filteredDocuments = allDocuments;
 
-          if (data.documents && data.documents.length > 0) {
-            // Show only top 10 documents
-            const topDocs = data.documents.slice(0, 10);
-            console.log("DEBUG: Top documents:", topDocs);
-            topDocs.forEach(function (doc) {
-              console.log(
-                "DEBUG: Adding document:",
-                doc.document_name,
-                "with collection:",
-                doc.collection_name
-              );
-              $select.append(
-                `<option value="${doc.collection_name}">${doc.document_name}</option>`
-              );
-            });
+          // Remove loader
+          $dropdownBtn.html(originalBtnHtml);
+          $dropdownBtn.prop("disabled", false);
+
+          updateSendButton();
+
+          // Update count info
+          const documentsCount = allDocuments.length;
+          const totalCount = data.total || documentsCount;
+
+          if (searchQuery && searchQuery.trim()) {
+            $countInfo.html(
+              `<i class="fa-solid fa-search me-1"></i>Found ${documentsCount} of ${totalCount} documents`
+            );
           } else {
-            console.log("DEBUG: No documents found");
-            // Add test documents as fallback
-            $select.append('<option value="labor_law">Labor Law</option>');
-            $select.append('<option value="contract_agreement">Contract Agreement</option>');
+            $countInfo.html(
+              `<i class="fa-solid fa-file me-1"></i>Showing ${documentsCount} of ${totalCount} documents`
+            );
           }
-
-          console.log("DEBUG: Final select HTML:", $select.html());
         },
         error: function (xhr, status, error) {
-          clearInterval(loadingInterval);
-          console.log(
-            "DEBUG: Error loading documents:",
-            error,
-            xhr.responseText
-          );
-          // Show user-friendly message
-          $select.prop('disabled', false)
-            .empty()
-            .append('<option value="">❌ No documents available</option>');
+          console.log("Error loading documents:", error);
+          allDocuments = [];
+          filteredDocuments = [];
+
+          // Remove loader
+          $dropdownBtn.html(originalBtnHtml);
+          $dropdownBtn.prop("disabled", false);
+
+          updateSendButton();
+
+          $countInfo.text("Error loading documents");
         },
       });
     }
 
-    // Update placeholder and subtitle based on selected document
-    $("#document-select-header").change(function () {
-      const selectedDocName = $(this).find("option:selected").text();
-      const selectedCollectionName = $(this).val();
-      const questionInput = $("#user-input");
-      const subtitle = $("#chat-subtitle");
+    function handleAutocompleteInput() {
+      const query = $(this).val().trim();
+
+      clearTimeout(searchTimeout);
+
+      if (query.length === 0) {
+        // IMMEDIATE: Show all documents when input is empty - no delay
+        console.log("Input is empty, showing all documents immediately");
+
+        // Check if we have documents loaded
+        if (allDocuments && allDocuments.length > 0) {
+          showDropdown(allDocuments);
+
+          // Update count info immediately
+          const $countInfo = $("#document-count-info");
+          const documentsCount = allDocuments.length;
+          $countInfo.html(
+            `<i class="fa-solid fa-file me-1"></i>Showing ${documentsCount} of ${documentsCount} documents`
+          );
+        } else {
+          // If no documents loaded yet, load them immediately
+          console.log("No documents in memory, loading fresh...");
+          loadDocuments("", 5);
+        }
+      } else if (query.length >= 1) {
+        // Show loading immediately for any search
+        showLoadingDropdown();
+
+        // Search with debounce - but shorter for better UX
+        searchTimeout = setTimeout(() => {
+          searchDocuments(query);
+        }, 150); // Reduced from 300ms to 150ms for faster response
+      }
+    }
+
+    function handleAutocompleteFocus() {
+      console.log("Autocomplete focused, allDocuments:", allDocuments);
+      const $input = $(this);
+
+      // Remove readonly to allow typing
+      $input.prop("readonly", false);
+
+      // Show dropdown with available documents
+      if (allDocuments.length > 0) {
+        showDropdown(allDocuments);
+      } else {
+        console.log("No documents to show, loading...");
+        loadDocuments("", 5);
+      }
+    }
+
+    function handleAutocompleteKeydown(e) {
+      const $dropdown = $("#autocomplete-dropdown");
+      const $items = $dropdown.find(".autocomplete-item");
+
+      if (!$dropdown.hasClass("show") || $items.length === 0) {
+        return;
+      }
+
+      switch (e.key) {
+        case "ArrowDown":
+          e.preventDefault();
+          highlightedIndex = Math.min(highlightedIndex + 1, $items.length - 1);
+          updateHighlight($items);
+          break;
+
+        case "ArrowUp":
+          e.preventDefault();
+          highlightedIndex = Math.max(highlightedIndex - 1, 0);
+          updateHighlight($items);
+          break;
+
+        case "Enter":
+          e.preventDefault();
+          if (highlightedIndex >= 0 && highlightedIndex < $items.length) {
+            selectDocument($items.eq(highlightedIndex));
+          }
+          break;
+
+        case "Escape":
+          hideDropdown();
+          break;
+      }
+    }
+
+    function searchDocuments(query) {
+      console.log(`Searching for: "${query}"`);
+      console.log(`Search query type: ${typeof query}`);
+      console.log(`Search query length: ${query ? query.length : 0}`);
+
+      // Show loader in input
+      const $input = $("#document-autocomplete");
+      const $dropdownBtn = $("#document-dropdown-btn");
+      const originalBtnHtml = $dropdownBtn.html();
+
+      $dropdownBtn.html('<i class="fas fa-spinner fa-spin"></i>');
+      $dropdownBtn.prop("disabled", true);
+
+      // Show loading dropdown
+      showLoadingDropdown();
+
+      const searchData = {
+        limit: 10,
+        offset: 0,
+        search: query || "",
+        sort_by: "recent",
+      };
+
+      console.log("Sending search data:", searchData);
+
+      // Search server-side and show results
+      $.ajax({
+        url: "/get-documents",
+        type: "GET",
+        data: searchData,
+        success: function (data) {
+          let documents = data.documents || [];
+          console.log(`Search results for "${query}":`, documents);
+          console.log(`Search data received:`, data);
+
+          // CLIENT-SIDE FILTERING BACKUP: If backend didn't filter, do it here
+          if (query && query.trim()) {
+            const searchTerm = query.toLowerCase().trim();
+            const originalCount = documents.length;
+
+            // Filter documents that contain search term in name
+            documents = documents.filter((doc) => {
+              const docName = (doc.document_name || "").toLowerCase();
+              const matches = docName.includes(searchTerm);
+              console.log(
+                `Filtering "${doc.document_name}": search="${searchTerm}", matches=${matches}`
+              );
+              return matches;
+            });
+
+            console.log(
+              `Client-side filter: ${originalCount} → ${documents.length} documents for "${query}"`
+            );
+          }
+
+          // Remove loader - CRITICAL DEBUG POINT
+          console.log(
+            "Removing loader and calling showDropdown with",
+            documents.length,
+            "documents"
+          );
+          $dropdownBtn.html(originalBtnHtml);
+          $dropdownBtn.prop("disabled", false);
+
+          showDropdown(documents);
+
+          // Update count info
+          const $countInfo = $("#document-count-info");
+          const documentsCount = documents.length;
+          const totalCount = data.total || documentsCount;
+
+          if (documentsCount === 0) {
+            $countInfo.html(
+              `<i class="fa-solid fa-search me-1"></i>No documents found for "${query}"`
+            );
+          } else {
+            $countInfo.html(
+              `<i class="fa-solid fa-search me-1"></i>Found ${documentsCount} of ${totalCount} documents`
+            );
+          }
+        },
+        error: function (xhr, status, error) {
+          console.log("Error searching documents:", error);
+
+          // Remove loader
+          $dropdownBtn.html(originalBtnHtml);
+          $dropdownBtn.prop("disabled", false);
+
+          showDropdown([]);
+
+          const $countInfo = $("#document-count-info");
+          $countInfo.html(
+            `<i class="fa-solid fa-exclamation-triangle me-1"></i>Search error`
+          );
+        },
+      });
+    }
+
+    function showLoadingDropdown() {
+      const $dropdown = $("#autocomplete-dropdown");
+
+      $dropdown.html(`
+        <div class="autocomplete-loading text-center py-3">
+          <i class="fas fa-spinner fa-spin me-2"></i>
+          <span>Searching documents...</span>
+        </div>
+      `);
+
+      $dropdown.removeClass("d-none").addClass("show").css("display", "block");
+    }
+
+    function showDropdown(documents) {
+      console.log("showDropdown called with documents:", documents);
+      console.log("Documents length:", documents ? documents.length : 0);
+      const $dropdown = $("#autocomplete-dropdown");
+      console.log(
+        "Dropdown element:",
+        $dropdown.length > 0 ? "Found" : "NOT FOUND"
+      );
+
+      // Clear any previous content
+      $dropdown.empty();
+
+      if (!documents || documents.length === 0) {
+        console.log("Showing NO RESULTS message");
+        $dropdown.html(`
+          <div class="autocomplete-no-results">
+            <i class="fa-solid fa-search me-2"></i>
+            No documents found
+          </div>
+        `);
+      } else {
+        let html = "";
+        documents.forEach((doc, index) => {
+          const displayText = formatDocumentText(doc);
+          html += `
+            <div class="autocomplete-item" data-collection="${doc.collection_name}" data-name="${doc.document_name}">
+              <div class="doc-name">${doc.document_name}</div>
+              <div class="doc-meta">${displayText}</div>
+            </div>
+          `;
+        });
+        $dropdown.html(html);
+
+        // Add click handlers
+        $dropdown.find(".autocomplete-item").on("click", function () {
+          selectDocument($(this));
+        });
+      }
+
+      console.log("Adding show class to dropdown, should be visible now");
+      console.log("Dropdown HTML content:", $dropdown.html());
+      console.log("Dropdown display:", $dropdown.css("display"));
+      $dropdown.removeClass("d-none").addClass("show").css("display", "block");
+      console.log(
+        "After setting display - Dropdown display:",
+        $dropdown.css("display")
+      );
+      console.log("Dropdown has show class:", $dropdown.hasClass("show"));
+      highlightedIndex = -1;
+    }
+
+    function hideDropdown() {
+      const $dropdown = $("#autocomplete-dropdown");
+      $dropdown.removeClass("show").css("display", "none");
+      highlightedIndex = -1;
+
+      const $input = $("#document-autocomplete");
+      $input.prop("readonly", true).blur();
+    }
+
+    function updateHighlight($items) {
+      $items.removeClass("highlighted");
+      if (highlightedIndex >= 0) {
+        $items.eq(highlightedIndex).addClass("highlighted");
+      }
+    }
+
+    function selectDocument($item) {
+      const collectionName = $item.data("collection");
+      const documentName = $item.data("name");
+
+      selectedDocument = collectionName;
+
+      const $input = $("#document-autocomplete");
+      $input.val(documentName).prop("readonly", true);
+
+      hideDropdown();
+      updateSelectedDocumentUI();
+    }
+
+    function formatDocumentText(doc) {
+      let text = "";
+
+      // Add upload date if available
+      if (doc.upload_date && doc.upload_date !== "Unknown") {
+        text += `Uploaded: ${doc.upload_date}`;
+      }
+
+      // Add size indicator
+      if (doc.points_count && doc.points_count > 0) {
+        const sizeText =
+          doc.points_count > 100
+            ? "Large"
+            : doc.points_count > 50
+            ? "Medium"
+            : "Small";
+        text += text ? ` • ${sizeText} doc` : `${sizeText} document`;
+      }
+
+      return text || "Document";
+    }
+
+    function updateSendButton() {
       const sendBtn = $("#send-btn");
 
-      if (selectedCollectionName) {
-        questionInput.attr(
-          "placeholder",
-          `Ask questions about ${selectedDocName}...`
+      if (selectedDocument) {
+        sendBtn.html(
+          '<i class="fa-solid fa-paper-plane me-2"></i>Send Message'
         );
-        subtitle.text(`You are chatting with: ${selectedDocName}`);
-        // Change border to green when document is selected
-        $(this).css("border-color", "#28a745");
-        // Enable send button
-        sendBtn
-          .prop("disabled", false)
-          .html('<i class="fa-solid fa-paper-plane"></i> Send')
-          .css({ background: "#2563eb", cursor: "pointer" });
+        sendBtn.prop("disabled", false);
+      } else if (allDocuments.length > 0) {
+        sendBtn.html("Select Document First");
+        sendBtn.prop("disabled", true);
+      } else {
+        sendBtn.html("No Documents Available");
+        sendBtn.prop("disabled", true);
+      }
+    }
+
+    function loadChatHistory() {
+      $.ajax({
+        url: "/chat-history",
+        method: "GET",
+        success: function (data) {
+          if (data.history && data.history.length > 0) {
+            const chatWindow = $("#chat-window");
+            // Hide welcome message
+            $("#welcome-message").hide();
+
+            // Load and display chat history
+            data.history.reverse().forEach(function (chat) {
+              // Add user message
+              const userMessageHtml = `
+                <div class="chat-message user-message">
+                  <div class="message-content">
+                    <div class="message-header">
+                      <strong>You</strong>
+                      <small class="text-muted">${new Date(
+                        chat.created_at
+                      ).toLocaleString()}</small>
+                    </div>
+                    <div class="message-text">${chat.user_query}</div>
+                    ${
+                      chat.document_filter
+                        ? `<div class="message-meta"><small class="text-muted"><i class="fa-solid fa-file me-1"></i>Document: ${chat.document_filter}</small></div>`
+                        : ""
+                    }
+                  </div>
+                </div>
+              `;
+
+              // Add AI response
+              const aiMessageHtml = `
+                <div class="chat-message ai-message">
+                  <div class="message-content">
+                    <div class="message-header">
+                      <strong>LegalEagle AI</strong>
+                      <small class="text-muted">${new Date(
+                        chat.created_at
+                      ).toLocaleString()}</small>
+                    </div>
+                    <div class="message-text">${chat.ai_response}</div>
+                    ${
+                      chat.sources && chat.sources.length > 0
+                        ? `<div class="message-sources">
+                        <div class="sources-header">
+                          <i class="fa-solid fa-book-open me-1"></i>
+                          <strong>Sources:</strong>
+                        </div>
+                        ${JSON.parse(chat.sources)
+                          .map(
+                            (source) =>
+                              `<div class="source-item">
+                            <i class="fa-solid fa-file-text me-1"></i>
+                            ${source.document || "Document"} - Page ${
+                                source.page || "N/A"
+                              }
+                          </div>`
+                          )
+                          .join("")}
+                      </div>`
+                        : ""
+                    }
+                  </div>
+                </div>
+              `;
+
+              chatWindow.append(userMessageHtml);
+              chatWindow.append(aiMessageHtml);
+            });
+
+            // Scroll to bottom
+            chatWindow.scrollTop(chatWindow[0].scrollHeight);
+            firstMessage = false;
+          }
+        },
+        error: function (xhr, status, error) {
+          console.log("Error loading chat history:", error);
+        },
+      });
+    }
+
+    // Update the existing form submission to work with autocomplete
+    // (The existing form handler below will use our selectedDocument variable)
+
+    // Removed old load more functionality - now handled by autocomplete search
+
+    // AI-powered autocomplete suggestions
+    let suggestionTimeout;
+    let isLoadingSuggestions = false;
+
+    $("#user-input").on("input", function () {
+      const query = $(this).val().trim();
+
+      clearTimeout(suggestionTimeout);
+
+      if (query.length < 2) {
+        $("#suggestions-dropdown").hide();
+        return;
+      }
+
+      // Show loading state
+      const $dropdown = $("#suggestions-dropdown .list-group");
+      $dropdown.html(
+        '<div class="list-group-item suggestion-loading"><i class="fas fa-spinner fa-spin me-2"></i>Getting AI suggestions...</div>'
+      );
+      $("#suggestions-dropdown").show();
+
+      suggestionTimeout = setTimeout(() => {
+        if (isLoadingSuggestions) return;
+        isLoadingSuggestions = true;
+
+        const selectedDoc = $("#document-select-header").val();
+        if (!selectedDoc) {
+          $dropdown.html(
+            '<div class="list-group-item text-muted"><i class="fa-solid fa-info-circle me-2"></i>Select document first</div>'
+          );
+          $("#suggestions-dropdown").show();
+          return;
+        }
+
+        $.ajax({
+          url: "/suggestions",
+          type: "GET",
+          data: { q: query, doc: selectedDoc },
+          success: function (data) {
+            $dropdown.empty();
+
+            if (data.suggestions && data.suggestions.length > 0) {
+              data.suggestions.forEach(function (suggestion, index) {
+                $dropdown.append(
+                  `<a href="#" class="list-group-item list-group-item-action suggestion-item" style="padding: 12px 16px; border-left: 3px solid #ef4524;">
+                    <i class="fa-solid fa-magic-wand-sparkles me-2 text-accent"></i>
+                    <span style="font-size: 14px;">${suggestion}</span>
+                  </a>`
+                );
+              });
+            } else {
+              $dropdown.html(
+                '<div class="list-group-item text-muted"><i class="fa-solid fa-search me-2"></i>No suggestions found</div>'
+              );
+            }
+          },
+          error: function () {
+            $dropdown.html(
+              '<div class="list-group-item text-muted"><i class="fa-solid fa-exclamation-triangle me-2"></i>Unable to load suggestions</div>'
+            );
+          },
+          complete: function () {
+            isLoadingSuggestions = false;
+          },
+        });
+      }, 200);
+    });
+
+    // Handle suggestion click
+    $(document).on("click", ".suggestion-item", function (e) {
+      e.preventDefault();
+      const suggestion = $(this).find("span").text().trim();
+      $("#user-input").val(suggestion);
+      $("#suggestions-dropdown").hide();
+      $("#user-input").focus();
+    });
+
+    // Hide suggestions when clicking outside
+    $(document).on("click", function (e) {
+      if (!$(e.target).closest("#user-input, #suggestions-dropdown").length) {
+        $("#suggestions-dropdown").hide();
+      }
+    });
+
+    // Keyboard navigation
+    $("#user-input").on("keydown", function (e) {
+      const $suggestions = $(".suggestion-item");
+      const $active = $(".suggestion-item.active");
+
+      if (e.key === "Escape") {
+        $("#suggestions-dropdown").hide();
+      } else if (e.key === "ArrowDown") {
+        e.preventDefault();
+        if ($active.length === 0) {
+          $suggestions.first().addClass("active");
+        } else {
+          $active
+            .removeClass("active")
+            .next(".suggestion-item")
+            .addClass("active");
+        }
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        if ($active.length > 0) {
+          $active
+            .removeClass("active")
+            .prev(".suggestion-item")
+            .addClass("active");
+        }
+      } else if (e.key === "Enter" && $active.length > 0) {
+        e.preventDefault();
+        $active.click();
+      }
+    });
+
+    // Update UI when document is selected via autocomplete
+    function updateSelectedDocumentUI() {
+      const questionInput = $("#user-input");
+      const subtitle = $("#chat-subtitle");
+      const $input = $("#document-autocomplete");
+
+      if (selectedDocument) {
+        const docName = $input.val();
+        questionInput.attr("placeholder", `Ask questions about ${docName}...`);
+        subtitle.text(`You are chatting with: ${docName}`);
+        $input.css("border-color", "#28a745");
       } else {
         questionInput.attr("placeholder", "Ask your legal question...");
         subtitle.text("Ask questions about your uploaded legal documents");
-        // Change border back to red when no document selected
-        $(this).css("border-color", "#dc3545");
-        // Disable send button
-        sendBtn
-          .prop("disabled", true)
-          .html('Select Document First')
-          .css({ background: "#6c757d", cursor: "not-allowed" });
+        $input.css("border-color", "#dc3545");
       }
-    });
+
+      updateSendButton();
+    }
     $("#chat-form").on("submit", function (e) {
       e.preventDefault();
       const message = $("#user-input").val().trim();
-      const selectedDocument = $("#document-select-header").val();
 
       if (!message) return;
 
-      // Check if document is selected
+      // Check if document is selected (using our autocomplete selectedDocument variable)
       if (!selectedDocument) {
         alert("Please select a document first before asking questions.");
         return;
       }
-      // Remove any previous loader and clear chat window only on first message
+      // Remove any previous loader and hide welcome message only on first message
       $("#chat-loader").remove();
       if (firstMessage) {
-        $("#chat-window").empty();
+        $("#welcome-message").hide();
         firstMessage = false;
       }
       addMessage("user", message);
@@ -308,13 +1317,11 @@ block content %}
         .html('<i class="fas fa-spinner fa-spin"></i> Thinking...');
 
       // Get selected document name for loader message
-      const selectedDocName = $("#document-select-header")
-        .find("option:selected")
-        .text();
+      const selectedDocName = $("#document-autocomplete").val();
 
       // Show loader inside chat window with document name
       $("#chat-window").append(
-        `<div id="chat-loader" class="text-center py-4"><i class="fas fa-spinner fa-spin fa-2x" style="color:#2563eb"></i><div class="mt-2 text-muted">Searching in ${selectedDocName} Document...</div></div>`
+        `<div id="chat-loader" class="text-center py-4"><i class="fas fa-spinner fa-spin fa-2x text-accent"></i><div class="mt-2 text-dark">Searching in ${selectedDocName} Document...</div></div>`
       );
 
       // Auto-scroll to show loader
@@ -331,9 +1338,9 @@ block content %}
         success: function (data) {
           $("#chat-loader").remove();
           if (data.error) {
-            addMessage("assistant", data.answer, null, true);
+            addMessage("assistant", data.error, null, true);
           } else {
-            addMessage("assistant", data.answer, null, false);
+            addStreamingMessage("assistant", data.response, null, false);
           }
         },
         error: function () {
@@ -356,25 +1363,59 @@ block content %}
 
     function addMessage(sender, text, sources, isError) {
       const badge = sender === "user" ? "💬 You" : "🦅 LegalEagle";
-      let bgClass;
-      if (sender === "user") {
-        bgClass = "bg-primary text-white";
-      } else if (isError) {
-        bgClass = "bg-danger text-white";
-      } else {
-        bgClass = "bg-light";
+
+      // Add message type class for alignment
+      const messageClass =
+        sender === "user" ? "user-message" : "assistant-message";
+
+      // Handle undefined text
+      if (!text) {
+        text = "No response received";
       }
-      const alignClass = sender === "user" ? "text-end" : "";
+
       let paragraphs = text.split(/\n\n+/);
-      let html = `<div class="mb-3 chat-message ${alignClass}"><div class="mb-2"><strong>${badge}</strong></div>`;
+
+      // Create container with proper alignment
+      const containerStyle =
+        sender === "user"
+          ? "display:flex;flex-direction:column;align-items:flex-end;margin-left:20%;margin-bottom:20px;"
+          : "display:flex;flex-direction:column;align-items:flex-start;margin-bottom:20px;";
+
+      let html = `<div class="chat-message ${messageClass}" style="${containerStyle}">`;
+
+      // Add badge above the message
+      const badgeAlign =
+        sender === "user"
+          ? "text-align:right;margin-right:10px;"
+          : "text-align:left;margin-left:10px;";
+      html += `<div class="mb-2" style="${badgeAlign}"><strong style="font-size: 13px; color: ${
+        sender === "user" ? "#ef4524" : "#1e293b"
+      }; font-weight: 600;">${badge}</strong></div>`;
+
       paragraphs.forEach((para, idx) => {
-        html += `<div class="chat-bubble ${bgClass} mb-3" style="width:100%;display:block;padding:16px 20px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.04);margin-bottom:18px;line-height:1.7;">${para.replace(
-          /\n/g,
-          "<br>"
-        )}</div>`;
+        if (isError) {
+          html += `<div class="chat-bubble" style="padding:16px 20px;border-radius:18px;margin-bottom:8px;line-height:1.7;font-size:15px;background:#fee2e2 !important;color:#b91c1c !important;border:1px solid #fca5a5;display:inline-block;max-width:100%;word-wrap:break-word;">${para.replace(
+            /\n/g,
+            "<br>"
+          )}</div>`;
+        } else {
+          // Apply different styles based on sender
+          if (sender === "user") {
+            html += `<div class="chat-bubble" style="padding:16px 20px;border-radius:18px 18px 4px 18px;margin-bottom:8px;line-height:1.7;font-size:15px;background:#ef4524 !important;color:#ffffff !important;border:none !important;display:inline-block;max-width:100%;word-wrap:break-word;margin-left:auto;box-shadow:0 3px 15px rgba(239,69,36,0.3);">${para.replace(
+              /\n/g,
+              "<br>"
+            )}</div>`;
+          } else {
+            html += `<div class="chat-bubble" style="padding:16px 20px;border-radius:18px 18px 18px 4px;margin-bottom:8px;line-height:1.7;font-size:15px;background:#e2e8f0 !important;color:#1e293b !important;border:2px solid #cbd5e1 !important;display:inline-block;max-width:100%;word-wrap:break-word;margin-right:auto;box-shadow:0 3px 15px rgba(30,41,59,0.15);">${para.replace(
+              /\n/g,
+              "<br>"
+            )}</div>`;
+          }
+        }
       });
+
       if (sources && sources !== "No sources found") {
-        html += `<div class="border-top pt-2 mt-2"><small class="text-muted"><strong>🔗 Sources:</strong> ${sources}</small></div>`;
+        // html += `<div class="mt-2"><small class="text-muted"><strong>🔗 Sources:</strong> ${sources}</small></div>`;
       }
       html += "</div>";
       $("#chat-window").append(html);
@@ -382,6 +1423,93 @@ block content %}
       // Auto-scroll to bottom after adding message
       $("#chat-window").scrollTop($("#chat-window")[0].scrollHeight);
     }
+
+    function addStreamingMessage(sender, text, sources, isError) {
+      const badge = sender === "user" ? "💬 You" : "🦅 LegalEagle";
+      const messageClass =
+        sender === "user" ? "user-message" : "assistant-message";
+
+      if (!text) {
+        text = "No response received";
+      }
+
+      // Create container
+      const containerStyle =
+        sender === "user"
+          ? "display:flex;flex-direction:column;align-items:flex-end;margin-left:20%;margin-bottom:20px;"
+          : "display:flex;flex-direction:column;align-items:flex-start;margin-bottom:20px;";
+
+      let html = `<div class="chat-message ${messageClass}" style="${containerStyle}">`;
+
+      // Add badge
+      const badgeAlign =
+        sender === "user"
+          ? "text-align:right;margin-right:10px;"
+          : "text-align:left;margin-left:10px;";
+      html += `<div class="mb-2" style="${badgeAlign}"><strong style="font-size: 13px; color: ${
+        sender === "user" ? "#ef4524" : "#1e293b"
+      }; font-weight: 600;">${badge}</strong></div>`;
+
+      // Add empty bubble that will be filled
+      html += `<div class="chat-bubble streaming-bubble" style="padding:16px 20px;border-radius:18px 18px 18px 4px;margin-bottom:8px;line-height:1.7;font-size:15px;background:#e2e8f0 !important;color:#1e293b !important;border:2px solid #cbd5e1 !important;display:inline-block;max-width:100%;word-wrap:break-word;margin-right:auto;box-shadow:0 3px 15px rgba(30,41,59,0.15);"><span class="typing-cursor">|</span></div>`;
+      html += "</div>";
+
+      $("#chat-window").append(html);
+
+      // Start fast typing animation like GPT
+      const $bubble = $(".streaming-bubble").last();
+      let currentIndex = 0;
+      const typingSpeed = 8; // Much faster - 8ms per character
+      const chunkSize = 3; // Type 3 characters at once for speed
+
+      function typeNextChunk() {
+        if (currentIndex < text.length) {
+          // Type multiple characters at once for speed
+          const endIndex = Math.min(currentIndex + chunkSize, text.length);
+          const currentText = text.substring(0, endIndex);
+          $bubble.html(currentText + '<span class="typing-cursor">|</span>');
+          currentIndex = endIndex;
+
+          // Auto-scroll during typing
+          $("#chat-window").scrollTop($("#chat-window")[0].scrollHeight);
+
+          setTimeout(typeNextChunk, typingSpeed);
+        } else {
+          // Remove cursor when done
+          $bubble.html(text.replace(/\n/g, "<br>"));
+          $bubble.removeClass("streaming-bubble");
+
+          // Sources hidden as requested
+          // if (sources && sources !== "No sources found") {
+          //   $bubble
+          //     .parent()
+          //     .append(
+          //       `<div class="mt-2"><small class="text-muted"><strong>🔗 Sources:</strong> ${sources}</small></div>`
+          //     );
+          // }
+        }
+      }
+
+      typeNextChunk();
+    }
   });
 </script>
+<style>
+  .typing-cursor {
+    animation: blink 1s infinite;
+    color: #ef4524;
+    font-weight: bold;
+  }
+
+  @keyframes blink {
+    0%,
+    50% {
+      opacity: 1;
+    }
+    51%,
+    100% {
+      opacity: 0;
+    }
+  }
+</style>
 {% endblock %}

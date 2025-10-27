@@ -1,0 +1,82 @@
+{% extends 'base.html' %} {% block title %}Payment Cancelled - LegalEagle{%
+endblock %} {% block content %}
+<!-- Cancel Section -->
+<section class="py-5 bg-white">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-6">
+        <div class="card-box text-center">
+          <div class="mb-4">
+            <i class="fa-solid fa-times-circle fa-4x text-warning mb-3"></i>
+            <h2 class="fw-bold text-dark">Payment Cancelled</h2>
+            <p class="lead text-dark">Your subscription was not completed</p>
+          </div>
+
+          <div class="bg-light-gray p-4 rounded mb-4">
+            <p class="text-dark mb-0">
+              No worries! Your payment was cancelled and no charges were made to
+              your account. You can try again anytime or continue using
+              LegalEagle with the free plan.
+            </p>
+          </div>
+
+          <div class="d-grid gap-2">
+            <a href="/subscription" class="btn btn-theme px-4 py-2 fw-semibold">
+              <i class="fa-solid fa-crown me-2"></i>View Plans Again
+            </a>
+            <a
+              href="/dashboard"
+              class="btn btn-outline-theme px-4 py-2 fw-semibold"
+            >
+              <i class="fa-solid fa-tachometer-alt me-2"></i>Back to Dashboard
+            </a>
+          </div>
+
+          <div class="text-center mt-4">
+            <small class="text-muted">
+              Need help?
+              <a href="/contact" class="text-decoration-none"
+                >Contact our support team</a
+              >
+            </small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Why Subscribe Section -->
+<section class="py-5 bg-light-gray">
+  <div class="container">
+    <div class="text-center mb-4">
+      <h4 class="fw-bold text-dark">Why Upgrade to Premium?</h4>
+    </div>
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="card-box text-center">
+          <i class="fa-solid fa-clock fa-2x text-accent mb-3"></i>
+          <h6 class="fw-bold text-dark">Save 90% Time</h6>
+          <p class="text-dark small">
+            Get instant answers instead of hours of research
+          </p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card-box text-center">
+          <i class="fa-solid fa-infinity fa-2x text-accent mb-3"></i>
+          <h6 class="fw-bold text-dark">Unlimited Usage</h6>
+          <p class="text-dark small">No limits on documents or questions</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card-box text-center">
+          <i class="fa-solid fa-headset fa-2x text-accent mb-3"></i>
+          <h6 class="fw-bold text-dark">Priority Support</h6>
+          <p class="text-dark small">Get help when you need it most</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

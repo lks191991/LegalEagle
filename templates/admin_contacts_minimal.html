@@ -1,0 +1,44 @@
+{% extends 'admin_base.html' %} {% block title %}Contact Submissions - Admin{%
+endblock %} {% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+      <h1>Contact Submissions</h1>
+      <p>Debug: Found {{ contact_submissions|length }} submissions</p>
+
+      {% if contact_submissions %}
+      <div class="table-responsive">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Message</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for contact in contact_submissions %}
+            <tr>
+              <td>{{ contact.id }}</td>
+              <td>{{ contact.first_name }} {{ contact.last_name }}</td>
+              <td>{{ contact.email }}</td>
+              <td>{{ contact.phone }}</td>
+              <td>{{ contact.message[:50] }}...</td>
+              <td>{{ contact.status }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="alert alert-info">
+        <p>No contact submissions found.</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

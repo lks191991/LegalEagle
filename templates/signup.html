@@ -1,0 +1,197 @@
+{% extends 'base.html' %} {% block title %}Sign Up - LegalEagle{% endblock %} {%
+block content %}
+<!-- Clean Signup Section -->
+<section class="auth-section">
+  <!-- Animated Background Elements -->
+  <div class="floating-shapes">
+    <div class="floating-shape shape-1"></div>
+    <div class="floating-shape shape-2"></div>
+    <div class="floating-shape shape-3"></div>
+    <div class="floating-shape shape-4"></div>
+  </div>
+
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-8 col-lg-7">
+        <div class="auth-card">
+          <div class="auth-header">
+            <div class="auth-icon">
+              <i class="fa-solid fa-user-plus"></i>
+            </div>
+            <h2 class="fw-bold mb-2">Join LegalEagle</h2>
+            <p class="mb-0 opacity-90">Transform your legal practice today</p>
+          </div>
+
+          <div class="auth-body">
+            {% if error %}
+            <div class="alert alert-danger" role="alert">
+              <i class="fa-solid fa-exclamation-triangle me-2"></i>{{ error }}
+            </div>
+            {% endif %} {% if success %}
+            <div class="alert alert-success" role="alert">
+              <i class="fa-solid fa-check-circle me-2"></i>{{ success }}
+              <div class="mt-2">
+                <a
+                  href="/login"
+                  class="btn btn-sm btn-auth text-white rounded-pill"
+                >
+                  <i class="fa-solid fa-sign-in-alt me-1"></i>Sign In Now
+                </a>
+              </div>
+            </div>
+            {% endif %}
+
+            <form method="POST" action="/signup" id="signupForm">
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-floating">
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="name"
+                      name="name"
+                      placeholder=" "
+                      required
+                    />
+                    <label for="name">
+                      <i class="fa-solid fa-user me-2 text-accent"></i>Full Name
+                    </label>
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <div class="form-floating">
+                    <input
+                      type="email"
+                      class="form-control"
+                      id="email"
+                      name="email"
+                      placeholder=" "
+                      required
+                    />
+                    <label for="email">
+                      <i class="fa-solid fa-envelope me-2 text-accent"></i>Email
+                      Address
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-floating">
+                    <input
+                      type="tel"
+                      class="form-control"
+                      id="mobile"
+                      name="mobile"
+                      placeholder=" "
+                      required
+                    />
+                    <label for="mobile">
+                      <i class="fa-solid fa-phone me-2 text-accent"></i>Mobile
+                      Number
+                    </label>
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <div class="form-floating">
+                    <input
+                      type="password"
+                      class="form-control"
+                      id="password"
+                      name="password"
+                      placeholder=" "
+                      required
+                    />
+                    <label for="password">
+                      <i class="fa-solid fa-lock me-2 text-accent"></i>Password
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-floating">
+                <input
+                  type="password"
+                  class="form-control"
+                  id="confirm_password"
+                  name="confirm_password"
+                  placeholder=" "
+                  required
+                />
+                <label for="confirm_password">
+                  <i class="fa-solid fa-lock-open me-2 text-accent"></i>Confirm
+                  Password
+                </label>
+              </div>
+
+              <button type="submit" class="btn btn-auth text-white w-100">
+                <i class="fa-solid fa-user-plus me-2"></i>Create Account
+              </button>
+            </form>
+
+            <div class="auth-links">
+              <p class="text-muted mb-2">Already have an account?</p>
+              <a href="/login">
+                <i class="fa-solid fa-sign-in-alt me-1"></i>Sign In Here
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %} {% block scripts %}
+<script>
+  document
+    .getElementById("signupForm")
+    .addEventListener("submit", function (e) {
+      const password = document.getElementById("password").value;
+      const confirmPassword = document.getElementById("confirm_password").value;
+      const mobile = document.getElementById("mobile").value;
+
+      // Mobile number validation
+      const mobileRegex = /^[6-9]\d{9}$/;
+      if (!mobileRegex.test(mobile)) {
+        e.preventDefault();
+        alert(
+          "Please enter a valid 10-digit mobile number starting with 6, 7, 8, or 9!"
+        );
+        return false;
+      }
+
+      if (password !== confirmPassword) {
+        e.preventDefault();
+        alert("Passwords do not match!");
+        return false;
+      }
+
+      if (password.length < 6) {
+        e.preventDefault();
+        alert("Password must be at least 6 characters long!");
+        return false;
+      }
+    });
+
+  // Real-time password matching
+  document
+    .getElementById("confirm_password")
+    .addEventListener("input", function () {
+      const password = document.getElementById("password").value;
+      const confirmPassword = this.value;
+
+      if (password !== confirmPassword) {
+        this.setCustomValidity("Passwords do not match");
+        this.classList.add("is-invalid");
+      } else {
+        this.setCustomValidity("");
+        this.classList.remove("is-invalid");
+        this.classList.add("is-valid");
+      }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,387 @@
+{% extends 'admin_base.html' %} {% block title %}Manage Subscriptions -
+LegalEagle Admin{% endblock %} {% block page_title %}Manage User Subscriptions{%
+endblock %} {% block content %}
+<!-- Message Display -->
+<div id="messageArea"></div>
+
+
+<!-- Enhanced Filters -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h6 class="card-title mb-0">
+            <i class="fa-solid fa-filter me-2"></i>Filter Subscriptions
+        </h6>
+    </div>
+    <div class="card-body">
+        <form method="GET" action="/admin/subscriptions">
+            <div class="row g-3">
+                <!-- First Row -->
+                <div class="col-md-3">
+                    <label for="user_name" class="form-label">User Name</label>
+                    <input type="text" class="form-control" id="user_name" name="user_name" placeholder="Enter user name..." value="{{ user_name_filter or '' }}">
+                </div>
+                <div class="col-md-3">
+                    <label for="user_email" class="form-label">User Email</label>
+                    <input type="email" class="form-control" id="user_email" name="user_email" placeholder="Enter user email..." value="{{ user_email_filter or '' }}">
+                </div>
+                <div class="col-md-3">
+                    <label for="plan_name" class="form-label">Plan Name</label>
+                    <select class="form-select" id="plan_name" name="plan_name">
+                        <option value="">All Plans</option>
+                        {% for plan in all_plans %}
+                        <option value="{{ plan.name }}" {% if plan_filter == plan.name %}selected{% endif %}>{{ plan.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="status" class="form-label">Status</label>
+                    <select class="form-select" id="status" name="status">
+                        <option value="">All Status</option>
+                        <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
+                        <option value="expired" {% if status_filter == 'expired' %}selected{% endif %}>Expired</option>
+                        <option value="cancelled" {% if status_filter == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Second Row - Date Filters -->
+            <div class="row g-3 mt-2">
+                <div class="col-md-3">
+                    <label for="date_from" class="form-label">Start Date From</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control admin-date-input" id="date_from" name="date_from" value="{{ date_from or '' }}" placeholder="dd-mm-yyyy">
+                        <span class="input-group-text calendar-icon">
+                            <i class="fa-solid fa-calendar-days text-accent"></i>
+                        </span>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <label for="date_to" class="form-label">Start Date To</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control admin-date-input" id="date_to" name="date_to" value="{{ date_to or '' }}" placeholder="dd-mm-yyyy">
+                        <span class="input-group-text calendar-icon">
+                            <i class="fa-solid fa-calendar-days text-accent"></i>
+                        </span>
+                    </div>
+                </div>
+                
+            
+            </div>
+            
+            <!-- Third Row - Action Buttons -->
+            <div class="row g-3 mt-2">
+                <div class="col-12 d-flex justify-content-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="fa-solid fa-search me-1"></i>Apply Filters
+                    </button>
+                    <a href="/admin/subscriptions" class="btn btn-outline-secondary">
+                        <i class="fa-solid fa-times me-1"></i>Clear
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Filter Status Indicators -->
+            {% if user_name_filter or user_email_filter or plan_filter or status_filter or date_from or date_to %}
+            <div class="mt-3 p-2 bg-light rounded">
+                <small class="text-muted">Active filters:</small>
+                {% if user_name_filter %}
+                    <span class="badge bg-info ms-1">User: {{ user_name_filter }}</span>
+                {% endif %}
+                {% if user_email_filter %}
+                    <span class="badge bg-info ms-1">Email: {{ user_email_filter }}</span>
+                {% endif %}
+                {% if plan_filter %}
+                    <span class="badge bg-info ms-1">Plan: {{ plan_filter }}</span>
+                {% endif %}
+                {% if status_filter %}
+                    <span class="badge bg-info ms-1">Status: {{ status_filter|title }}</span>
+                {% endif %}
+                {% if date_from %}
+                    <span class="badge bg-info ms-1">From: {{ date_from }}</span>
+                {% endif %}
+                {% if date_to %}
+                    <span class="badge bg-info ms-1">To: {{ date_to }}</span>
+                {% endif %}
+            </div>
+            {% endif %}
+        </form>
+    </div>
+</div>
+
+<!-- Subscriptions Table -->
+<div class="card-box">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead class="table-light">
+        <tr>
+          <th class="text-dark">ID</th>
+          <th class="text-dark">User</th>
+          <th class="text-dark">Email</th>
+          <th class="text-dark">Plan</th>
+          <th class="text-dark">Start Date</th>
+          <th class="text-dark">End Date</th>
+          <th class="text-dark">Status</th>
+          <th class="text-dark">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="subscriptionsTable">
+        {% for subscription in subscriptions %}
+        <tr data-status="{{ subscription.status }}">
+          <td class="text-dark">#{{ "%03d"|format(subscription.id) }}</td>
+          <td class="text-dark">{{ subscription.user_name }}</td>
+          <td class="text-dark">{{ subscription.user_email }}</td>
+          <td class="text-dark">{{ subscription.plan_name }}</td>
+          <td class="text-dark">{{ subscription.start_date }}</td>
+          <td class="text-dark">{{ subscription.end_date }}</td>
+          <td>
+            <div class="d-flex align-items-center gap-2">
+              <span
+                class="badge bg-{% if subscription.status == 'active' %}success{% elif subscription.status == 'cancelled' %}warning{% else %}danger{% endif %}"
+                >{{ subscription.status|title }}</span
+              >
+              {% if subscription.status == 'active' %}
+              <button
+                class="btn btn-sm btn-outline-danger"
+                onclick="changeStatus({{ subscription.id }}, '{{ subscription.status }}')"
+                title="Cancel Subscription"
+              >
+                <i class="fa-solid fa-ban"></i>
+              </button>
+
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if subscriptions|length == 0 %}
+  <!-- No Results -->
+  <div class="text-center p-4">
+    <i class="fa-solid fa-search text-muted" style="font-size: 3rem"></i>
+    <h5 class="text-muted mt-3">No subscriptions found</h5>
+    <p class="text-muted">
+      {% if search_query %}No results for "{{ search_query }}"{% else %}No
+      subscriptions match the current filter.{% endif %}
+    </p>
+    {% if search_query or current_filter != 'all' %}
+    <a href="/admin/subscriptions?status=all" class="btn btn-outline-primary"
+      >View All Subscriptions</a
+    >
+    {% endif %}
+  </div>
+  {% else %}
+  <!-- Results Summary -->
+  <div class="d-flex justify-content-between align-items-center p-3 border-top">
+    <div class="text-muted">
+      Showing {{ subscriptions|length }} subscription(s) {% if search_query %}
+      for "{{ search_query }}"{% endif %} {% if current_filter != 'all' %} with
+      {{ current_filter }} status{% endif %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %} {% block scripts %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Handle Enter key in search input
+    const searchInput = document.getElementById("searchInput");
+    if (searchInput) {
+      searchInput.addEventListener("keypress", function (e) {
+        if (e.key === "Enter") {
+          performSearch();
+        }
+      });
+    }
+  });
+
+  function performSearch() {
+    const searchQuery = document.getElementById("searchInput").value.trim();
+    const currentStatus = "{{ current_filter }}";
+
+    let url = "/admin/subscriptions";
+    const params = new URLSearchParams();
+
+    if (currentStatus && currentStatus !== "all") {
+      params.append("status", currentStatus);
+    }
+
+    if (searchQuery) {
+      params.append("search", searchQuery);
+    }
+
+    if (params.toString()) {
+      url += "?" + params.toString();
+    }
+
+    window.location.href = url;
+  }
+
+  function clearSearch() {
+    const currentStatus = "{{ current_filter }}";
+    let url = "/admin/subscriptions";
+
+    if (currentStatus && currentStatus !== "all") {
+      url += "?status=" + currentStatus;
+    }
+
+    window.location.href = url;
+  }
+
+  function changeStatus(subscriptionId, currentStatus) {
+    // Only active subscriptions can be cancelled
+    if (currentStatus !== "active") {
+      showMessage("Only active subscriptions can be modified.", "error");
+      return;
+    }
+
+    const newStatus = "cancelled";
+
+    if (
+      confirm(
+        `Are you sure you want to cancel this subscription? This action cannot be undone.`
+      )
+    ) {
+      const formData = new FormData();
+      formData.append("status", newStatus);
+
+      fetch(`/admin/subscriptions/${subscriptionId}/status`, {
+        method: "POST",
+        body: formData,
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          showMessage(data.message, data.success ? "success" : "error");
+          if (data.success) {
+            setTimeout(() => location.reload(), 1500);
+          }
+        });
+    }
+  }
+
+  // Message display function
+  function showMessage(message, type) {
+    const messageArea = document.getElementById("messageArea");
+    const alertClass = type === "success" ? "alert-success" : "alert-danger";
+    messageArea.innerHTML = `
+        <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    setTimeout(() => {
+      const alert = messageArea.querySelector(".alert");
+      if (alert) alert.remove();
+    }, 5000);
+  }
+
+  // Quick Date Filter Functions
+  function setDateRange(period) {
+    const today = new Date();
+    const dateFromInput = document.getElementById('date_from');
+    const dateToInput = document.getElementById('date_to');
+    
+    let fromDate, toDate;
+    
+    switch(period) {
+        case 'today':
+            fromDate = toDate = today;
+            break;
+        case 'yesterday':
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+            fromDate = toDate = yesterday;
+            break;
+        case 'week':
+            const startOfWeek = new Date(today);
+            startOfWeek.setDate(today.getDate() - today.getDay());
+            fromDate = startOfWeek;
+            toDate = today;
+            break;
+        case 'month':
+            const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+            fromDate = startOfMonth;
+            toDate = today;
+            break;
+        case 'year':
+            const startOfYear = new Date(today.getFullYear(), 0, 1);
+            fromDate = startOfYear;
+            toDate = today;
+            break;
+    }
+    
+    if (fromDate && toDate) {
+        // Convert to dd-mm-yyyy format for datepicker
+        const fromDay = ("0" + fromDate.getDate()).slice(-2);
+        const fromMonth = ("0" + (fromDate.getMonth() + 1)).slice(-2);
+        const fromYear = fromDate.getFullYear();
+        
+        const toDay = ("0" + toDate.getDate()).slice(-2);
+        const toMonth = ("0" + (toDate.getMonth() + 1)).slice(-2);
+        const toYear = toDate.getFullYear();
+        
+        dateFromInput.value = fromDay + "-" + fromMonth + "-" + fromYear;
+        dateToInput.value = toDay + "-" + toMonth + "-" + toYear;
+    }
+  }
+
+  // Admin Datepicker Initialization
+  $(document).ready(function() {
+    console.log("🔧 Initializing admin subscriptions datepickers...");
+    console.log("jQuery available:", typeof $ !== 'undefined');
+    console.log("Datepicker available:", typeof $.fn.datepicker !== 'undefined');
+    
+    // Wait for datepicker library to load
+    setTimeout(function() {
+      // Initialize datepickers for admin date fields
+      $(".admin-date-input").each(function() {
+        var $field = $(this);
+        var fieldId = $field.attr('id');
+        
+        console.log("Initializing datepicker for:", fieldId);
+        
+        try {
+        $field.datepicker({
+          format: "dd-mm-yyyy",
+          autoclose: true,
+          todayHighlight: true,
+          startDate: "01-01-1900",
+          endDate: "+0d",
+          weekStart: 1,
+          daysOfWeekHighlighted: "0,6",
+          showOnFocus: true,
+          orientation: "bottom left",
+          container: "body",
+          zIndexOffset: 50000
+        }).on("changeDate", function(e) {
+          var selectedDate = e.date;
+          if (selectedDate) {
+            var day = ("0" + selectedDate.getDate()).slice(-2);
+            var month = ("0" + (selectedDate.getMonth() + 1)).slice(-2);
+            var year = selectedDate.getFullYear();
+            $(this).val(day + "-" + month + "-" + year);
+          }
+        });
+        
+        console.log("✅ Datepicker initialized for:", fieldId);
+      } catch (error) {
+        console.error("❌ Error initializing datepicker for " + fieldId + ":", error);
+      }
+    });
+
+    // Calendar icon click handlers
+    $(".calendar-icon").on("click", function(e) {
+      e.preventDefault();
+      var $input = $(this).siblings('.admin-date-input');
+      if ($input.data('datepicker')) {
+        $input.datepicker("show");
+        console.log("📅 Datepicker opened for:", $input.attr('id'));
+      }
+    });
+    
+    }, 500); // End of setTimeout for datepicker loading
+  });
+</script>
+{% endblock %}
