@@ -2,7 +2,7 @@ from fastapi import APIRouter, Request, Form, Cookie, Query
 from fastapi.responses import HTMLResponse, JSONResponse
 from template_config import templates
 from typing import Optional
-from services.rag import query_rag
+from services.rag import query_rag, query_rag_with_collection
 from db_operations import DatabaseOperations
 
 router = APIRouter()
@@ -38,12 +38,12 @@ def get_documents(
     search: Optional[str] = Query(None),
     sort_by: str = "recent"
 ):
-    """Get available document collections for the current user with filtering and pagination"""
+    """Get available documents from MySQL database for the current user with filtering and pagination"""
     
-    # DIRECT FIX: Extract search from request query params
+    # Extract search from request query params
     actual_search = request.query_params.get('search')
     
-    print(f"=== API CALLED ===")
+    print(f"=== MYSQL DOCUMENTS API CALLED ===")
     print(f"Original search parameter: '{search}' (type: {type(search)})")
     print(f"Request query params: {dict(request.query_params)}")
     print(f"Direct extracted search: '{actual_search}' (type: {type(actual_search)})")
@@ -57,23 +57,23 @@ def get_documents(
         if not user_data:
             return JSONResponse({"error": "Authentication required", "documents": [], "total": 0}, status_code=401)
         
-        from services.vector_store import VectorStore
-        vector_store = VectorStore(user_id=int(user_data['user_id']))
+        # Get documents from MySQL database instead of vector store
+        print(f"=== CALLING MYSQL DATABASE ===")
+        print(f"Getting documents for user {user_data['user_id']} with search='{search}'")
         
-        print(f"=== CALLING VECTOR STORE ===")
-        print(f"Passing to vector store: search='{search}' (type: {type(search)})")
-        
-        documents, total = vector_store.get_available_documents(
+        documents, total = DatabaseOperations.get_user_documents_for_chat(
+            user_id=int(user_data['user_id']),
             limit=limit, 
             offset=offset, 
             search=search, 
             sort_by=sort_by
         )
-        print(f"DEBUG: Found {len(documents)}/{total} documents for user {user_data['user_id']} with search='{search}'")
+        
+        print(f"DEBUG: Found {len(documents)}/{total} documents from MySQL for user {user_data['user_id']} with search='{search}'")
         if search:
-            print(f"DEBUG: Returned documents when searching for '{search}':")
+            print(f"DEBUG: MySQL search '{search}' returned documents:")
             for doc in documents:
-                print(f"  - {doc.get('document_name', 'Unknown')}")
+                print(f"  - {doc.get('document_name', 'Unknown')} (Collection: {doc.get('collection_name', 'Unknown')})")
         
         return JSONResponse({
             "documents": documents,
@@ -83,7 +83,9 @@ def get_documents(
             "offset": offset
         })
     except Exception as e:
-        print(f"DEBUG: Error getting documents: {str(e)}")
+        print(f"DEBUG: Error getting documents from MySQL: {str(e)}")
+        import traceback
+        print(f"DEBUG: Traceback: {traceback.format_exc()}")
         return JSONResponse({"error": str(e), "documents": [], "total": 0})
 
 
@@ -138,10 +140,49 @@ async def chat_api(request: Request, user_session: Optional[str] = Cookie(None))
                 "error": True
             }, status_code=400)
 
-        # Use RAG pipeline to get answer with document filter and user_id
-        doc_filter = selected_document if selected_document else None
-        print(f"DEBUG: Chat request - message: {message}, selected_document: {selected_document}, user_id: {user_data['user_id']}")
-        result = query_rag(message, doc_filter, user_id=int(user_data['user_id']))
+        # Get collection name from MySQL for the selected document
+        doc_filter = None
+        collection_name = None
+        if selected_document and selected_document.strip():
+            try:
+                # Get document info from MySQL database
+                user_docs = DatabaseOperations.get_user_documents(int(user_data['user_id']))
+                found_doc = None
+                
+                # Try to match by document name first, then by collection name
+                for doc in user_docs:
+                    if doc['document_name'] == selected_document or doc['collection_name'] == selected_document:
+                        found_doc = doc
+                        collection_name = doc['collection_name']
+                        doc_filter = doc['document_name']  # Use document name for search
+                        print(f"DEBUG: Found document '{doc['document_name']}' (selected: '{selected_document}') with collection '{collection_name}'")
+                        break
+                
+                if not found_doc:
+                    print(f"DEBUG: Document '{selected_document}' not found in MySQL database")
+                    print(f"DEBUG: Available documents: {[doc['document_name'] + ' (' + doc['collection_name'] + ')' for doc in user_docs]}")
+                    return JSONResponse({
+                        "role": "assistant",
+                        "success": False,
+                        "answer": f"Selected document '{selected_document}' not found in your document library.",
+                        "sources": [],
+                        "error": True
+                    }, status_code=400)
+                    
+            except Exception as e:
+                print(f"DEBUG: Error getting collection name: {str(e)}")
+                return JSONResponse({
+                    "role": "assistant",
+                    "success": False,
+                    "answer": f"Error accessing document information: {str(e)}",
+                    "sources": [],
+                    "error": True
+                }, status_code=500)
+        
+        print(f"DEBUG: Chat request - message: {message}, selected_document: {selected_document}, collection_name: {collection_name}, user_id: {user_data['user_id']}")
+        
+        # Use RAG pipeline with collection name for vector search
+        result = query_rag_with_collection(message, doc_filter, collection_name, user_id=int(user_data['user_id']))
         
         print(f"DEBUG: RAG result: {result}")
         

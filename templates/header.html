@@ -16,14 +16,6 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav ms-auto align-items-center">
-        <li class="nav-item">
-          <a
-            class="nav-link {% if current_page == 'home' %}active{% endif %}"
-            href="/"
-            ><i class="fa fa-home me-1 text-accent"></i>Home</a
-          >
-        </li>
-
         <!-- Show for all users -->
         <li class="nav-item">
           <a
@@ -60,13 +52,6 @@
         <!-- User is logged in - show user menu -->
         <li class="nav-item">
           <a
-            class="nav-link {% if current_page == 'dashboard' %}active{% endif %}"
-            href="/dashboard"
-            ><i class="fa fa-tachometer-alt me-1 text-accent"></i>Dashboard</a
-          >
-        </li>
-        <li class="nav-item">
-          <a
             class="nav-link {% if current_page == 'upload' %}active{% endif %}"
             href="/upload"
             ><i class="fa fa-upload me-1 text-accent"></i>Upload</a
@@ -93,6 +78,11 @@
             <i class="fa fa-user-circle me-1 text-accent"></i>Account
           </a>
           <ul class="dropdown-menu">
+            <li>
+              <a class="dropdown-item" href="/dashboard">
+                <i class="fa fa-tachometer-alt me-2 text-muted"></i>Dashboard
+              </a>
+            </li>
             <li>
               <a class="dropdown-item" href="/profile">
                 <i class="fa fa-user me-2 text-muted"></i>Profile

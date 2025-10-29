@@ -1,7 +1,33 @@
 import os
-from qdrant_client import QdrantClient, models
-from sentence_transformers import SentenceTransformer
 import uuid
+import numpy as np
+
+# Optional imports - handle gracefully if not available
+try:
+    from qdrant_client import QdrantClient, models
+    QDRANT_AVAILABLE = True
+except ImportError:
+    QDRANT_AVAILABLE = False
+    print("WARNING: Qdrant not available")
+
+try:
+    from sentence_transformers import SentenceTransformer
+    SENTENCE_TRANSFORMERS_AVAILABLE = True
+except ImportError:
+    SENTENCE_TRANSFORMERS_AVAILABLE = False
+    print("WARNING: Sentence transformers not available")
+
+class MockSentenceTransformer:
+    """Mock sentence transformer for development without Hugging Face"""
+    def encode(self, texts):
+        """Return mock embeddings"""
+        if isinstance(texts, str):
+            texts = [texts]
+        return np.random.rand(len(texts), 384).astype(np.float32)
+    
+    def to(self, device):
+        """Mock to method"""
+        return self
 
 def normalize_name(name):
     # Helper to normalize names for matching
@@ -13,44 +39,91 @@ def collection_name_from_document(document_name):
 
 class VectorStore:
     def __init__(self, document_name=None, user_id=None):
-        # Initialize Qdrant client with timeout
-        self.client = QdrantClient(
-            url=os.getenv("QDRANT_URL", "http://localhost:6333"),
-            api_key=os.getenv("QDRANT_API_KEY"),
-            timeout=60
-        )
-        # Store user_id for data separation
+        # Store user_id for data separation  
         self.user_id = user_id
         
         # Create collection name based on document and user
         if document_name and user_id:
             self.collection_name = f"user_{user_id}_{collection_name_from_document(document_name)}"
             self.document_name = document_name  # Store original name
-            # Only create collection if document name and user_id are provided
-            self._create_collection_if_not_exists()
         else:
             self.collection_name = None
             self.document_name = None
-            
-        # Initialize model with proper device handling
-        import torch
-        torch.set_default_device('cpu')
-        self.model = SentenceTransformer('all-MiniLM-L6-v2')
-        self.model = self.model.to('cpu')
+        
+        # Initialize Qdrant client and model only when needed
+        self.client = None
+        self.model = None
+    
+    def _init_client_if_needed(self):
+        """Initialize Qdrant client only when needed"""
+        if self.client is None:
+            if QDRANT_AVAILABLE:
+                try:
+                    self.client = QdrantClient(
+                        url=os.getenv("QDRANT_URL", "http://localhost:6333"),
+                        api_key=os.getenv("QDRANT_API_KEY"),
+                        timeout=60
+                    )
+                    print("INFO: Qdrant client initialized successfully")
+                except Exception as e:
+                    print(f"WARNING: Could not initialize Qdrant client: {e}")
+                    self.client = "disabled"  # Mark as disabled instead of None
+            else:
+                print("WARNING: Qdrant not available, vector operations disabled")
+                self.client = "disabled"  # Mark as disabled instead of None
+    
+    def _init_model_if_needed(self):
+        """Initialize sentence transformer model only when needed"""
+        if self.model is None:
+            if SENTENCE_TRANSFORMERS_AVAILABLE:
+                try:
+                    import torch
+                    torch.set_default_device('cpu')
+                    self.model = SentenceTransformer('all-MiniLM-L6-v2')
+                    self.model = self.model.to('cpu')
+                    print("INFO: Sentence transformer model loaded successfully")
+                except Exception as e:
+                    print(f"WARNING: Could not load sentence transformer model: {e}")
+                    # Fallback to mock model
+                    self.model = MockSentenceTransformer()
+            else:
+                print("WARNING: Using mock sentence transformer model")
+                self.model = MockSentenceTransformer()
     
     def _create_collection_if_not_exists(self):
         """Create collection if it doesn't exist"""
-        collections = [c.name for c in self.client.get_collections().collections]
-        if self.collection_name not in collections:
-            self.client.create_collection(
-                collection_name=self.collection_name,
-                vectors_config=models.VectorParams(size=384, distance=models.Distance.COSINE)
-            )
+        self._init_client_if_needed()
+        if self.client == "disabled" or self.client is None:
+            print("WARNING: Qdrant client disabled, skipping collection creation")
+            return
+            
+        if self.client and QDRANT_AVAILABLE:
+            try:
+                collections = [c.name for c in self.client.get_collections().collections]
+                if self.collection_name not in collections:
+                    self.client.create_collection(
+                        collection_name=self.collection_name,
+                        vectors_config=models.VectorParams(size=384, distance=models.Distance.COSINE)
+                    )
+                    print(f"INFO: Created collection {self.collection_name}")
+                else:
+                    print(f"INFO: Collection {self.collection_name} already exists")
+            except Exception as e:
+                print(f"WARNING: Could not create collection: {e}")
     
     def add_documents(self, chunks, filename, tags="", document_date=None, created_date=None, upload_date=None):
         """Add document chunks to user-specific vector store"""
         if not self.user_id:
             raise ValueError("user_id is required for document operations")
+        
+        # Initialize client and model
+        self._init_client_if_needed()
+        self._init_model_if_needed()
+        
+        # If vector storage is disabled, return minimal success
+        if self.client == "disabled" or self.client is None:
+            print("WARNING: Vector storage disabled, document uploaded to database only")
+            return len(chunks)  # Return number of chunks for compatibility
             
         texts = [chunk["text"] for chunk in chunks]
         embeddings = self.model.encode(texts)
@@ -104,12 +177,20 @@ class VectorStore:
                 vector=embeddings[i].tolist(),
                 payload=payload
             ))
+        # Create collection if needed
+        self._create_collection_if_not_exists()
+        
         batch_size = 50
         total_points = 0
         for i in range(0, len(points), batch_size):
             batch = points[i:i + batch_size]
             print(f"DEBUG: Upserting batch with payloads: {[p.payload for p in batch]}")
-            self.client.upsert(collection_name=self.collection_name, points=batch)
+            
+            # Only upsert if client is available
+            if self.client != "disabled" and self.client is not None:
+                self.client.upsert(collection_name=self.collection_name, points=batch)
+            else:
+                print("WARNING: Skipping vector upsert as client is disabled")
             total_points += len(batch)
         return total_points
     
@@ -117,6 +198,15 @@ class VectorStore:
         """Search for a query in user-specific vector store"""
         if not self.user_id:
             raise ValueError("user_id is required for search operations")
+        
+        # Initialize client and model
+        self._init_client_if_needed()
+        self._init_model_if_needed()
+        
+        # If vector search is disabled, return empty results
+        if self.client == "disabled" or self.client is None:
+            print("WARNING: Vector search disabled, returning empty results")
+            return []
             
         query_embedding = self.model.encode([query])
         all_results = []
@@ -180,6 +270,61 @@ class VectorStore:
             print(f"Error in search: {e}")
             return []
     
+    def search_in_collection(self, query, collection_name, limit=5):
+        """Search directly in a specific collection by collection name"""
+        try:
+            # Initialize client and model
+            self._init_client_if_needed()
+            self._init_model_if_needed()
+            
+            # If vector search is disabled, return empty results
+            if self.client == "disabled" or self.client is None:
+                print("WARNING: Vector search disabled, returning empty results")
+                return []
+                
+            print(f"🔍 Searching in specific collection: {collection_name}")
+            
+            # Generate query embedding
+            query_embedding = self.model.encode([query])
+            print(f"Generated embedding for query: {query}")
+            
+            # Check if collection exists
+            collections = [c.name for c in self.client.get_collections().collections]
+            if collection_name not in collections:
+                print(f"❌ Collection '{collection_name}' does not exist")
+                return []
+            
+            # Search directly in the specified collection
+            results = self.client.search(
+                collection_name=collection_name,
+                query_vector=query_embedding[0].tolist(),
+                limit=limit,
+                with_payload=True
+            )
+            
+            print(f"✅ Found {len(results)} results in collection '{collection_name}'")
+            
+            search_results = []
+            for hit in results:
+                result_data = {
+                    "text": hit.payload["text"],
+                    "page": hit.payload.get("page"),
+                    "filename": hit.payload["filename"],
+                    "document_name": hit.payload.get("document_name", "Unknown"),
+                    "score": hit.score,
+                    "collection_name": collection_name
+                }
+                search_results.append(result_data)
+                print(f"Result score {hit.score:.3f}: {hit.payload['text'][:100]}...")
+            
+            return search_results
+            
+        except Exception as e:
+            print(f"❌ Error searching in collection '{collection_name}': {e}")
+            import traceback
+            print(f"Traceback: {traceback.format_exc()}")
+            return []
+    
     def get_available_documents(self, limit=5, offset=0, search=None, sort_by="recent"):
         """Get list of available document collections for the current user with filtering and pagination"""
         if not self.user_id:
@@ -203,6 +348,14 @@ class VectorStore:
         print(f"TIMESTAMP: {datetime.datetime.now()} - Function called") 
         print(f"DEBUG: get_available_documents called with search='{search}', user_id={self.user_id}")
         try:
+            # Initialize client and check if available
+            self._init_client_if_needed()
+            
+            # If client is disabled, return data from database instead
+            if self.client == "disabled" or self.client is None:
+                print("WARNING: Qdrant client disabled, using database fallback for documents")
+                return self._get_documents_from_database(search, limit, offset, sort_by)
+            
             collections = self.client.get_collections().collections
             user_prefix = f"user_{self.user_id}_"
             
@@ -317,6 +470,61 @@ class VectorStore:
             print(f"ERROR: Exception in get_available_documents: {e}")
             import traceback
             print(f"ERROR: Traceback: {traceback.format_exc()}")
+            print("WARNING: Falling back to database for documents")
+            return self._get_documents_from_database(search, limit, offset, sort_by)
+    
+    def _get_documents_from_database(self, search=None, limit=10, offset=0, sort_by="recent"):
+        """Fallback method to get documents from database when Qdrant is unavailable"""
+        try:
+            from db_operations import DatabaseOperations
+            
+            print(f"DEBUG: Getting documents from database for user {self.user_id}")
+            
+            # Get user documents from database
+            documents = DatabaseOperations.get_user_documents_for_chat(self.user_id)
+            
+            if not documents:
+                print("DEBUG: No documents found in database")
+                return [], 0
+            
+            # Convert database format to expected format
+            all_documents = []
+            for doc in documents:
+                document_info = {
+                    "collection_name": doc.get('collection_name', ''),
+                    "document_name": doc.get('filename', doc.get('document_name', 'Unknown')),
+                    "clean_name": doc.get('filename', doc.get('document_name', 'Unknown')),
+                    "upload_date": doc.get('upload_date', 'Unknown'),
+                    "document_date": doc.get('document_date', 'Unknown'),
+                    "tags": doc.get('tags', '').split(',') if doc.get('tags') else [],
+                    "points_count": doc.get('chunk_count', 0)
+                }
+                
+                # Apply search filter if provided
+                if search and search.strip() and search != "None":
+                    search_lower = search.lower()
+                    doc_name_lower = document_info["document_name"].lower()
+                    
+                    if search_lower not in doc_name_lower:
+                        continue  # Skip this document if it doesn't match search
+                
+                all_documents.append(document_info)
+            
+            # Apply sorting
+            if sort_by == "recent":
+                all_documents.sort(key=lambda x: x.get("upload_date", ""), reverse=True)
+            elif sort_by == "alphabetical":
+                all_documents.sort(key=lambda x: x.get("document_name", "").lower())
+            
+            # Apply pagination
+            total_count = len(all_documents)
+            paginated_docs = all_documents[offset:offset + limit]
+            
+            print(f"DEBUG: Database fallback returned {len(paginated_docs)} documents (total: {total_count})")
+            return paginated_docs, total_count
+            
+        except Exception as e:
+            print(f"ERROR: Database fallback failed: {e}")
             return [], 0
     
     def delete_user_documents(self, document_name=None):

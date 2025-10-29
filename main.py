@@ -12,7 +12,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Include routers
 from routes.upload_simple import router as upload_router
-from routes.chat_simple import router as chat_router
+from routes.chat import router as chat_router  # Changed from chat_simple to chat
 from routes.pages import router as pages_router
 from routes.admin_main import router as admin_router
 from routes.auth import router as auth_router

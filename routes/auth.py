@@ -182,24 +182,49 @@ def user_dashboard(request: Request, user_session: Optional[str] = Cookie(None))
                 print(f"Transaction fetch error: {e}")
                 transactions = []
             
-            # Initialize other data
+            # Get actual usage statistics from database
             documents_count = 0
+            chat_count = 0
             recent_chats = []
+            
+            # Get actual document count from database
+            try:
+                documents_count = DatabaseOperations.get_user_documents_count(user_id)
+                print(f"DEBUG: User {user_id} has {documents_count} documents")
+            except Exception as e:
+                print(f"ERROR getting documents count: {e}")
+                documents_count = 0
+            
+            # Get actual chat count from database
+            try:
+                chat_count = DatabaseOperations.get_user_chat_count(user_id)
+                print(f"DEBUG: User {user_id} has {chat_count} chat messages")
+            except Exception as e:
+                print(f"ERROR getting chat count: {e}")
+                chat_count = 0
+            
+            # Build usage stats with real database numbers and plan limits
+            max_documents = 25  # Default limit for display
+            max_prompts = 250   # Default limit for display
+            
+            # Get plan limits from database if user has a plan
+            if current_plan:
+                max_documents = current_plan.get('max_documents', 25)
+                max_prompts = current_plan.get('max_chat_prompts', 250)
+                print(f"DEBUG: Plan limits - Documents: {max_documents}, Prompts: {max_prompts}")
+            else:
+                print(f"DEBUG: Using default limits - Documents: {max_documents}, Prompts: {max_prompts}")
+            
             usage_stats = {
-                'documents_used': current_plan.get('used_documents', 0) if current_plan else 0,
-                'prompts_used': current_plan.get('used_prompts', 0) if current_plan else 0,
-                'documents_limit': current_plan.get('max_documents', 0) if current_plan else 0,
-                'prompts_limit': current_plan.get('max_prompts', 0) if current_plan else 0,
-                'total_documents': 0
+                'documents_used': documents_count,  # Actual count from DB
+                'prompts_used': chat_count,  # Actual count from DB  
+                'documents_limit': max_documents,
+                'prompts_limit': max_prompts,
+                'total_documents': documents_count,  # Same as documents_used
+                'total_chats': chat_count  # Add total chats for dashboard display
             }
             
-            # Try to get documents count if method exists
-            try:
-                user_docs = DatabaseOperations.get_user_documents(user_id)
-                documents_count = len(user_docs) if user_docs else 0
-                usage_stats['total_documents'] = documents_count
-            except:
-                documents_count = 0
+            print(f"DEBUG: Final usage stats for user {user_id}: {usage_stats}")
             
         except Exception as e:
             print(f"Dashboard data error: {e}")

@@ -1061,6 +1061,78 @@ class DatabaseOperations:
         return documents
     
     @staticmethod
+    def get_user_documents_for_chat(user_id: int, limit: int = 5, offset: int = 0, search: str = None, sort_by: str = "recent") -> tuple:
+        """Get user documents formatted for chat interface with filtering and pagination"""
+        connection = get_db_connection()
+        if not connection:
+            return [], 0
+        
+        cursor = connection.cursor(dictionary=True)
+        
+        # Build WHERE clause for search
+        where_conditions = ["user_id = %s"]
+        params = [user_id]
+        
+        if search and search.strip():
+            search_term = f"%{search.strip()}%"
+            where_conditions.append("(document_name LIKE %s OR tags LIKE %s)")
+            params.extend([search_term, search_term])
+        
+        where_clause = " AND ".join(where_conditions)
+        
+        # Build ORDER BY clause
+        if sort_by == "recent":
+            order_clause = "ORDER BY upload_date DESC"
+        elif sort_by == "name":
+            order_clause = "ORDER BY document_name ASC"
+        elif sort_by == "size":
+            order_clause = "ORDER BY file_size DESC"
+        else:
+            order_clause = "ORDER BY upload_date DESC"
+        
+        # Get total count
+        count_query = f"SELECT COUNT(*) as total FROM user_documents WHERE {where_clause}"
+        cursor.execute(count_query, params)
+        total_count = cursor.fetchone()['total']
+        
+        # Get paginated results
+        query = f"""
+            SELECT id, document_name, collection_name, tags, document_date, 
+                   upload_date, chunk_count, file_size, file_type, status
+            FROM user_documents 
+            WHERE {where_clause}
+            {order_clause}
+            LIMIT %s OFFSET %s
+        """
+        params.extend([limit, offset])
+        cursor.execute(query, params)
+        documents = cursor.fetchall()
+        
+        # Format documents for chat interface
+        formatted_docs = []
+        for doc in documents:
+            # Convert upload_date to string format if it's a datetime
+            upload_date_str = doc['upload_date'].strftime('%d-%m-%Y') if doc['upload_date'] else 'Unknown'
+            
+            formatted_doc = {
+                'collection_name': doc['collection_name'],
+                'document_name': doc['document_name'],
+                'clean_name': doc['document_name'].replace('_', ' '),
+                'upload_date': upload_date_str,
+                'document_date': doc['document_date'] if doc['document_date'] else 'Unknown',
+                'tags': doc['tags'].split(',') if doc['tags'] else [],
+                'points_count': doc['chunk_count'],
+                'file_size': doc['file_size'],
+                'file_type': doc['file_type'],
+                'status': doc['status']
+            }
+            formatted_docs.append(formatted_doc)
+        
+        cursor.close()
+        connection.close()
+        return formatted_docs, total_count
+    
+    @staticmethod
     def get_user_document_by_id(user_id: int, doc_id: int) -> Optional[Dict]:
         """Get a specific document by ID, ensuring it belongs to the user"""
         connection = get_db_connection()
@@ -1284,6 +1356,20 @@ class DatabaseOperations:
         
         cursor = connection.cursor()
         cursor.execute("SELECT COUNT(*) as count FROM user_documents WHERE user_id = %s", (user_id,))
+        result = cursor.fetchone()
+        cursor.close()
+        connection.close()
+        return result[0] if result else 0
+    
+    @staticmethod
+    def get_user_chat_count(user_id: int) -> int:
+        """Get count of user's chat messages"""
+        connection = get_db_connection()
+        if not connection:
+            return 0
+        
+        cursor = connection.cursor()
+        cursor.execute("SELECT COUNT(*) as count FROM chat_history WHERE user_id = %s", (user_id,))
         result = cursor.fetchone()
         cursor.close()
         connection.close()

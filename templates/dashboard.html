@@ -144,17 +144,37 @@
           <h5 class="feature-title">{{ usage_stats.total_documents or 0 }}</h5>
           <p class="feature-description">
             <strong>Documents Uploaded</strong>
-            {% if current_plan and current_plan.max_documents %}
-            <br><small class="text-muted">{{ usage_stats.documents_used or 0 }} / {{ current_plan.max_documents }} used</small>
-            {% endif %}
+            <br><small class="text-muted">
+              {{ usage_stats.documents_used or 0 }} 
+              {% if usage_stats.documents_limit and usage_stats.documents_limit > 0 %}
+                / {{ usage_stats.documents_limit }} used
+              {% else %}
+                uploaded
+              {% endif %}
+            </small>
           </p>
-          {% if current_plan and current_plan.max_documents %}
-          <div class="progress mt-2">
-            <div class="progress-bar bg-primary documents-progress-bar"
-                 data-progress="{{ (usage_stats.documents_used / current_plan.max_documents * 100) if current_plan.max_documents > 0 else 0 }}">
+          <div class="progress mt-2 position-relative" style="height: 24px; background-color: #f0f0f0;">
+            {% if usage_stats.documents_limit and usage_stats.documents_limit > 0 %}
+              <div class="progress-bar bg-primary documents-progress-bar d-flex align-items-center justify-content-center"
+                   data-progress="{{ (usage_stats.documents_used / usage_stats.documents_limit * 100) if usage_stats.documents_limit > 0 else 0 }}"
+                   style="width: {{ (usage_stats.documents_used / usage_stats.documents_limit * 100) if usage_stats.documents_limit > 0 else 0 }}%; min-width: 50px;">
+                <small class="fw-bold text-white">{{ usage_stats.documents_used or 0 }}/{{ usage_stats.documents_limit }}</small>
+              </div>
+            {% else %}
+              <div class="progress-bar bg-info documents-progress-bar d-flex align-items-center justify-content-center"
+                   style="width: {{ 30 if usage_stats.documents_used > 0 else 10 }}%; min-width: 40px;">
+                <small class="fw-bold text-white">{{ usage_stats.documents_used or 0 }}</small>
+              </div>
+            {% endif %}
+            <!-- Overlay text for better visibility -->
+            <div class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center" style="top: 0; left: 0; pointer-events: none;">
+              {% if usage_stats.documents_limit and usage_stats.documents_limit > 0 %}
+                <small class="fw-bold" style="color: #333; text-shadow: 1px 1px 2px rgba(255,255,255,0.8);">{{ usage_stats.documents_used or 0 }}/{{ usage_stats.documents_limit }}</small>
+              {% else %}
+                <small class="fw-bold" style="color: #333; text-shadow: 1px 1px 2px rgba(255,255,255,0.8);">{{ usage_stats.documents_used or 0 }} uploaded</small>
+              {% endif %}
             </div>
           </div>
-          {% endif %}
         </div>
       </div>
       <div class="col-md-3">
@@ -162,20 +182,39 @@
           <div class="feature-icon mb-3">
             <i class="fa-solid fa-comments fa-3x text-accent"></i>
           </div>
-          <h5 class="feature-title">{{ usage_stats.total_chats or 0 }}</h5>
+          <h5 class="feature-title">Chat Messages</h5>
           <p class="feature-description">
-            <strong>Chat Messages</strong>
-            {% if current_plan and current_plan.max_prompts %}
-            <br><small class="text-muted">{{ usage_stats.prompts_used or 0 }} / {{ current_plan.max_prompts }} used</small>
-            {% endif %}
+            <small class="text-muted">
+              {{ usage_stats.prompts_used or 0 }}
+              {% if usage_stats.prompts_limit and usage_stats.prompts_limit > 0 %}
+                / {{ usage_stats.prompts_limit }} messages
+              {% else %}
+                messages sent
+              {% endif %}
+            </small>
           </p>
-          {% if current_plan and current_plan.max_prompts %}
-          <div class="progress mt-2">
-            <div class="progress-bar bg-success prompts-progress-bar"
-                 data-progress="{{ (usage_stats.prompts_used / current_plan.max_prompts * 100) if current_plan.max_prompts > 0 else 0 }}">
+          <div class="progress mt-2 position-relative" style="height: 24px; background-color: #f0f0f0;">
+            {% if usage_stats.prompts_limit and usage_stats.prompts_limit > 0 %}
+              <div class="progress-bar bg-success prompts-progress-bar d-flex align-items-center justify-content-center"
+                   data-progress="{{ (usage_stats.prompts_used / usage_stats.prompts_limit * 100) if usage_stats.prompts_limit > 0 else 0 }}"
+                   style="width: {{ (usage_stats.prompts_used / usage_stats.prompts_limit * 100) if usage_stats.prompts_limit > 0 else 0 }}%; min-width: 50px;">
+                <small class="fw-bold text-white">{{ usage_stats.prompts_used or 0 }}/{{ usage_stats.prompts_limit }}</small>
+              </div>
+            {% else %}
+              <div class="progress-bar bg-warning prompts-progress-bar d-flex align-items-center justify-content-center"
+                   style="width: {{ 30 if usage_stats.prompts_used > 0 else 10 }}%; min-width: 40px;">
+                <small class="fw-bold text-white">{{ usage_stats.prompts_used or 0 }}</small>
+              </div>
+            {% endif %}
+            <!-- Overlay text for better visibility -->
+            <div class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center" style="top: 0; left: 0; pointer-events: none;">
+              {% if usage_stats.prompts_limit and usage_stats.prompts_limit > 0 %}
+                <small class="fw-bold" style="color: #333; text-shadow: 1px 1px 2px rgba(255,255,255,0.8);">{{ usage_stats.prompts_used or 0 }}/{{ usage_stats.prompts_limit }}</small>
+              {% else %}
+                <small class="fw-bold" style="color: #333; text-shadow: 1px 1px 2px rgba(255,255,255,0.8);">{{ usage_stats.prompts_used or 0 }} sent</small>
+              {% endif %}
             </div>
           </div>
-          {% endif %}
         </div>
       </div>
       <div class="col-md-3">
@@ -183,15 +222,31 @@
           <div class="feature-icon mb-3">
             <i class="fa-solid fa-credit-card fa-3x text-accent"></i>
           </div>
-          <h5 class="feature-title">{{ subscriptions|length or 0 }}</h5>
+          <h5 class="feature-title">Subscriptions</h5>
           <p class="feature-description">
-            <strong>Subscriptions</strong>
-            {% if subscriptions %}
-            <br><span class="badge bg-{{ 'success' if subscriptions[0].status == 'active' else 'secondary' }}">
-              {{ subscriptions[0].status|title }}
-            </span>
-            {% endif %}
+            <small class="text-muted">
+              {{ subscriptions|length or 0 }} active plans
+            </small>
           </p>
+          <div class="progress mt-2 position-relative" style="height: 24px; background-color: #f0f0f0;">
+            {% if subscriptions %}
+              <div class="progress-bar bg-{{ 'success' if subscriptions[0].status == 'active' else 'warning' }} d-flex align-items-center justify-content-center"
+                   style="width: {{ '100' if subscriptions[0].status == 'active' else '50' }}%; min-width: 50px;">
+              </div>
+            {% else %}
+              <div class="progress-bar bg-secondary d-flex align-items-center justify-content-center"
+                   style="width: 20%; min-width: 40px;">
+              </div>
+            {% endif %}
+            <!-- Overlay text for better visibility -->
+            <div class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center" style="top: 0; left: 0; pointer-events: none;">
+              {% if subscriptions %}
+                <small class="fw-bold text-white" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.7);">{{ subscriptions[0].status|title }}</small>
+              {% else %}
+                <small class="fw-bold text-white" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.7);">No Plan</small>
+              {% endif %}
+            </div>
+          </div>
         </div>
       </div>
       <div class="col-md-3">
@@ -199,12 +254,33 @@
           <div class="feature-icon mb-3">
             <i class="fa-solid fa-star fa-3x text-accent"></i>
           </div>
-          <h5 class="feature-title">{% if current_plan %}{{ current_plan.plan_name }}{% else %}Free{% endif %}</h5>
+          <h5 class="feature-title">Current Plan</h5>
           <p class="feature-description">
-            <strong>Current Plan</strong>
+            <small class="text-muted">
+              {% if current_plan %}{{ current_plan.plan_name }}{% else %}Free Plan{% endif %} active
+            </small>
           </p>
+          <div class="progress mt-2 position-relative" style="height: 24px; background-color: #f0f0f0;">
+            {% if current_plan %}
+              <div class="progress-bar bg-warning d-flex align-items-center justify-content-center"
+                   style="width: 100%; min-width: 50px;">
+              </div>
+            {% else %}
+              <div class="progress-bar bg-secondary d-flex align-items-center justify-content-center"
+                   style="width: 30%; min-width: 40px;">
+              </div>
+            {% endif %}
+            <!-- Overlay text for better visibility -->
+            <div class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center" style="top: 0; left: 0; pointer-events: none;">
+              {% if current_plan %}
+                <small class="fw-bold text-white" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.7);">{{ current_plan.plan_name }}</small>
+              {% else %}
+                <small class="fw-bold text-white" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.7);">Free Plan</small>
+              {% endif %}
+            </div>
+          </div>
           {% if not current_plan %}
-          <a href="/subscription" class="btn btn-sm btn-outline-theme feature-button">
+          <a href="/subscription" class="btn btn-sm btn-outline-theme feature-button mt-2">
             <i class="fa-solid fa-arrow-up me-1"></i>Upgrade
           </a>
           {% endif %}

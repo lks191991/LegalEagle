@@ -10,6 +10,187 @@ except ImportError:
     print("OpenAI not installed. Install with: pip install openai")
 
 
+def query_rag_with_collection(query, doc_filter=None, collection_name=None, user_id=None):
+    """
+    RAG Pipeline with MySQL collection name: User Question → Vector Search with Collection → Context Retrieval → AI Processing → Intelligent Answer
+    """
+    print(f"🔍 Step 1: Processing user question with collection: {query}")
+    print(f"🔍 Collection name: {collection_name}, Document filter: {doc_filter}")
+    
+    # Validate user_id is provided
+    if not user_id:
+        return {
+            "answer": "❌ User authentication required for document access.",
+            "sources": []
+        }
+    
+    # Step 2: Vector Search with collection name
+    if not collection_name and not doc_filter:
+        return {
+            "answer": "❌ Please select a document first. Document selection is mandatory.",
+            "sources": []
+        }
+    
+    try:
+        print(f"🔍 Step 2: Vector search with collection '{collection_name}' for user {user_id}")
+        
+        # Initialize VectorStore for the user
+        vector_store = VectorStore(user_id=user_id)
+        
+        # Initialize clients when needed
+        vector_store._init_client_if_needed()
+        vector_store._init_model_if_needed()
+        
+        if not vector_store.client:
+            return {
+                "answer": f"❌ Vector database is not available. Please ensure Qdrant is running and properly configured.",
+                "sources": []
+            }
+        
+        # Perform vector search in the specific collection
+        search_results = vector_store.search_in_collection(query, collection_name, limit=5)
+        print(f"📊 Vector search found {len(search_results)} results")
+        
+        # If no results found, try fallback strategies
+        if not search_results:
+            print(f"🔍 No results found, trying fallback strategies...")
+            
+            # Try searching with broader terms
+            fallback_queries = [
+                query.lower(),
+                " ".join(query.split()[:2]),  # First two words
+                query.split()[0] if query.split() else query  # First word only
+            ]
+            
+            for fallback_query in fallback_queries:
+                if fallback_query and fallback_query != query:
+                    print(f"🔍 Trying fallback query: '{fallback_query}'")
+                    search_results = vector_store.search_in_collection(fallback_query, collection_name, limit=3)
+                    if search_results:
+                        print(f"✅ Found {len(search_results)} results with fallback query")
+                        break
+        
+        if not search_results:
+            return {
+                "answer": f"❌ No relevant content found for '{query}' in the selected document. The document may not contain information about this topic, or try using different search terms.",
+                "sources": []
+            }
+        
+        for i, result in enumerate(search_results):
+            score = result.get('score', 0)
+            print(f"Result {i+1} (score: {score:.3f}): {result['text'][:100]}...")
+        
+        # If no results found, try fallback strategies
+        if not search_results:
+            print(f"🔍 No results found, trying fallback strategies...")
+            
+            if collection_name:
+                # Try getting any content from the collection
+                any_content = vector_store.search_in_collection("the", collection_name, limit=5)
+                print(f"📊 Collection '{collection_name}' has {len(any_content)} total chunks")
+                if any_content:
+                    search_results = any_content[:3]  # Use first few chunks
+                    print(f"✅ Using {len(search_results)} fallback chunks")
+            
+        print(f"✅ Final results: {len(search_results)} chunks from collection '{collection_name}'")
+            
+    except Exception as e:
+        print(f"❌ Vector search failed: {str(e)}")
+        return {
+            "answer": f"Vector database error: {str(e)}",
+            "sources": []
+        }
+    
+    if not search_results:
+        return {
+            "answer": f"❌ No content found for '{query}' in the selected document. Please check if the document is properly uploaded or try different search terms.",
+            "sources": []
+        }
+    
+    # Step 3: Context Retrieval
+    print(f"🔍 Step 3: Retrieving context from {len(search_results)} chunks")
+    
+    context = "\n\n".join([
+        f"Document: {result.get('filename', 'Document')}, Page: {result.get('page', 'N/A')}\n{result['text']}"
+        for result in search_results
+    ])
+    print(f"✅ Context prepared from {len(search_results)} chunks ({len(context)} characters)")
+    
+    # Step 4: AI Processing
+    openai_api_key = os.getenv("OPENAI_API_KEY")
+    
+    if OPENAI_AVAILABLE and openai_api_key:
+        try:
+            print(f"🤖 Step 4: AI processing with OpenAI")
+            client = OpenAI(api_key=openai_api_key)
+            
+            response = client.chat.completions.create(
+                model=os.getenv("LLM_MODEL", "gpt-3.5-turbo"),
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are LegalEagle. Answer STRICTLY based on the document context provided. Be comprehensive and include ALL relevant information from the context. Never use general knowledge."
+                    },
+                    {
+                        "role": "user",
+                        "content": f"Context from document:\n{context}\n\nQuestion: {query}\n\nProvide a complete answer using ALL relevant information from the context above. Include all Articles, Chapters, and provisions mentioned."
+                    }
+                ],
+                max_tokens=500,
+                temperature=0.0
+            )
+            
+            answer = response.choices[0].message.content
+            
+            # Prepare sources
+            sources = []
+            for result in search_results:
+                source = result['filename']
+                if result.get('page'):
+                    source += f" (Page {result['page']})"
+                sources.append(source)
+            
+            print(f"✅ Step 5: Generated intelligent answer with OpenAI")
+            return {
+                "answer": f"🦅 {answer}",
+                "sources": sources
+            }
+            
+        except Exception as e:
+            print(f"❌ AI processing failed: {str(e)}")
+    
+    # Fallback: Document content mode
+    print(f"🔍 Step 4-5: Fallback to document content mode")
+    try:
+        best_result = search_results[0]
+        best_score = best_result.get('score', 0)
+        
+        # Show the most relevant result
+        best_text = best_result['text']
+        page_info = f" (Page {best_result.get('page', 'N/A')})" if best_result.get('page') else ""
+        filename = best_result.get('filename', 'Selected Document')
+        answer = f"📄 Found in {filename}{page_info}:\n\n{best_text[:700]}..."
+        
+        sources = []
+        for result in search_results[:2]:
+            source = result.get('filename', 'Unknown Document')
+            if result.get('page'):
+                source += f" (Page {result['page']})"
+            sources.append(source)
+        
+        return {
+            "answer": answer,
+            "sources": sources
+        }
+        
+    except Exception as e:
+        print(f"❌ Document processing error: {str(e)}")
+        return {
+            "answer": f"Error: {str(e)}",
+            "sources": []
+        }
+
+
 def query_rag(query, doc_filter=None, user_id=None):
     """
     RAG Pipeline: User Question → Vector Search → Context Retrieval → AI Processing → Intelligent Answer
@@ -33,6 +214,16 @@ def query_rag(query, doc_filter=None, user_id=None):
     try:
         print(f"🔍 Step 2: Vector search in user's selected document: {doc_filter}")
         vector_store = VectorStore(user_id=user_id)
+        
+        # Initialize clients when needed
+        vector_store._init_client_if_needed()
+        vector_store._init_model_if_needed()
+        
+        if not vector_store.client:
+            return {
+                "answer": f"❌ Vector database is not available. Please ensure Qdrant is running and properly configured.",
+                "sources": []
+            }
         
         # Primary search with original query - get more chunks for consistency
         raw_results = vector_store.search(query, limit=10, document_name=doc_filter)
