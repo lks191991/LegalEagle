@@ -5,6 +5,7 @@
 **LegalEagle** is an AI-powered legal Q&A chatbot platform built with FastAPI, MySQL, and Qdrant vector database. It allows users to upload legal documents and ask questions about them using advanced AI models.
 
 ### Key Features
+
 - 📄 Document upload and processing (PDF support)
 - 🤖 AI-powered chat interface with document context
 - 👥 User management with role-based access
@@ -18,6 +19,7 @@
 ## 🏗️ System Architecture
 
 ### Tech Stack
+
 - **Backend**: FastAPI (Python)
 - **Database**: MySQL (User data, plans, transactions)
 - **Vector DB**: Qdrant Cloud (Document embeddings)
@@ -27,6 +29,7 @@
 - **File Processing**: PyMuPDF for PDF processing
 
 ### Project Structure
+
 ```
 LegalEagle/
 ├── main.py                 # FastAPI app entry point
@@ -56,6 +59,7 @@ LegalEagle/
 ## 🛠️ Installation & Setup
 
 ### Prerequisites
+
 - Python 3.8+
 - MySQL Server
 - Qdrant Cloud account (or local Qdrant)
@@ -63,12 +67,14 @@ LegalEagle/
 - Stripe account (for payments)
 
 ### Step 1: Clone Repository
+
 ```bash
 git clone <repository-url>
 cd LegalEagle
 ```
 
 ### Step 2: Create Virtual Environment
+
 ```bash
 python -m venv venv
 # Windows
@@ -78,11 +84,13 @@ source venv/bin/activate
 ```
 
 ### Step 3: Install Dependencies
+
 ```bash
 pip install -r requirements.txt
 ```
 
 ### Step 4: Environment Configuration
+
 Create `.env` file (copy from `.env.example`):
 
 ```env
@@ -110,6 +118,7 @@ STRIPE_SECRET_KEY=sk_test_your_stripe_secret_key
 ```
 
 ### Step 5: Database Setup
+
 ```bash
 # Create MySQL database
 mysql -u root -p
@@ -121,6 +130,7 @@ python database.py
 ```
 
 ### Step 6: Run Application
+
 ```bash
 python main.py
 ```
@@ -132,7 +142,9 @@ The application will be available at: `http://127.0.0.1:8005`
 ## 🔧 Configuration Details
 
 ### Database Schema
+
 The application uses MySQL with the following main tables:
+
 - `users` - User accounts and profiles
 - `subscription_plans` - Available subscription plans
 - `user_plans` - User's active plans
@@ -143,10 +155,12 @@ The application uses MySQL with the following main tables:
 - `user_ai_settings` - User-specific AI configurations
 
 ### Default Admin Account
+
 - **Email**: `admin@legaleagle.com`
 - **Password**: `password` (hash: `5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8`)
 
 ### API Endpoints Structure
+
 ```
 / - Public homepage
 /admin/* - Admin panel routes
@@ -163,6 +177,7 @@ The application uses MySQL with the following main tables:
 ### Production Environment Setup
 
 1. **Server Requirements**:
+
    - Ubuntu 20.04+ or similar
    - Python 3.8+
    - MySQL 8.0+
@@ -170,26 +185,29 @@ The application uses MySQL with the following main tables:
    - SSL certificate
 
 2. **Environment Variables**:
+
    - Update `.env` with production values
    - Use strong database passwords
    - Use production Stripe keys
    - Set proper CORS origins
 
 3. **Database Migration**:
+
    ```bash
    # Backup existing data if upgrading
    mysqldump -u root -p legaleagle > backup.sql
-   
+
    # Run migrations
    python database.py
    ```
 
 4. **Process Management**:
+
    ```bash
    # Using Gunicorn
    pip install gunicorn
    gunicorn main:app -w 4 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
-   
+
    # Or using systemd service
    sudo systemctl start legaleagle
    sudo systemctl enable legaleagle
@@ -200,13 +218,13 @@ The application uses MySQL with the following main tables:
    server {
        listen 80;
        server_name yourdomain.com;
-       
+
        location / {
            proxy_pass http://127.0.0.1:8000;
            proxy_set_header Host $host;
            proxy_set_header X-Real-IP $remote_addr;
        }
-       
+
        location /static/ {
            alias /path/to/legaleagle/static/;
        }
@@ -218,18 +236,21 @@ The application uses MySQL with the following main tables:
 ## 🔍 Key Components Deep Dive
 
 ### 1. Document Processing Pipeline
+
 ```python
 # File: services/pdf_utils.py
 1. PDF upload → 2. Text extraction → 3. Chunking → 4. Embedding generation → 5. Qdrant storage
 ```
 
 ### 2. Chat System Flow
+
 ```python
 # File: services/rag.py
 1. User query → 2. Query embedding → 3. Vector search → 4. Context retrieval → 5. GPT response
 ```
 
 ### 3. User Management
+
 ```python
 # File: db_operations.py
 - User CRUD operations
@@ -238,6 +259,7 @@ The application uses MySQL with the following main tables:
 ```
 
 ### 4. Payment Integration
+
 ```python
 # File: routes/payments.py
 - Stripe checkout sessions
@@ -246,6 +268,7 @@ The application uses MySQL with the following main tables:
 ```
 
 ### 5. Admin Dashboard Features
+
 - User management
 - Plan management
 - Transaction monitoring
@@ -258,6 +281,7 @@ The application uses MySQL with the following main tables:
 ## 🧪 Testing
 
 ### Unit Tests
+
 ```bash
 # Run specific tests
 python test_api_direct.py
@@ -267,6 +291,7 @@ python test_user_separation.py
 ```
 
 ### Integration Tests
+
 ```bash
 # Test complete chat flow
 python test_chat_api_direct.py
@@ -276,6 +301,7 @@ python test_mysql_collection_integration.py
 ```
 
 ### Manual Testing Checklist
+
 - [ ] User registration/login
 - [ ] Document upload
 - [ ] Chat functionality
@@ -290,15 +316,17 @@ python test_mysql_collection_integration.py
 ### Common Issues
 
 1. **Database Connection Issues**:
+
    ```bash
    # Check MySQL service
    sudo systemctl status mysql
-   
+
    # Test connection
    python -c "from database import get_db_connection; print(get_db_connection())"
    ```
 
 2. **Qdrant Connection Issues**:
+
    ```bash
    # Verify Qdrant credentials in .env
    # Check collection exists
@@ -306,6 +334,7 @@ python test_mysql_collection_integration.py
    ```
 
 3. **File Upload Issues**:
+
    - Check `static/uploads/` directory permissions
    - Verify max file size settings
    - Check disk space
@@ -316,12 +345,15 @@ python test_mysql_collection_integration.py
    - Monitor Stripe dashboard
 
 ### Database Migration Scripts
+
 Located in project root:
+
 - `migrate_*.py` - Various database migrations
 - `setup_test_data.py` - Test data generation
 - `verify_dashboard.py` - Dashboard verification
 
 ### Monitoring & Logs
+
 ```bash
 # Application logs
 tail -f logs/app.log
@@ -338,6 +370,7 @@ tail -f /var/log/nginx/access.log
 ## 📚 Additional Resources
 
 ### Important Files to Review
+
 1. `db_operations.py` - Core database operations
 2. `services/rag.py` - AI chat logic
 3. `routes/admin_main.py` - Admin functionality
@@ -345,12 +378,14 @@ tail -f /var/log/nginx/access.log
 5. Migration summary files (`*_SUMMARY.md`)
 
 ### External Dependencies
+
 - **FastAPI Documentation**: https://fastapi.tiangolo.com/
 - **Qdrant Documentation**: https://qdrant.tech/documentation/
 - **OpenAI API Documentation**: https://platform.openai.com/docs
 - **Stripe Documentation**: https://stripe.com/docs
 
 ### Development Best Practices
+
 1. Always backup database before migrations
 2. Test payment flows in Stripe test mode
 3. Monitor API rate limits (OpenAI, Qdrant)
@@ -363,6 +398,7 @@ tail -f /var/log/nginx/access.log
 ## 🤝 Handover Checklist
 
 ### For New Developer
+
 - [ ] Environment setup completed
 - [ ] Database connection verified
 - [ ] All external API keys configured
@@ -373,6 +409,7 @@ tail -f /var/log/nginx/access.log
 - [ ] Payment flow tested (test mode)
 
 ### Knowledge Transfer Items
+
 - [ ] Codebase walkthrough completed
 - [ ] Database schema explained
 - [ ] API integration points reviewed
@@ -381,6 +418,7 @@ tail -f /var/log/nginx/access.log
 - [ ] Access to external services provided
 
 ### Future Enhancements
+
 - Multi-language support
 - Advanced document types (Word, Excel)
 - Real-time notifications
@@ -394,6 +432,7 @@ tail -f /var/log/nginx/access.log
 ## 📞 Support & Contact
 
 For technical questions or issues:
+
 - Review this documentation first
 - Check existing migration summary files
 - Test with sample data before production changes
