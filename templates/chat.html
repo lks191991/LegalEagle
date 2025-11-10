@@ -1062,7 +1062,10 @@ primary_link="/upload", secondary_text="Book Demo", secondary_link="/contact" )
           // Type multiple characters at once for speed
           const endIndex = Math.min(currentIndex + chunkSize, text.length);
           const currentText = text.substring(0, endIndex);
-          $bubble.html(currentText + '<span class="typing-cursor">|</span>');
+          $bubble.html(
+            currentText.replace(/\n/g, "<br>") +
+              '<span class="typing-cursor">|</span>'
+          );
           currentIndex = endIndex;
 
           // Auto-scroll during typing

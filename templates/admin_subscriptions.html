@@ -96,11 +96,23 @@ endblock %} {% block content %}
                 {% if status_filter %}
                     <span class="badge bg-info ms-1">Status: {{ status_filter|title }}</span>
                 {% endif %}
+                {% macro dmy(date) %}
+                  {%- if date and '-' in date -%}
+                    {%- set parts = date.split('-') -%}
+                    {%- if parts|length == 3 and parts[0]|length == 4 -%}
+                      {{ parts[2] ~ '-' ~ parts[1] ~ '-' ~ parts[0] }}
+                    {%- else -%}
+                      {{ date }}
+                    {%- endif -%}
+                  {%- else -%}
+                    {{ date }}
+                  {%- endif -%}
+                {% endmacro %}
                 {% if date_from %}
-                    <span class="badge bg-info ms-1">From: {{ date_from }}</span>
+                    <span class="badge bg-info ms-1">From: {{ dmy(date_from) }}</span>
                 {% endif %}
                 {% if date_to %}
-                    <span class="badge bg-info ms-1">To: {{ date_to }}</span>
+                    <span class="badge bg-info ms-1">To: {{ dmy(date_to) }}</span>
                 {% endif %}
             </div>
             {% endif %}
@@ -139,14 +151,42 @@ endblock %} {% block content %}
                 class="badge bg-{% if subscription.status == 'active' %}success{% elif subscription.status == 'cancelled' %}warning{% else %}danger{% endif %}"
                 >{{ subscription.status|title }}</span
               >
+             
+            </div>
+          </td>
+          <td>
+            <div class="d-flex align-items-center gap-2">
+              
               {% if subscription.status == 'active' %}
+
               <button
                 class="btn btn-sm btn-outline-danger"
-                onclick="changeStatus({{ subscription.id }}, '{{ subscription.status }}')"
+                data-bs-toggle="modal"
+                data-bs-target="#cancelSubscriptionModal"
+                data-subscription-id="{{ subscription.id }}"
+                data-current-status="{{ subscription.status }}"
                 title="Cancel Subscription"
               >
                 <i class="fa-solid fa-ban"></i>
               </button>
+<!-- Cancel Subscription Modal -->
+<div class="modal fade" id="cancelSubscriptionModal" tabindex="-1" aria-labelledby="cancelSubscriptionModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="cancelSubscriptionModalLabel">Cancel Subscription</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to cancel this subscription? This action cannot be undone.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No, Keep Active</button>
+        <button type="button" class="btn btn-danger" id="confirmCancelSubscriptionBtn">Yes, Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
 
               {% endif %}
             </div>
@@ -230,24 +270,28 @@ endblock %} {% block content %}
     window.location.href = url;
   }
 
-  function changeStatus(subscriptionId, currentStatus) {
-    // Only active subscriptions can be cancelled
-    if (currentStatus !== "active") {
-      showMessage("Only active subscriptions can be modified.", "error");
-      return;
-    }
 
-    const newStatus = "cancelled";
+  // Modal-based Cancel Subscription logic
+  let selectedSubscriptionId = null;
+  let selectedCurrentStatus = null;
 
-    if (
-      confirm(
-        `Are you sure you want to cancel this subscription? This action cannot be undone.`
-      )
-    ) {
+  const cancelModal = document.getElementById('cancelSubscriptionModal');
+  if (cancelModal) {
+    cancelModal.addEventListener('show.bs.modal', function (event) {
+      const button = event.relatedTarget;
+      selectedSubscriptionId = button.getAttribute('data-subscription-id');
+      selectedCurrentStatus = button.getAttribute('data-current-status');
+    });
+
+    document.getElementById('confirmCancelSubscriptionBtn').onclick = function () {
+      if (selectedCurrentStatus !== "active") {
+        showMessage("Only active subscriptions can be modified.", "error");
+        return;
+      }
+      const newStatus = "cancelled";
       const formData = new FormData();
       formData.append("status", newStatus);
-
-      fetch(`/admin/subscriptions/${subscriptionId}/status`, {
+      fetch(`/admin/subscriptions/${selectedSubscriptionId}/status`, {
         method: "POST",
         body: formData,
       })
@@ -258,7 +302,10 @@ endblock %} {% block content %}
             setTimeout(() => location.reload(), 1500);
           }
         });
-    }
+      // Hide modal after action
+      var modalInstance = bootstrap.Modal.getInstance(cancelModal);
+      if (modalInstance) modalInstance.hide();
+    };
   }
 
   // Message display function
@@ -382,6 +429,22 @@ endblock %} {% block content %}
     });
     
     }, 500); // End of setTimeout for datepicker loading
+  });
+
+  // Convert dd-mm-yyyy to yyyy-mm-dd for date_from and date_to before submitting the filter form
+  $(function() {
+    $('form[action="/admin/subscriptions"]').on('submit', function(e) {
+      var from = $('#date_from').val();
+      var to = $('#date_to').val();
+      function convert(d) {
+        if (!d) return '';
+        var parts = d.split('-');
+        if (parts.length === 3) return parts[2] + '-' + parts[1] + '-' + parts[0];
+        return d;
+      }
+      $('#date_from').val(convert(from));
+      $('#date_to').val(convert(to));
+    });
   });
 </script>
 {% endblock %}

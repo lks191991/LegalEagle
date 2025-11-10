@@ -1,3 +1,34 @@
+# Migration script to add address fields to users table
+import mysql.connector
+from database import get_db_connection
+
+def migrate_add_address_fields():
+    connection = get_db_connection()
+    if not connection:
+        print("❌ Could not connect to database.")
+        return
+    cursor = connection.cursor()
+    try:
+        cursor.execute("""
+            ALTER TABLE users
+            ADD COLUMN address_line1 VARCHAR(255) DEFAULT NULL,
+            ADD COLUMN address_line2 VARCHAR(255) DEFAULT NULL,
+            ADD COLUMN city VARCHAR(100) DEFAULT NULL,
+            ADD COLUMN state VARCHAR(100) DEFAULT NULL,
+            ADD COLUMN country VARCHAR(100) DEFAULT NULL,
+            ADD COLUMN pincode VARCHAR(20) DEFAULT NULL
+        """)
+        connection.commit()
+        print("✅ Address fields added to users table.")
+    except Exception as e:
+        print(f"❌ Migration failed: {e}")
+        connection.rollback()
+    finally:
+        cursor.close()
+        connection.close()
+
+if __name__ == "__main__":
+    migrate_add_address_fields()
 #!/usr/bin/env python3
 """
 Migration script to add address fields to users table

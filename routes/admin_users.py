@@ -44,18 +44,26 @@ def admin_users(request: Request, page: int = 1, name: str = None, email: str = 
     name_filter = name if name and name.strip() else None
     email_filter = email if email and email.strip() else None
     status_filter = status if status and status.strip() else None
-    date_from_filter = date_from if date_from and date_from.strip() else None
-    date_to_filter = date_to if date_to and date_to.strip() else None
     sort_filter = sort_by if sort_by and sort_by.strip() else 'id_desc'
-    
+
+    # Use date_converter utility for date conversion
+    from utils.date_converter import ddmmyyyy_to_yyyymmdd, yyyymmdd_to_ddmmyyyy
+
+    date_from_db = ddmmyyyy_to_yyyymmdd(date_from) if date_from else None
+    date_to_db = ddmmyyyy_to_yyyymmdd(date_to) if date_to else None
+
     # Handle role filter - default to 'all' to show all users
     if role and role.strip() == 'all':
         role_filter = None
     else:
         role_filter = role if role and role.strip() else None
-    
+
     users_data = DatabaseOperations.get_all_users(page, 10, name_filter, email_filter, status_filter, role_filter, 
-                                                date_from_filter, date_to_filter, sort_filter)
+                                                date_from_db, date_to_db, sort_filter)
+
+    date_from_display = yyyymmdd_to_ddmmyyyy(date_from_db) if date_from else ''
+    date_to_display = yyyymmdd_to_ddmmyyyy(date_to_db) if date_to else ''
+
     return templates.TemplateResponse("admin_users.html", {
         "request": request, 
         "current_page": "users", 
@@ -63,8 +71,8 @@ def admin_users(request: Request, page: int = 1, name: str = None, email: str = 
         "email_filter": email or "",
         "status_filter": status or "",
         "role_filter": role or "all",
-        "date_from": date_from or "",
-        "date_to": date_to or "",
+        "date_from": date_from_display,
+        "date_to": date_to_display,
         "sort_filter": sort_filter,
         **users_data
     })

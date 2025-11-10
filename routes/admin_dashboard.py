@@ -64,19 +64,28 @@ def admin_contact_submissions(
     if not user_data:
         return RedirectResponse(url="/admin/login", status_code=302)
     
+    # Use date_converter utility for date conversion
+    from utils.date_converter import ddmmyyyy_to_yyyymmdd, yyyymmdd_to_ddmmyyyy
+
+    date_from_db = ddmmyyyy_to_yyyymmdd(date_from) if date_from else None
+    date_to_db = ddmmyyyy_to_yyyymmdd(date_to) if date_to else None
+
     # Get filtered contact submissions
     if status or search or date_from or date_to:
         contact_submissions = DatabaseOperations.get_filtered_contact_submissions(
-            status=status, search=search, date_from=date_from, date_to=date_to
+            status=status, search=search, date_from=date_from_db, date_to=date_to_db
         )
     else:
         contact_submissions = DatabaseOperations.get_all_contact_submissions()
-    
+
     # Debug: Print submission count
     print(f"DEBUG: Found {len(contact_submissions)} contact submissions for admin page")
     for i, sub in enumerate(contact_submissions):
-        print(f"DEBUG: Submission {i+1}: ID={sub.get('id')}, Name={sub.get('first_name')} {sub.get('last_name')}")
-    
+        print(f"DEBUG: Submission {i+1}: ID={sub.get('id')}, Name={sub.get('first_name', sub.get('name', ''))} {sub.get('last_name', '')}")
+
+    date_from_display = yyyymmdd_to_ddmmyyyy(date_from_db) if date_from else ''
+    date_to_display = yyyymmdd_to_ddmmyyyy(date_to_db) if date_to else ''
+
     return templates.TemplateResponse("admin_contacts.html", {
         "request": request,
         "contact_submissions": contact_submissions,
@@ -85,8 +94,8 @@ def admin_contact_submissions(
         "filters": {
             "status": status or "all",
             "search": search or "",
-            "date_from": date_from or "",
-            "date_to": date_to or ""
+            "date_from": date_from_display,
+            "date_to": date_to_display
         }
     })
 

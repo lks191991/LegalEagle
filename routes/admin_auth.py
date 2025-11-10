@@ -74,17 +74,23 @@ def verify_admin_session(admin_session: Optional[str] = Cookie(None)):
     """Verify admin session and return admin data"""
     if not admin_session:
         return None
-    
     try:
-        # Get admin user by session (assuming session stores user email)
-        # In a real app, you'd validate the session token
-        admin_data = get_user_by_email(admin_session)
-        
-        if admin_data and admin_data.get('is_admin'):
-            return admin_data
-        else:
+        # Parse the session cookie: 'user_id:1,role:admin'
+        parts = admin_session.split(',')
+        session_data = {}
+        for part in parts:
+            if ':' in part:
+                key, value = part.split(':', 1)
+                session_data[key.strip()] = value.strip()
+        user_id = session_data.get('user_id')
+        role = session_data.get('role')
+        if not user_id or role != 'admin':
             return None
-            
+        # Look up user by ID
+        user = DatabaseOperations.get_user_by_id(int(user_id))
+        if user and user.get('role') == 'admin':
+            return user
+        return None
     except Exception as e:
         print(f"Admin session verification error: {e}")
         return None

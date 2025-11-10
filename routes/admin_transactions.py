@@ -43,16 +43,53 @@ def admin_transactions(request: Request,
     if not user_data:
         return RedirectResponse(url="/admin/login", status_code=302)
     
-    transactions = DatabaseOperations.get_all_transactions_filtered(user_name, user_email, status, amount_range, date_from, date_to)
-    
+    # Convert dd-mm-yyyy to yyyy-mm-dd for backend filtering
+    from datetime import datetime
+    def convert_to_yyyy_mm_dd(date_str):
+        if date_str and '-' in date_str:
+            try:
+                return datetime.strptime(date_str, '%d-%m-%Y').strftime('%Y-%m-%d')
+            except Exception:
+                return date_str
+        return date_str
+
+    date_from_filter = convert_to_yyyy_mm_dd(date_from) if date_from and date_from.strip() else None
+    date_to_filter = convert_to_yyyy_mm_dd(date_to) if date_to and date_to.strip() else None
+
+    transactions = DatabaseOperations.get_all_transactions_filtered(user_name, user_email, status, amount_range, date_from_filter, date_to_filter)
+    total_amount = sum(t.get('amount', 0) or 0 for t in transactions)
+    all_time_total = DatabaseOperations.get_total_revenue()
+
+    # For display in filter badges, always show dd-mm-yyyy
+    def convert_to_dd_mm_yyyy(date_str):
+        if date_str and '-' in date_str:
+            try:
+                # Accept both yyyy-mm-dd and dd-mm-yyyy
+                if date_str.count('-') == 2:
+                    parts = date_str.split('-')
+                    if len(parts[0]) == 4:
+                        # yyyy-mm-dd
+                        return datetime.strptime(date_str, '%Y-%m-%d').strftime('%d-%m-%Y')
+                    elif len(parts[2]) == 4:
+                        # dd-mm-yyyy
+                        return date_str
+            except Exception:
+                return date_str
+        return date_str or ''
+
+    date_from_display = convert_to_dd_mm_yyyy(date_from) if date_from else ''
+    date_to_display = convert_to_dd_mm_yyyy(date_to) if date_to else ''
+
     return templates.TemplateResponse("admin_transactions.html", {
         "request": request, 
         "transactions": transactions, 
+        "total_amount": total_amount,
+        "all_time_total": all_time_total,
         "current_page": "transactions",
         "user_name_filter": user_name,
         "user_email_filter": user_email,
         "status_filter": status,
         "amount_filter": amount_range,
-        "date_from": date_from,
-        "date_to": date_to
+        "date_from": date_from_display,
+        "date_to": date_to_display
     })

@@ -3,6 +3,18 @@ from typing import List, Dict, Optional
 import hashlib
 
 class DatabaseOperations:
+    @staticmethod
+    def get_total_revenue() -> float:
+        """Get the sum of all transaction amounts (all time)"""
+        connection = get_db_connection()
+        if not connection:
+            return 0
+        cursor = connection.cursor()
+        cursor.execute("SELECT SUM(amount) FROM transactions")
+        result = cursor.fetchone()
+        cursor.close()
+        connection.close()
+        return float(result[0]) if result and result[0] is not None else 0
     
     @staticmethod
     def get_user_by_email(email: str) -> Optional[Dict]:
@@ -55,35 +67,33 @@ class DatabaseOperations:
     
     @staticmethod
     def update_user_profile(user_id: int, name: str, email: str, mobile_number: str = None, password: str = None, profile_photo: str = None) -> bool:
-        """Update user profile"""
+        """Update user profile (name, email, mobile, password, image)"""
         connection = get_db_connection()
         if not connection:
             return False
-        
+
         cursor = connection.cursor()
-        
-        # Build dynamic query based on what fields are being updated
-        update_fields = ["name = %s", "email = %s"]
-        params = [name, email]
-        
-        if mobile_number is not None:
-            update_fields.append("mobile_number = %s")
-            params.append(mobile_number)
-        
-        if password:
+
+        # Always update name, email, mobile
+        update_fields = ["name = %s", "email = %s", "mobile_number = %s"]
+        params = [name, email, mobile_number]
+
+        # Optionally update password
+        if password is not None:
+            import hashlib
             hashed_password = hashlib.sha256(password.encode()).hexdigest()
             update_fields.append("password = %s")
             params.append(hashed_password)
-        
+
+        # Optionally update profile photo
         if profile_photo is not None:
             update_fields.append("profile_photo = %s")
             params.append(profile_photo)
-        
+
         params.append(user_id)
-        
         query = f"UPDATE users SET {', '.join(update_fields)} WHERE id = %s"
         cursor.execute(query, params)
-        
+
         connection.commit()
         cursor.close()
         connection.close()
@@ -123,72 +133,79 @@ class DatabaseOperations:
         params = []
         
         if name_filter:
-            where_conditions.append("name LIKE %s")
+            where_conditions.append("u.name LIKE %s")
             params.append(f"%{name_filter}%")
         
         if email_filter:
-            where_conditions.append("email LIKE %s")
+            where_conditions.append("u.email LIKE %s")
             params.append(f"%{email_filter}%")
         
         if status_filter:
-            where_conditions.append("status = %s")
+            where_conditions.append("u.status = %s")
             params.append(status_filter)
         
         # Apply role filter if specified
         if role_filter:
-            where_conditions.append("role = %s")
+            where_conditions.append("u.role = %s")
             params.append(role_filter)
             
         # Date range filter
         if date_from:
-            where_conditions.append("DATE(created_at) >= %s")
+            where_conditions.append("DATE(u.created_at) >= %s")
             params.append(date_from)
             
         if date_to:
-            where_conditions.append("DATE(created_at) <= %s")
+            where_conditions.append("DATE(u.created_at) <= %s")
             params.append(date_to)
         
         where_clause = " AND ".join(where_conditions) if where_conditions else "1=1"
         
         # Build ORDER BY clause
-        order_by = "ORDER BY id DESC"  # Default sorting
+        order_by = "ORDER BY u.id DESC"  # Default sorting
         if sort_by:
             if sort_by == "id_desc":
-                order_by = "ORDER BY id DESC"
+                order_by = "ORDER BY u.id DESC"
             elif sort_by == "id_asc":
-                order_by = "ORDER BY id ASC"
+                order_by = "ORDER BY u.id ASC"
             elif sort_by == "name_asc":
-                order_by = "ORDER BY name ASC"
+                order_by = "ORDER BY u.name ASC"
             elif sort_by == "name_desc":
-                order_by = "ORDER BY name DESC"
+                order_by = "ORDER BY u.name DESC"
             elif sort_by == "email_asc":
-                order_by = "ORDER BY email ASC"
+                order_by = "ORDER BY u.email ASC"
             elif sort_by == "email_desc":
-                order_by = "ORDER BY email DESC"
-        
+                order_by = "ORDER BY u.email DESC"
+
         # Get total count
-        cursor.execute(f"SELECT COUNT(*) as total FROM users WHERE {where_clause}", params)
+        cursor.execute(f"SELECT COUNT(*) as total FROM users u WHERE {where_clause}", params)
         total = cursor.fetchone()["total"]
-        
+
         # Calculate pagination
         total_pages = (total + per_page - 1) // per_page if total > 0 else 0
         offset = (page - 1) * per_page
-        
+
         # Get paginated users
         cursor.execute(
-            f"SELECT id, name, email, mobile_number, profile_photo, role, status, created_at FROM users WHERE {where_clause} {order_by} LIMIT %s OFFSET %s",
+            f"""
+            SELECT u.id, u.name, u.email, u.mobile_number, u.profile_photo, u.role, u.status, u.created_at,
+                   sp.name as plan_name
+            FROM users u
+            LEFT JOIN user_subscriptions up ON u.id = up.user_id AND up.status = 'active'
+            LEFT JOIN subscription_plans sp ON up.plan_id = sp.id
+            WHERE {where_clause} {order_by} LIMIT %s OFFSET %s
+            """,
             params + [per_page, offset]
         )
         users = cursor.fetchall()
-        
+
         # Convert datetime objects to readable format strings
         for user in users:
             if user['created_at']:
                 user['created_at'] = user['created_at'].strftime('%d %b %Y')
-        
+
         cursor.close()
         connection.close()
-        
+
         return {
             "users": users,
             "total": total,
@@ -1003,7 +1020,7 @@ class DatabaseOperations:
         
         cursor = connection.cursor()
         cursor.execute("""
-            UPDATE user_plans 
+            UPDATE             python migrate_address_fields.py 
             SET used_prompts = 0 
             WHERE user_id = %s AND status = 'active'
         """, (user_id,))
@@ -1868,33 +1885,30 @@ class DatabaseOperations:
         return success
 
     @staticmethod
-    def get_admin_chat_history(page: int = 1, per_page: int = 20, user_id: int = None, search: str = None) -> Dict:
-        """Get chat history for admin with pagination and filtering"""
+    def get_admin_chat_history(page: int = 1, per_page: int = 20, user_id: int = None, search: str = None, date_from: str = None, date_to: str = None) -> Dict:
+        """Get chat history for admin with pagination and filtering (only user name/email)"""
         connection = get_db_connection()
         if not connection:
             return {"chat_history": [], "total": 0, "page": page, "per_page": per_page}
-        
         cursor = connection.cursor(dictionary=True)
-        
-        # Check if plans table exists
-        cursor.execute("SHOW TABLES LIKE 'plans'")
-        plans_exists = cursor.fetchone() is not None
-        
         # Build WHERE clause
         where_conditions = []
         params = []
-        
         if user_id:
             where_conditions.append("ch.user_id = %s")
             params.append(user_id)
-            
         if search:
             where_conditions.append("(u.name LIKE %s OR u.email LIKE %s OR ch.user_query LIKE %s)")
             search_param = f"%{search}%"
             params.extend([search_param, search_param, search_param])
-        
+        # Date filter
+        if date_from:
+            where_conditions.append("DATE(ch.created_at) >= %s")
+            params.append(date_from)
+        if date_to:
+            where_conditions.append("DATE(ch.created_at) <= %s")
+            params.append(date_to)
         where_clause = "WHERE " + " AND ".join(where_conditions) if where_conditions else ""
-        
         # Get total count
         count_query = f"""
             SELECT COUNT(*) as total
@@ -1904,65 +1918,32 @@ class DatabaseOperations:
         """
         cursor.execute(count_query, params)
         total = cursor.fetchone()['total']
-        
         # Get paginated results
         offset = (page - 1) * per_page
-        
-        if plans_exists:
-            data_query = f"""
-                SELECT 
-                    ch.id,
-                    ch.user_id,
-                    u.name as user_name,
-                    u.email as user_email,
-                    ch.session_id,
-                    ch.user_query,
-                    ch.ai_response,
-                    ch.document_filter,
-                    ch.sources,
-                    ch.response_time,
-                    ch.created_at,
-                    COALESCE(p.name, 'No Plan') as plan_name,
-                    u.current_prompt_usage,
-                    COALESCE(p.max_chat_prompts, 0) as max_chat_prompts
-                FROM chat_history ch
-                LEFT JOIN users u ON ch.user_id = u.id
-                LEFT JOIN plans p ON u.current_plan_id = p.id
-                {where_clause}
-                ORDER BY ch.created_at DESC
-                LIMIT %s OFFSET %s
-            """
-        else:
-            data_query = f"""
-                SELECT 
-                    ch.id,
-                    ch.user_id,
-                    u.name as user_name,
-                    u.email as user_email,
-                    ch.session_id,
-                    ch.user_query,
-                    ch.ai_response,
-                    ch.document_filter,
-                    ch.sources,
-                    ch.response_time,
-                    ch.created_at,
-                    'No Plan' as plan_name,
-                    u.current_prompt_usage,
-                    0 as max_chat_prompts
-                FROM chat_history ch
-                LEFT JOIN users u ON ch.user_id = u.id
-                {where_clause}
-                ORDER BY ch.created_at DESC
-                LIMIT %s OFFSET %s
-            """
-        
+        data_query = f"""
+            SELECT 
+                ch.id,
+                ch.user_id,
+                u.name as user_name,
+                u.email as user_email,
+                ch.session_id,
+                ch.user_query,
+                ch.ai_response,
+                ch.document_filter,
+                ch.sources,
+                ch.response_time,
+                ch.created_at
+            FROM chat_history ch
+            LEFT JOIN users u ON ch.user_id = u.id
+            {where_clause}
+            ORDER BY ch.created_at DESC
+            LIMIT %s OFFSET %s
+        """
         params.extend([per_page, offset])
         cursor.execute(data_query, params)
         chat_history = cursor.fetchall()
-        
         cursor.close()
         connection.close()
-        
         return {
             "chat_history": chat_history,
             "total": total,

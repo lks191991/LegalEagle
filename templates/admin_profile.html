@@ -12,7 +12,7 @@ endblock %} {% block page_title %}My Profile{% endblock %} {% block content %}
           <div class="mb-3">
             {% if user.profile_photo %}
             <img
-              src="/static/uploads/{{ user.profile_photo }}"
+              src="/static/uploads/{{ user.profile_photo }}?v={{ range(100000)|random }}"
               alt="Profile"
               class="rounded-circle"
               style="width: 100px; height: 100px; object-fit: cover"
@@ -38,7 +38,7 @@ endblock %} {% block page_title %}My Profile{% endblock %} {% block content %}
           <small class="text-muted">JPG, PNG, GIF up to 2MB</small>
         </div>
         <div class="row">
-          <div class="col-md-6 mb-3">
+          <div class="col-md-4 mb-3">
             <label class="form-label fw-semibold text-dark">Name</label>
             <input
               type="text"
@@ -49,7 +49,18 @@ endblock %} {% block page_title %}My Profile{% endblock %} {% block content %}
             />
             <div class="invalid-feedback"></div>
           </div>
-          <div class="col-md-6 mb-3">
+          <div class="col-md-4 mb-3">
+            <label class="form-label fw-semibold text-dark">Mobile</label>
+            <input
+              type="text"
+              class="form-control"
+              name="mobile_number"
+              value="{{ user.mobile_number or '' }}"
+              required
+            />
+            <div class="invalid-feedback"></div>
+          </div>
+          <div class="col-md-4 mb-3">
             <label class="form-label fw-semibold text-dark">Email</label>
             <input
               type="email"
@@ -88,38 +99,74 @@ endblock %} {% block page_title %}My Profile{% endblock %} {% block content %}
     <div class="card-box">
       <h5 class="text-dark mb-4">Change Password</h5>
       <form id="passwordForm">
-        <div class="mb-3">
+        <div class="mb-3 position-relative">
           <label class="form-label fw-semibold text-dark"
             >Current Password</label
           >
           <input
             type="password"
-            class="form-control"
+            class="form-control password-input"
             name="current_password"
             required
           />
+          <span
+            class="toggle-password"
+            style="
+              position: absolute;
+              top: 38px;
+              right: 16px;
+              cursor: pointer;
+              z-index: 2;
+            "
+          >
+            <i class="fa fa-eye-slash"></i>
+          </span>
           <div class="invalid-feedback"></div>
         </div>
-        <div class="mb-3">
+        <div class="mb-3 position-relative">
           <label class="form-label fw-semibold text-dark">New Password</label>
           <input
             type="password"
-            class="form-control"
+            class="form-control password-input"
             name="new_password"
             required
           />
+          <span
+            class="toggle-password"
+            style="
+              position: absolute;
+              top: 38px;
+              right: 16px;
+              cursor: pointer;
+              z-index: 2;
+            "
+          >
+            <i class="fa fa-eye-slash"></i>
+          </span>
           <div class="invalid-feedback"></div>
         </div>
-        <div class="mb-3">
+        <div class="mb-3 position-relative">
           <label class="form-label fw-semibold text-dark"
             >Confirm New Password</label
           >
           <input
             type="password"
-            class="form-control"
+            class="form-control password-input"
             name="confirm_password"
             required
           />
+          <span
+            class="toggle-password"
+            style="
+              position: absolute;
+              top: 38px;
+              right: 16px;
+              cursor: pointer;
+              z-index: 2;
+            "
+          >
+            <i class="fa fa-eye-slash"></i>
+          </span>
           <div class="invalid-feedback"></div>
         </div>
         <button
@@ -151,6 +198,18 @@ endblock %} {% block page_title %}My Profile{% endblock %} {% block content %}
 </div>
 {% endblock %} {% block scripts %}
 <script>
+  // Show/hide password toggle
+  $(document).on("click", ".toggle-password", function () {
+    const $icon = $(this).find("i");
+    const $input = $(this).siblings("input");
+    if ($input.attr("type") === "password") {
+      $input.attr("type", "text");
+      $icon.removeClass("fa-eye-slash").addClass("fa-eye");
+    } else {
+      $input.attr("type", "password");
+      $icon.removeClass("fa-eye").addClass("fa-eye-slash");
+    }
+  });
   function validateField(input, message) {
     const $input = $(input);
     const $feedback = $input.parent().find(".invalid-feedback");
@@ -169,6 +228,7 @@ endblock %} {% block page_title %}My Profile{% endblock %} {% block content %}
     const $form = $("#profileForm");
     const nameInput = $form.find('[name="name"]')[0];
     const emailInput = $form.find('[name="email"]')[0];
+    const mobileInput = $form.find('[name="mobile_number"]')[0];
 
     let isValid = true;
 
@@ -179,6 +239,15 @@ endblock %} {% block page_title %}My Profile{% endblock %} {% block content %}
       isValid = false;
     } else {
       validateField(nameInput, "");
+    }
+
+    // Validate mobile
+    const mobile = $(mobileInput).val().trim();
+    if (!mobile || !/^\d{10,15}$/.test(mobile)) {
+      validateField(mobileInput, "Please enter a valid mobile number");
+      isValid = false;
+    } else {
+      validateField(mobileInput, "");
     }
 
     // Validate email
@@ -248,14 +317,12 @@ endblock %} {% block page_title %}My Profile{% endblock %} {% block content %}
     if (!isValid) return;
 
     const formData = {
-      name: $('#profileForm [name="name"]').val(),
-      email: $('#profileForm [name="email"]').val(),
       current_password: currentPassword,
       new_password: newPassword,
     };
 
     $.ajax({
-      url: "/admin/profile",
+      url: "/admin/change-password",
       method: "POST",
       data: formData,
       success: function (data) {

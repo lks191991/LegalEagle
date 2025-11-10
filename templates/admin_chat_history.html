@@ -1,121 +1,280 @@
-{% extends 'admin_base.html' %} {% block title %}Chat History - Admin Panel{%
-endblock %} {% block content %}
+{# Macro to format date as dd-mm-yyyy #} {% macro ddmmyyyy(date_str) %} {%- if
+date_str and '-' in date_str -%} {%- set parts = date_str.split('-') -%} {%- if
+parts|length == 3 and parts[0]|length == 4 -%} {{ date_str[8:10] ~ '-' ~
+date_str[5:7] ~ '-' ~ date_str[0:4] }} {%- else -%} {{ date_str }} {%- endif -%}
+{%- else -%} {{ date_str or '' }} {%- endif -%} {% endmacro %} {% extends
+'admin_base.html' %} {% block title %}Chat History - Admin Panel{% endblock %}
+{% block content %}
+
 <div class="container-fluid">
   <div class="row">
     <div class="col-12">
       <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="text-dark mb-0">
-          <i class="fa-solid fa-comments me-2 text-primary"></i>
+          <i
+            class="fa-solid fa-comments me-2 text-primary"
+            style="color: #ef4524 !important"
+          ></i>
           Chat History Management
         </h2>
-        <div class="d-flex gap-2">
-          <button class="btn btn-outline-primary" onclick="refreshData()">
-            <i class="fa-solid fa-refresh me-1"></i>Refresh
-          </button>
-          <button class="btn btn-outline-secondary" onclick="showStats()">
-            <i class="fa-solid fa-chart-line me-1"></i>Statistics
-          </button>
-        </div>
       </div>
 
-      <!-- Filters -->
-      <div class="card mb-4">
-        <div class="card-body">
-          <div class="row g-3">
-            <div class="col-md-4">
-              <label class="form-label">Search</label>
-              <input
-                type="text"
-                class="form-control"
-                id="search"
-                placeholder="Search by user name, email, or query..."
-              />
+      <!-- Filters (User Subscriptions Style) -->
+      <div
+        class="card mb-4"
+        style="border: 1px solid #e2e8f0; border-radius: 8px"
+      >
+        <div
+          class="card-header bg-light"
+          style="border-bottom: 1px solid #e2e8f0"
+        >
+          <h6 class="card-title mb-0 fw-bold text-dark">
+            <i class="fa-solid fa-filter me-2 text-primary"></i>Filter Chat
+            History
+          </h6>
+        </div>
+        <div class="card-body" style="padding: 1.5rem">
+          <form method="GET" action="/admin/chat-history">
+            <div class="row g-3">
+              <!-- First Row -->
+              <div class="col-md-3">
+                <label for="search" class="form-label">Search</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="search"
+                  name="search"
+                  placeholder="Search by user name, email, or query..."
+                  value="{{ search_filter or '' }}"
+                />
+              </div>
+
+              <div class="col-md-4">
+                <label for="date_from" class="form-label fw-medium"
+                  >Date From</label
+                >
+                <div class="input-group">
+                  <input
+                    type="text"
+                    class="form-control admin-date-input"
+                    id="date_from"
+                    name="date_from"
+                    value="{{ ddmmyyyy(date_from) }}"
+                    placeholder="dd-mm-yyyy"
+                    style="min-height: 38px"
+                  />
+                  <span class="input-group-text calendar-icon">
+                    <i class="fa-solid fa-calendar-days text-accent"></i>
+                  </span>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <label for="date_to" class="form-label fw-medium"
+                  >Date To</label
+                >
+                <div class="input-group">
+                  <input
+                    type="text"
+                    class="form-control admin-date-input"
+                    id="date_to"
+                    name="date_to"
+                    value="{{ ddmmyyyy(date_to) }}"
+                    placeholder="dd-mm-yyyy"
+                    style="min-height: 38px"
+                  />
+                  <span class="input-group-text calendar-icon">
+                    <i class="fa-solid fa-calendar-days text-accent"></i>
+                  </span>
+                </div>
+              </div>
+
+              <!-- Third Row - Action Buttons -->
+              <div class="row g-3 mt-2">
+                <div class="col-12 d-flex justify-content-end">
+                  <button type="submit" class="btn btn-primary me-2">
+                    <i class="fa-solid fa-search me-1"></i>Apply Filters
+                  </button>
+                  <a
+                    href="/admin/chat-history"
+                    class="btn btn-outline-secondary"
+                  >
+                    <i class="fa-solid fa-times me-1"></i>Clear
+                  </a>
+                </div>
+              </div>
             </div>
-            <div class="col-md-3">
-              <label class="form-label">User Filter</label>
-              <select class="form-select" id="userFilter">
-                <option value="">All Users</option>
-              </select>
-            </div>
-            <div class="col-md-2">
-              <label class="form-label">Per Page</label>
-              <select class="form-select" id="perPage">
-                <option value="10">10</option>
-                <option value="20" selected>20</option>
-                <option value="50">50</option>
-                <option value="100">100</option>
-              </select>
-            </div>
-            <div class="col-md-3 d-flex align-items-end">
-              <button class="btn btn-primary me-2" onclick="applyFilters()">
-                <i class="fa-solid fa-filter me-1"></i>Apply Filters
-              </button>
-              <button
-                class="btn btn-outline-secondary"
-                onclick="clearFilters()"
+
+            <!-- Filter Status Indicators -->
+            {% if search_filter or date_from or date_to %}
+            <div class="mt-3 p-2 bg-light rounded">
+              <small class="text-muted">Active filters:</small>
+              {% if search_filter %}
+              <span class="badge bg-info ms-1"
+                >Search: {{ search_filter }}</span
               >
-                <i class="fa-solid fa-times me-1"></i>Clear
-              </button>
+              {% endif %} {% if date_from %}
+              <span class="badge bg-info ms-1"
+                >From: {{ ddmmyyyy(date_from) }}</span
+              >
+              {% endif %} {% if date_to %}
+              <span class="badge bg-info ms-1"
+                >To: {{ ddmmyyyy(date_to) }}</span
+              >
+              {% endif %}
             </div>
-          </div>
+            {% endif %}
+          </form>
         </div>
       </div>
 
       <!-- Chat History Table -->
-      <div class="card">
-        <div class="card-body">
-          <div class="table-responsive">
-            <table class="table table-hover" id="chatHistoryTable">
-              <thead class="table-light">
-                <tr>
-                  <th>ID</th>
-                  <th>User</th>
-                  <th>Query</th>
-                  <th>Response</th>
-                  <th>Document</th>
-                  <th>Plan</th>
-                  <th>Usage</th>
-                  <th>Time</th>
-                  <th>Created</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody id="chatHistoryTableBody">
-                <!-- Data will be loaded here -->
-              </tbody>
-            </table>
-          </div>
-
-          <!-- Pagination -->
-          <nav aria-label="Chat history pagination">
-            <ul class="pagination justify-content-center" id="pagination">
-              <!-- Pagination will be generated here -->
-            </ul>
-          </nav>
-
-          <!-- Loading indicator -->
-          <div
-            id="loadingIndicator"
-            class="text-center py-4"
-            style="display: none"
-          >
-            <i class="fa-solid fa-spinner fa-spin fa-2x text-primary"></i>
-            <div class="mt-2">Loading chat history...</div>
-          </div>
-
-          <!-- No data message -->
-          <div
-            id="noDataMessage"
-            class="text-center py-4"
-            style="display: none"
-          >
-            <i class="fa-solid fa-comments fa-3x text-muted mb-3"></i>
-            <h5 class="text-muted">No chat history found</h5>
-            <p class="text-muted">
-              No chat conversations match your current filters.
-            </p>
-          </div>
+      <div class="card-box">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead class="table-light">
+              <tr>
+                <th class="text-dark">ID</th>
+                <th class="text-dark">User</th>
+                <th class="text-dark">Query</th>
+                <th class="text-dark">Response</th>
+                <th class="text-dark">Document</th>
+                <th class="text-dark">Response Time</th>
+                <th class="text-dark">Created At</th>
+                <th class="text-dark">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if chat_data and chat_data.chat_history %} {% for chat in
+              chat_data.chat_history %}
+              <tr>
+                <td class="text-dark">#{{ "%03d"|format(chat.id) }}</td>
+                <td class="text-dark">
+                  <div>
+                    <strong>{{ chat.user_name or "Unknown" }}</strong><br />
+                    <small class="text-muted"
+                      >{{ chat.user_email or "No email" }}</small
+                    >
+                  </div>
+                </td>
+                <td class="text-dark">
+                  <div
+                    class="text-truncate"
+                    style="max-width: 200px"
+                    title="{{ chat.user_query }}"
+                  >
+                    {{ chat.user_query[:100] }}{% if chat.user_query|length >
+                    100 %}...{% endif %}
+                  </div>
+                </td>
+                <td class="text-dark">
+                  <div
+                    class="text-truncate"
+                    style="max-width: 200px"
+                    title="{{ chat.ai_response }}"
+                  >
+                    {{ chat.ai_response[:100] }}{% if chat.ai_response|length >
+                    100 %}...{% endif %}
+                  </div>
+                </td>
+                <td class="text-dark">
+                  <span class="badge bg-light text-dark">
+                    {{ chat.document_filter or "All Documents" }}
+                  </span>
+                </td>
+                <td class="text-dark">
+                  <span class="badge bg-info">
+                    {% if chat.response_time %} {{
+                    "%.2f"|format(chat.response_time) }}s {% else %} N/A {%
+                    endif %}
+                  </span>
+                </td>
+                <td class="text-dark">
+                  <small>{{ chat.created_at }}</small>
+                </td>
+                <td>
+                  <div class="admin-actions d-flex gap-1">
+                    <button
+                      class="btn btn-outline-primary btn-sm"
+                      title="View Details"
+                      onclick="viewChatDetail({{ chat.id }})"
+                    >
+                      <i class="fa-solid fa-eye"></i>
+                    </button>
+                    <button
+                      class="btn btn-outline-danger btn-sm"
+                      title="Delete Chat"
+                      onclick="deleteChatHistory({{ chat.id }})"
+                    >
+                      <i class="fa-solid fa-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %} {% endif %}
+            </tbody>
+          </table>
         </div>
+
+        <!-- Pagination -->
+        {% if chat_data and chat_data.pages > 1 %}
+        <nav aria-label="Chat history pagination" class="mt-4">
+          <ul class="pagination justify-content-center">
+            <!-- Previous button -->
+            {% if page > 1 %}
+            <li class="page-item">
+              <a
+                class="page-link"
+                href="?page={{ page - 1 }}&search={{ search_filter }}&user_id={{ user_id_filter }}&date_from={{ date_from }}&date_to={{ date_to }}&per_page={{ per_page }}"
+                >Previous</a
+              >
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+              <span class="page-link">Previous</span>
+            </li>
+            {% endif %}
+
+            <!-- Page numbers -->
+            {% set start_page = ([1, page - 2] | max) %} {% set end_page =
+            ([chat_data.pages, page + 2] | min) %} {% for p in range(start_page,
+            end_page + 1) %}
+            <li class="page-item {% if p == page %}active{% endif %}">
+              <a
+                class="page-link"
+                href="?page={{ p }}&search={{ search_filter }}&user_id={{ user_id_filter }}&date_from={{ date_from }}&date_to={{ date_to }}&per_page={{ per_page }}"
+                >{{ p }}</a
+              >
+            </li>
+            {% endfor %}
+
+            <!-- Next button -->
+            {% if page < chat_data.pages %}
+            <li class="page-item">
+              <a
+                class="page-link"
+                href="?page={{ page + 1 }}&search={{ search_filter }}&user_id={{ user_id_filter }}&date_from={{ date_from }}&date_to={{ date_to }}&per_page={{ per_page }}"
+                >Next</a
+              >
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+              <span class="page-link">Next</span>
+            </li>
+            {% endif %}
+          </ul>
+        </nav>
+        {% endif %}
+
+        <!-- No data message -->
+        {% if not chat_data or not chat_data.chat_history %}
+        <div class="text-center py-4">
+          <i class="fa-solid fa-comments fa-3x text-muted mb-3"></i>
+          <h5 class="text-muted">No chat history found</h5>
+          <p class="text-muted">
+            No chat conversations match your current filters.
+          </p>
+        </div>
+        {% endif %}
       </div>
     </div>
   </div>
@@ -147,261 +306,21 @@ endblock %} {% block content %}
     </div>
   </div>
 </div>
-
-<!-- Statistics Modal -->
-<div class="modal fade" id="statsModal" tabindex="-1">
-  <div class="modal-dialog modal-xl">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Chat Usage Statistics</h5>
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="modal"
-        ></button>
-      </div>
-      <div class="modal-body" id="statsModalBody">
-        <!-- Statistics will be loaded here -->
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-          Close
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
+{% endblock %} {% block scripts %}
 <script>
-  let currentPage = 1;
-  let currentFilters = {
-    search: "",
-    user_id: "",
-    per_page: 20,
-  };
-
-  $(document).ready(function () {
-    loadChatHistory();
-    loadUsers();
-
-    // Set up search with debounce
-    let searchTimeout;
-    $("#search").on("input", function () {
-      clearTimeout(searchTimeout);
-      searchTimeout = setTimeout(function () {
-        applyFilters();
-      }, 500);
-    });
-  });
-
-  function loadChatHistory(page = 1) {
-    currentPage = page;
-    showLoading(true);
-
-    const params = new URLSearchParams({
-      page: page,
-      per_page: currentFilters.per_page,
-      ...currentFilters,
-    });
-
-    $.ajax({
-      url: `/admin/api/chat-history?${params}`,
-      method: "GET",
-      success: function (data) {
-        displayChatHistory(data);
-        generatePagination(data);
-        showLoading(false);
-      },
-      error: function (xhr, status, error) {
-        console.error("Error loading chat history:", error);
-        showError("Failed to load chat history");
-        showLoading(false);
-      },
-    });
-  }
-
-  function displayChatHistory(data) {
-    const tbody = $("#chatHistoryTableBody");
-    tbody.empty();
-
-    if (data.chat_history.length === 0) {
-      $("#noDataMessage").show();
-      $("#chatHistoryTable").hide();
-      return;
-    }
-
-    $("#noDataMessage").hide();
-    $("#chatHistoryTable").show();
-
-    data.chat_history.forEach(function (chat) {
-      const row = `
-      <tr>
-        <td>${chat.id}</td>
-        <td>
-          <div>
-            <strong>${chat.user_name || "Unknown"}</strong><br>
-            <small class="text-muted">${chat.user_email || "No email"}</small>
-          </div>
-        </td>
-        <td>
-          <div class="text-truncate" style="max-width: 200px;" title="${escapeHtml(
-            chat.user_query
-          )}">
-            ${escapeHtml(chat.user_query.substring(0, 100))}${
-        chat.user_query.length > 100 ? "..." : ""
-      }
-          </div>
-        </td>
-        <td>
-          <div class="text-truncate" style="max-width: 200px;" title="${escapeHtml(
-            chat.ai_response
-          )}">
-            ${escapeHtml(chat.ai_response.substring(0, 100))}${
-        chat.ai_response.length > 100 ? "..." : ""
-      }
-          </div>
-        </td>
-        <td>
-          <span class="badge bg-light text-dark">
-            ${chat.document_filter || "All Documents"}
-          </span>
-        </td>
-        <td>
-          <span class="badge ${chat.plan_name ? "bg-primary" : "bg-secondary"}">
-            ${chat.plan_name || "No Plan"}
-          </span>
-        </td>
-        <td>
-          <div class="text-center">
-            <div class="fw-bold">${chat.current_prompt_usage || 0}/${
-        chat.max_chat_prompts || 0
-      }</div>
-            <div class="progress" style="height: 4px;">
-              <div class="progress-bar ${getUsageBarColor(
-                chat.current_prompt_usage,
-                chat.max_chat_prompts
-              )}" 
-                   style="width: ${getUsagePercentage(
-                     chat.current_prompt_usage,
-                     chat.max_chat_prompts
-                   )}%"></div>
-            </div>
-          </div>
-        </td>
-        <td>
-          <span class="badge bg-info">
-            ${
-              chat.response_time
-                ? parseFloat(chat.response_time).toFixed(2) + "s"
-                : "N/A"
-            }
-          </span>
-        </td>
-        <td>
-          <small>${new Date(chat.created_at).toLocaleString()}</small>
-        </td>
-        <td>
-          <div class="btn-group btn-group-sm">
-            <button class="btn btn-outline-primary" onclick="viewChatDetail(${
-              chat.id
-            })">
-              <i class="fa-solid fa-eye"></i>
-            </button>
-            <button class="btn btn-outline-danger" onclick="deleteChatHistory(${
-              chat.id
-            })">
-              <i class="fa-solid fa-trash"></i>
-            </button>
-          </div>
-        </td>
-      </tr>
-    `;
-      tbody.append(row);
-    });
-  }
-
-  function generatePagination(data) {
-    const pagination = $("#pagination");
-    pagination.empty();
-
-    if (data.total_pages <= 1) return;
-
-    // Previous button
-    pagination.append(`
-    <li class="page-item ${currentPage === 1 ? "disabled" : ""}">
-      <a class="page-link" href="#" onclick="loadChatHistory(${
-        currentPage - 1
-      })">Previous</a>
-    </li>
-  `);
-
-    // Page numbers
-    const startPage = Math.max(1, currentPage - 2);
-    const endPage = Math.min(data.total_pages, currentPage + 2);
-
-    for (let i = startPage; i <= endPage; i++) {
-      pagination.append(`
-      <li class="page-item ${i === currentPage ? "active" : ""}">
-        <a class="page-link" href="#" onclick="loadChatHistory(${i})">${i}</a>
-      </li>
-    `);
-    }
-
-    // Next button
-    pagination.append(`
-    <li class="page-item ${currentPage === data.total_pages ? "disabled" : ""}">
-      <a class="page-link" href="#" onclick="loadChatHistory(${
-        currentPage + 1
-      })">Next</a>
-    </li>
-  `);
-  }
-
-  function loadUsers() {
-    // This would load users for the filter dropdown
-    // For now, we'll leave it empty and let users type in the search
-  }
-
-  function applyFilters() {
-    currentFilters = {
-      search: $("#search").val(),
-      user_id: $("#userFilter").val(),
-      per_page: parseInt($("#perPage").val()),
-    };
-    loadChatHistory(1);
-  }
-
-  function clearFilters() {
-    $("#search").val("");
-    $("#userFilter").val("");
-    $("#perPage").val("20");
-    currentFilters = { search: "", user_id: "", per_page: 20 };
-    loadChatHistory(1);
-  }
-
-  function refreshData() {
-    loadChatHistory(currentPage);
-  }
-
   function viewChatDetail(chatId) {
-    // Load and display chat details in modal
     $("#chatDetailModal").modal("show");
     $("#chatDetailBody").html(
       '<div class="text-center"><i class="fa-solid fa-spinner fa-spin"></i> Loading...</div>'
     );
 
-    // Find the chat in current data
-    const chatData = $("#chatHistoryTableBody tr").filter(function () {
-      return $(this).find("td:first").text() == chatId;
-    });
-
-    // For now, show basic details - you can enhance this
+    // Show basic details for now
     $("#chatDetailBody").html(`
-    <div class="alert alert-info">
-      <strong>Chat ID:</strong> ${chatId}<br>
-      <em>Detailed chat view coming soon...</em>
-    </div>
-  `);
+        <div class="alert alert-info">
+            <strong>Chat ID:</strong> ${chatId}<br>
+            <em>Detailed chat view coming soon...</em>
+        </div>
+    `);
 
     $("#deleteChatBtn").data("chat-id", chatId);
   }
@@ -415,144 +334,69 @@ endblock %} {% block content %}
       return;
     }
 
-    $.ajax({
-      url: `/admin/api/chat-history/${chatId}`,
-      method: "DELETE",
-      success: function (data) {
-        showSuccess("Chat history deleted successfully");
-        loadChatHistory(currentPage);
-      },
-      error: function (xhr, status, error) {
-        showError("Failed to delete chat history");
-      },
-    });
+    // For now, just reload the page
+    alert("Delete functionality will be implemented soon.");
   }
 
-  function showStats() {
-    $("#statsModal").modal("show");
-    $("#statsModalBody").html(
-      '<div class="text-center"><i class="fa-solid fa-spinner fa-spin"></i> Loading statistics...</div>'
+  // Initialize date pickers exactly like admin users page
+  $(document).ready(function () {
+    console.log("🔧 Initializing chat history datepickers...");
+    console.log("jQuery available:", typeof $ !== "undefined");
+    console.log(
+      "Datepicker available:",
+      typeof $.fn.datepicker !== "undefined"
     );
 
-    $.ajax({
-      url: "/admin/api/chat-stats",
-      method: "GET",
-      success: function (data) {
-        displayStats(data);
-      },
-      error: function (xhr, status, error) {
-        $("#statsModalBody").html(
-          '<div class="alert alert-danger">Failed to load statistics</div>'
-        );
-      },
-    });
-  }
+    // Wait for datepicker library to load
+    setTimeout(function () {
+      // Initialize datepickers for admin date fields
+      $(".admin-date-input").each(function () {
+        var $field = $(this);
+        var fieldId = $field.attr("id");
 
-  function displayStats(data) {
-    const stats = data.general_stats;
-    const topUsers = data.top_users;
+        try {
+          $field
+            .datepicker({
+              format: "dd-mm-yyyy",
+              autoclose: true,
+              todayHighlight: true,
+              startDate: "01-01-1900",
+              endDate: "+0d",
+              weekStart: 1,
+              daysOfWeekHighlighted: "0,6",
+              showOnFocus: true,
+              orientation: "bottom left",
+              container: "body",
+              zIndexOffset: 50000,
+            })
+            .on("changeDate", function (e) {
+              var selectedDate = e.date;
+              if (selectedDate) {
+                var day = ("0" + selectedDate.getDate()).slice(-2);
+                var month = ("0" + (selectedDate.getMonth() + 1)).slice(-2);
+                var year = selectedDate.getFullYear();
+                $(this).val(day + "-" + month + "-" + year);
+              }
+            });
+          console.log("✅ Datepicker initialized for:", fieldId);
+        } catch (error) {
+          console.error(
+            "❌ Error initializing datepicker for " + fieldId + ":",
+            error
+          );
+        }
+      });
 
-    const html = `
-    <div class="row">
-      <div class="col-md-6">
-        <div class="card">
-          <div class="card-header"><h5>General Statistics</h5></div>
-          <div class="card-body">
-            <div class="row text-center">
-              <div class="col-6 mb-3">
-                <h4 class="text-primary">${stats.total_chats}</h4>
-                <small>Total Chats</small>
-              </div>
-              <div class="col-6 mb-3">
-                <h4 class="text-success">${stats.unique_users}</h4>
-                <small>Unique Users</small>
-              </div>
-              <div class="col-6 mb-3">
-                <h4 class="text-info">${stats.chats_today}</h4>
-                <small>Chats Today</small>
-              </div>
-              <div class="col-6 mb-3">
-                <h4 class="text-warning">${stats.chats_this_month}</h4>
-                <small>This Month</small>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-6">
-        <div class="card">
-          <div class="card-header"><h5>Top Users by Chat Count</h5></div>
-          <div class="card-body">
-            <div class="list-group">
-              ${topUsers
-                .map(
-                  (user) => `
-                <div class="list-group-item d-flex justify-content-between">
-                  <div>
-                    <strong>${user.name}</strong><br>
-                    <small class="text-muted">${user.email}</small>
-                  </div>
-                  <div class="text-end">
-                    <span class="badge bg-primary">${user.chat_count} chats</span><br>
-                    <small class="text-muted">${user.current_prompt_usage}/${user.max_chat_prompts} used</small>
-                  </div>
-                </div>
-              `
-                )
-                .join("")}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
-
-    $("#statsModalBody").html(html);
-  }
-
-  function showLoading(show) {
-    if (show) {
-      $("#loadingIndicator").show();
-      $("#chatHistoryTable").hide();
-      $("#noDataMessage").hide();
-    } else {
-      $("#loadingIndicator").hide();
-    }
-  }
-
-  function showSuccess(message) {
-    // You can implement a toast notification here
-    alert(message);
-  }
-
-  function showError(message) {
-    // You can implement a toast notification here
-    alert(message);
-  }
-
-  function escapeHtml(text) {
-    const div = document.createElement("div");
-    div.textContent = text;
-    return div.innerHTML;
-  }
-
-  function getUsagePercentage(used, max) {
-    if (!max || max === 0) return 0;
-    return Math.min(100, (used / max) * 100);
-  }
-
-  function getUsageBarColor(used, max) {
-    const percentage = getUsagePercentage(used, max);
-    if (percentage >= 90) return "bg-danger";
-    if (percentage >= 70) return "bg-warning";
-    return "bg-success";
-  }
-
-  // Handle delete from modal
-  $("#deleteChatBtn").on("click", function () {
-    const chatId = $(this).data("chat-id");
-    $("#chatDetailModal").modal("hide");
-    deleteChatHistory(chatId);
+      // Calendar icon click handlers (fix selector to match users page)
+      $(".calendar-icon").on("click", function (e) {
+        e.preventDefault();
+        var $input = $(this).parent().find(".admin-date-input");
+        if ($input.data("datepicker")) {
+          $input.datepicker("show");
+          console.log("📅 Datepicker opened for:", $input.attr("id"));
+        }
+      });
+    }, 500); // End of setTimeout for datepicker loading
   });
 </script>
 

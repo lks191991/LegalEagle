@@ -16,9 +16,7 @@
         </div>
     </div>
     <div class="d-flex gap-2">
-        <button class="btn btn-outline-secondary" onclick="exportUsers()">
-            <i class="fas fa-download me-2"></i>Export
-        </button>
+       
         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createUserModal">
             <i class="fa-solid fa-plus me-2"></i>Create User
         </button>
@@ -108,6 +106,18 @@
             </div>
             
             <!-- Filter Status Indicators -->
+            {% macro ddmmyyyy(date_str) %}
+                {%- if date_str and '-' in date_str -%}
+                    {%- set parts = date_str.split('-') -%}
+                    {%- if parts|length == 3 and parts[0]|length == 4 -%}
+                        {{ date_str[8:10] ~ '-' ~ date_str[5:7] ~ '-' ~ date_str[0:4] }}
+                    {%- else -%}
+                        {{ date_str }}
+                    {%- endif -%}
+                {%- else -%}
+                    {{ date_str or '' }}
+                {%- endif -%}
+            {% endmacro %}
             {% if name_filter or email_filter or status_filter or role_filter or date_from or date_to or sort_filter %}
             <div class="mt-3 p-2 bg-light rounded">
                 <small class="text-muted">Active filters:</small>
@@ -124,10 +134,10 @@
                     <span class="badge bg-info ms-1">Role: {{ role_filter|title }}</span>
                 {% endif %}
                 {% if date_from %}
-                    <span class="badge bg-info ms-1">From: {{ date_from }}</span>
+                    <span class="badge bg-info ms-1">From: {{ ddmmyyyy(date_from) }}</span>
                 {% endif %}
                 {% if date_to %}
-                    <span class="badge bg-info ms-1">To: {{ date_to }}</span>
+                    <span class="badge bg-info ms-1">To: {{ ddmmyyyy(date_to) }}</span>
                 {% endif %}
                 {% if sort_filter %}
                     <span class="badge bg-success ms-1">Sorted: {{ sort_filter.replace('_', ' ')|title }}</span>
@@ -149,6 +159,7 @@
                     <th class="text-dark">Name</th>
                     <th class="text-dark">Email</th>
                     <th class="text-dark">Mobile</th>
+                    <th class="text-dark">Plan</th>
                     <th class="text-dark">Registration Date</th>
                     <th class="text-dark">Role</th>
                     <th class="text-dark">Status</th>
@@ -179,6 +190,13 @@
                             <i class="fa-solid fa-phone me-1 text-muted"></i>{{ user.mobile_number }}
                         {% else %}
                             <span class="text-muted">Not provided</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-dark">
+                        {% if user.plan_name %}
+                            <span class="badge bg-info">{{ user.plan_name }}</span>
+                        {% else %}
+                            <span class="text-muted">No Plan</span>
                         {% endif %}
                     </td>
                     <td class="text-dark">
@@ -214,12 +232,6 @@
                             <a href="/admin/users/{{ user.id }}/plans" class="btn btn-outline-info btn-sm" title="View Plans & Subscriptions">
                                 <i class="fa-solid fa-crown"></i>
                             </a>
-                            <button class="btn btn-outline-warning btn-sm" title="AI Settings" onclick="manageAISettings({{ user.id }})">
-                                <i class="fa-solid fa-robot"></i>
-                            </button>
-                            <button class="btn btn-outline-danger btn-sm" title="Delete User" onclick="deleteUser({{ user.id }})">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
                         </div>
                         {% endif %}
                     </td>
@@ -373,58 +385,6 @@
     </div>
 </div>
 
-<!-- AI Settings Modal -->
-<div class="modal fade" id="aiSettingsModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title text-dark">AI Settings</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <form id="aiSettingsForm">
-                    <input type="hidden" name="user_id" id="aiUserId">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-semibold text-dark">OpenAI API Key</label>
-                            <input type="text" class="form-control" name="openai_key" id="aiOpenaiKey" placeholder="sk-...">
-                            <div class="invalid-feedback"></div>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-semibold text-dark">OpenAI Model</label>
-                            <select class="form-select" name="openai_model" id="aiOpenaiModel">
-                                <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
-                                <option value="gpt-4">GPT-4</option>
-                                <option value="gpt-4-turbo">GPT-4 Turbo</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-semibold text-dark">Qdrant URL</label>
-                            <input type="text" class="form-control" name="qdrant_url" id="aiQdrantUrl" placeholder="https://your-cluster.cloud.qdrant.io:6333">
-                            <div class="invalid-feedback"></div>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-semibold text-dark">Qdrant API Key</label>
-                            <input type="text" class="form-control" name="qdrant_key" id="aiQdrantKey" placeholder="Your Qdrant API Key">
-                            <div class="invalid-feedback"></div>
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold text-dark">Qdrant Collection</label>
-                        <input type="text" class="form-control" name="qdrant_collection" id="aiQdrantCollection" value="user_docs">
-                        <small class="text-muted">Collection name for storing user documents</small>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-success" onclick="saveAISettings()">Save AI Settings</button>
-            </div>
-        </div>
-    </div>
-</div>
 
 <!-- Image View Modal -->
 <div class="modal fade" id="imageViewModal" tabindex="-1">

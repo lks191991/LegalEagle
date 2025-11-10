@@ -44,22 +44,28 @@ def admin_subscriptions(request: Request,
     if not user_data:
         return RedirectResponse(url="/admin/login", status_code=302)
     
+    # Use date_converter utility for date conversion
+    from utils.date_converter import ddmmyyyy_to_yyyymmdd, yyyymmdd_to_ddmmyyyy
+
+    date_from_db = ddmmyyyy_to_yyyymmdd(date_from) if date_from else None
+    date_to_db = ddmmyyyy_to_yyyymmdd(date_to) if date_to else None
+
     # Get filtered subscriptions using the database function
     subscriptions = DatabaseOperations.get_all_subscriptions_filtered(
         user_name_filter=user_name,
         user_email_filter=user_email, 
         plan_name_filter=plan_name,
         status_filter=status,
-        date_from=date_from,
-        date_to=date_to
+        date_from=date_from_db,
+        date_to=date_to_db
     )
-    
+
     # Get all subscriptions for status counts (unfiltered)
     all_subscriptions = DatabaseOperations.get_all_subscriptions()
-    
+
     # Get all available subscription plans for the filter dropdown
     all_plans = DatabaseOperations.get_all_plans()
-    
+
     # Get counts for each status
     status_counts = {
         'all': len(all_subscriptions),
@@ -67,7 +73,10 @@ def admin_subscriptions(request: Request,
         'cancelled': len([sub for sub in all_subscriptions if sub['status'] == 'cancelled']),
         'expired': len([sub for sub in all_subscriptions if sub['status'] == 'expired'])
     }
-    
+
+    date_from_display = yyyymmdd_to_ddmmyyyy(date_from_db) if date_from else ''
+    date_to_display = yyyymmdd_to_ddmmyyyy(date_to_db) if date_to else ''
+
     return templates.TemplateResponse("admin_subscriptions.html", {
         "request": request, 
         "subscriptions": subscriptions, 
@@ -77,8 +86,8 @@ def admin_subscriptions(request: Request,
         "user_email_filter": user_email,
         "plan_filter": plan_name,
         "status_filter": status,
-        "date_from": date_from,
-        "date_to": date_to,
+        "date_from": date_from_display,
+        "date_to": date_to_display,
         "search_query": search or "",
         "status_counts": status_counts,
         "all_plans": all_plans

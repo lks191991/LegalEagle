@@ -4,8 +4,8 @@
 {% block page_title %}Transactions{% endblock %}
 
 {% block content %}
-<!-- Top Actions -->
-<div class="d-flex justify-content-between align-items-center mb-4">
+<!-- Top Actions & Revenue Summary -->
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
     <div class="d-flex align-items-center gap-3">
         <div class="d-flex align-items-center rounded px-3 py-2 border" style="border-color: #ef4524 !important; background-color: #ef4524;">
             <i class="fa-solid fa-receipt text-white me-2"></i>
@@ -13,9 +13,14 @@
             <span class="fw-bold text-white">{{ transactions|length }}</span>
         </div>
     </div>
-    <button class="btn btn-outline-secondary" onclick="exportTransactions()">
-        <i class="fas fa-download me-2"></i>Export
-    </button>
+    <div class="d-flex align-items-center gap-2">
+        <div class="d-flex flex-column align-items-start rounded px-4 py-3 border shadow-sm" style="background: linear-gradient(90deg, #28a745 0%, #20c997 100%); border-color: #28a745 !important; min-width: 260px;">
+            <div class="d-flex align-items-center mb-2">
+                <div class="text-white fw-bold" style="font-size: 1.2rem;">Total Revenue ₹{{ "%.0f"|format(all_time_total if all_time_total is defined else 0) }}</div>
+            </div>
+            
+        </div>
+    </div>
 </div>
 
 <!-- Enhanced Filters -->
@@ -109,12 +114,24 @@
                 {% if amount_filter %}
                     <span class="badge bg-info ms-1">Amount: {{ amount_filter }}</span>
                 {% endif %}
-                {% if date_from %}
-                    <span class="badge bg-info ms-1">From: {{ date_from }}</span>
-                {% endif %}
-                {% if date_to %}
-                    <span class="badge bg-info ms-1">To: {{ date_to }}</span>
-                {% endif %}
+                                {% macro dmy(date) %}
+                                    {%- if date and '-' in date -%}
+                                        {%- set parts = date.split('-') -%}
+                                        {%- if parts|length == 3 and parts[0]|length == 4 -%}
+                                            {{ parts[2] ~ '-' ~ parts[1] ~ '-' ~ parts[0] }}
+                                        {%- else -%}
+                                            {{ date }}
+                                        {%- endif -%}
+                                    {%- else -%}
+                                        {{ date }}
+                                    {%- endif -%}
+                                {% endmacro %}
+                                {% if date_from %}
+                                        <span class="badge bg-info ms-1">From: {{ dmy(date_from) }}</span>
+                                {% endif %}
+                                {% if date_to %}
+                                        <span class="badge bg-info ms-1">To: {{ dmy(date_to) }}</span>
+                                {% endif %}
             </div>
             {% endif %}
         </form>
@@ -156,109 +173,72 @@
 </div>
 
 <script>
+// All custom JS runs after DOM and jQuery are ready
+(function waitForJQuery() {
+  if (typeof $ === 'undefined') {
+    setTimeout(waitForJQuery, 100);
+    return;
+  }
+  // Datepicker for filter fields
+  $('#date_from, #date_to').datepicker({
+    format: 'dd-mm-yyyy',
+    autoclose: true,
+    todayHighlight: true,
+    orientation: 'bottom left',
+    container: 'body',
+    zIndexOffset: 50000
+  });
+  // Calendar icon click
+  $('.calendar-icon').on('click', function(e) {
+    e.preventDefault();
+    $(this).closest('.input-group').find('.admin-date-input').datepicker('show');
+  });
+  // Convert dd-mm-yyyy to yyyy-mm-dd before submitting the filter form
+  $('form[action="/admin/transactions"]').on('submit', function(e) {
+    var from = $('#date_from').val();
+    var to = $('#date_to').val();
+    function convert(d) {
+      if (!d) return '';
+      var parts = d.split('-');
+      if (parts.length === 3) return parts[2] + '-' + parts[1] + '-' + parts[0];
+      return d;
+    }
+    $('#date_from').val(convert(from));
+    $('#date_to').val(convert(to));
+  });
+})();
+
 function setDateRange(period) {
     const today = new Date();
     const dateFromInput = document.getElementById('date_from');
     const dateToInput = document.getElementById('date_to');
-    
     let fromDate, toDate;
-    
     switch(period) {
-        case 'today':
-            fromDate = toDate = today;
-            break;
+        case 'today': fromDate = toDate = today; break;
         case 'yesterday':
-            const yesterday = new Date(today);
-            yesterday.setDate(yesterday.getDate() - 1);
-            fromDate = toDate = yesterday;
-            break;
+            const yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1);
+            fromDate = toDate = yesterday; break;
         case 'week':
-            const startOfWeek = new Date(today);
-            startOfWeek.setDate(today.getDate() - today.getDay());
-            fromDate = startOfWeek;
-            toDate = today;
-            break;
+            const startOfWeek = new Date(today); startOfWeek.setDate(today.getDate() - today.getDay());
+            fromDate = startOfWeek; toDate = today; break;
         case 'month':
             const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-            fromDate = startOfMonth;
-            toDate = today;
-            break;
+            fromDate = startOfMonth; toDate = today; break;
         case 'year':
             const startOfYear = new Date(today.getFullYear(), 0, 1);
-            fromDate = startOfYear;
-            toDate = today;
-            break;
+            fromDate = startOfYear; toDate = today; break;
     }
-    
     if (fromDate && toDate) {
-        // Convert to dd-mm-yyyy format for datepicker
         const fromDay = ("0" + fromDate.getDate()).slice(-2);
         const fromMonth = ("0" + (fromDate.getMonth() + 1)).slice(-2);
         const fromYear = fromDate.getFullYear();
-        
         const toDay = ("0" + toDate.getDate()).slice(-2);
         const toMonth = ("0" + (toDate.getMonth() + 1)).slice(-2);
         const toYear = toDate.getFullYear();
-        
         dateFromInput.value = fromDay + "-" + fromMonth + "-" + fromYear;
         dateToInput.value = toDay + "-" + toMonth + "-" + toYear;
     }
 }
-
-// Admin Datepicker Initialization
-$(document).ready(function() {
-    console.log("🔧 Initializing admin transactions datepickers...");
-    console.log("jQuery available:", typeof $ !== 'undefined');
-    console.log("Datepicker available:", typeof $.fn.datepicker !== 'undefined');
-    
-    // Wait for datepicker library to load
-    setTimeout(function() {
-      // Initialize datepickers for admin date fields
-      $(".admin-date-input").each(function() {
-      var $field = $(this);
-      var fieldId = $field.attr('id');
-      
-      try {
-        $field.datepicker({
-          format: "dd-mm-yyyy",
-          autoclose: true,
-          todayHighlight: true,
-          startDate: "01-01-1900",
-          endDate: "+0d",
-          weekStart: 1,
-          daysOfWeekHighlighted: "0,6",
-          showOnFocus: true,
-          orientation: "bottom left",
-          container: "body",
-          zIndexOffset: 50000
-        }).on("changeDate", function(e) {
-          var selectedDate = e.date;
-          if (selectedDate) {
-            var day = ("0" + selectedDate.getDate()).slice(-2);
-            var month = ("0" + (selectedDate.getMonth() + 1)).slice(-2);
-            var year = selectedDate.getFullYear();
-            $(this).val(day + "-" + month + "-" + year);
-          }
-        });
-        
-        console.log("✅ Datepicker initialized for:", fieldId);
-      } catch (error) {
-        console.error("❌ Error initializing datepicker for " + fieldId + ":", error);
-      }
-    });
-
-      // Calendar icon click handlers
-      $(".calendar-icon").on("click", function(e) {
-        e.preventDefault();
-        var $input = $(this).siblings('.admin-date-input');
-        if ($input.data('datepicker')) {
-          $input.datepicker("show");
-          console.log("📅 Datepicker opened for:", $input.attr('id'));
-        }
-      });
-      
-    }, 500); // End of setTimeout for datepicker loading
-});
 
 function exportTransactions() {
     alert('Export functionality would be implemented here');
